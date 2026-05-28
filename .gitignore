@@ -10,10 +10,14 @@
 # 10xDevs
 10x-*
 .10x-*
+.github/prompts/skill-explainer.md
 
 # from 10x-astro-starter
 # build output
 dist/
+
+# bundled output for size verification
+bundled/
 
 # generated types
 .astro/
@@ -29,6 +33,7 @@ pnpm-debug.log*
 
 # environment variables
 .env
+.env.local
 .env.production
 
 # cloudflare

@@ -52,41 +52,41 @@ Deploy the Fermenta Astro 6 app to Cloudflare Workers using **Cloudflare Workers
 
 ## Phase 1: Local Configuration & Renaming
 
-- [ ] **1.1** Rename Worker from `10x-astro-starter` to `fermenta` in `wrangler.jsonc`
-- [ ] **1.2** Update `.github/workflows/ci.yml` branch references from `master` to `main` (repo default is already `main`)
-- [ ] **1.3** Create `.dev.vars` from `.env.example` template with actual Supabase credentials for local dev
-- [ ] **1.4** Add `"deploy"` script to `package.json` (`wrangler deploy`) for manual deploys
-- [ ] **1.5** Verify local dev still works with workerd runtime (`npm run dev`)
+- [x] **1.1** Rename Worker from `10x-astro-starter` to `fermenta` in `wrangler.jsonc`
+- [x] **1.2** Update `.github/workflows/ci.yml` branch references from `master` to `main` (repo default is already `main`)
+- [x] **1.3** Create `.dev.vars` from `.env.example` template with actual Supabase credentials for local dev
+- [x] **1.4** Add `"deploy"` script to `package.json` (`wrangler deploy`) for manual deploys
+- [x] **1.5** Verify local dev still works with workerd runtime (`npm run dev`)
 
 ---
 
 ## Phase 2: Cloudflare Account & Authentication
 
-- [ ] **2.1** Authenticate Wrangler CLI (`npx wrangler login`) - opens browser OAuth flow
-- [ ] **2.2** Verify account access (`npx wrangler whoami`)
-- [ ] **2.3** **Edge case**: If using a Cloudflare account with no Workers plan activated, the free tier must be opted into via the dashboard first (Workers & Pages > Overview). `wrangler deploy` will fail with `workers.api.error.unauthorized` otherwise.
+- [x] **2.1** Authenticate Wrangler CLI (`npx wrangler login`) - opens browser OAuth flow
+- [x] **2.2** Verify account access (`npx wrangler whoami`)
+- [x] **2.3** **Edge case**: If using a Cloudflare account with no Workers plan activated, the free tier must be opted into via the dashboard first (Workers & Pages > Overview). `wrangler deploy` will fail with `workers.api.error.unauthorized` otherwise.
 
 ---
 
 ## Phase 3: First Manual Deploy
 
-- [ ] **3.1** Run production build: `npm run build`
-- [ ] **3.2** Dry-run deploy to verify bundle size and config: `npx wrangler deploy --dry-run`
-- [ ] **3.3** Deploy to production: `npx wrangler deploy`
+- [x] **3.1** Run production build: `npm run build`
+- [x] **3.2** Dry-run deploy to verify bundle size and config: `npx wrangler deploy --dry-run`
+- [x] **3.3** Deploy to production: `npx wrangler deploy`
   - First deploy auto-creates the Worker project named `fermenta` on Cloudflare
   - Confirm Worker URL is assigned (format: `fermenta.<subdomain>.workers.dev`)
-- [ ] **3.4** **Edge case - first deploy without secrets**: App boots but auth is non-functional. Safe because `createClient()` in `src/lib/supabase.ts` returns `null` when env vars are missing.
+- [x] **3.4** **Edge case - first deploy without secrets**: App boots but auth is non-functional. Safe because `createClient()` in `src/lib/supabase.ts` returns `null` when env vars are missing.
 
 ---
 
 ## Phase 4: Secrets Configuration
 
-- [ ] **4.1** Set Supabase secrets on the Worker:
+- [x] **4.1** Set Supabase secrets on the Worker:
   - `npx wrangler secret put SUPABASE_URL`
   - `npx wrangler secret put SUPABASE_KEY`
-- [ ] **4.2** Verify secrets registered: `npx wrangler secret list`
-- [ ] **4.3** **Edge case - Astro env schema**: Env vars declared as `optional: true` in `astro.config.mjs`. Correct for CI/build-time (no secrets needed), but means runtime won't throw if missing. Verify auth works after setting secrets.
-- [ ] **4.4** Verify live deployment: open `.workers.dev` URL, test signin page, confirm Supabase auth completes
+- [x] **4.2** Verify secrets registered: `npx wrangler secret list`
+- [x] **4.3** **Edge case - Astro env schema**: Env vars declared as `optional: true` in `astro.config.mjs`. Correct for CI/build-time (no secrets needed), but means runtime won't throw if missing. Verify auth works after setting secrets.
+- [x] **4.4** Verify live deployment: open `.workers.dev` URL, test signin page, confirm Supabase auth completes
 - [ ] **4.5** **Edge case - Supabase redirect URLs**: Add the production Worker URL (`https://fermenta.<account>.workers.dev`) to Supabase Auth > URL Configuration > Redirect URLs. Without this, OAuth/magic-link flows fail with "redirect URL mismatch".
 
 ---

@@ -87,46 +87,46 @@ Deploy the Fermenta Astro 6 app to Cloudflare Workers using **Cloudflare Workers
 - [x] **4.2** Verify secrets registered: `npx wrangler secret list`
 - [x] **4.3** **Edge case - Astro env schema**: Env vars declared as `optional: true` in `astro.config.mjs`. Correct for CI/build-time (no secrets needed), but means runtime won't throw if missing. Verify auth works after setting secrets.
 - [x] **4.4** Verify live deployment: open `.workers.dev` URL, test signin page, confirm Supabase auth completes
-- [ ] **4.5** **Edge case - Supabase redirect URLs**: Add the production Worker URL (`https://fermenta.<account>.workers.dev`) to Supabase Auth > URL Configuration > Redirect URLs. Without this, OAuth/magic-link flows fail with "redirect URL mismatch".
+- [x] **4.5** **Edge case - Supabase redirect URLs**: Add the production Worker URL (`https://fermenta.<account>.workers.dev`) to Supabase Auth > URL Configuration > Redirect URLs. Without this, OAuth/magic-link flows fail with "redirect URL mismatch".
 
 ---
 
 ## Phase 5: Connect Workers Builds (Auto-Deploy on Push to `main`)
 
-- [ ] **5.1** In Cloudflare Dashboard: Workers & Pages > select `fermenta` Worker > Settings > Builds > Connect
-- [ ] **5.2** Authorize the GitHub integration (installs Cloudflare app on the repo)
-- [ ] **5.3** Select the repository and configure build settings:
+- [x] **5.1** In Cloudflare Dashboard: Workers & Pages > select `fermenta` Worker > Settings > Builds > Connect
+- [x] **5.2** Authorize the GitHub integration (installs Cloudflare app on the repo)
+- [x] **5.3** Select the repository and configure build settings:
   - **Production branch**: `main`
   - **Build command**: `npm run build`
   - **Deploy command**: `npx wrangler deploy` (default)
   - **Root directory**: `/` (monorepo root)
-- [ ] **5.4** Add **build variables** (needed at build time for Astro env schema):
+- [x] **5.4** Add **build variables** (needed at build time for Astro env schema):
   - `SUPABASE_URL` (as build secret)
   - `SUPABASE_KEY` (as build secret)
   - These are separate from the runtime secrets set in Phase 4 - build vars are only available during the build step
-- [ ] **5.5** **Critical**: Verify the Worker name in `wrangler.jsonc` (`fermenta`) matches the Worker name on the dashboard. Mismatches cause build failure with: `The name in your Wrangler configuration file must match the name of your Worker`.
-- [ ] **5.6** Push a test commit to `main` to trigger the first automated build+deploy. Verify in Dashboard > Deployments > View Build History.
-- [ ] **5.7** **Edge case - non-production branches (preview)**: By default, pushes to branches other than `main` run `npx wrangler versions upload` (creates a preview version without promoting to production). Non-production branch builds must be explicitly enabled in Settings > Builds > Build branches if you want PR preview URLs.
-- [ ] **5.8** **Edge case - build timeout**: Workers Builds has a 20-minute max build duration. Current Astro build is fast (~15s), but if npm install + build exceeds this, enable build caching in Settings > Builds.
+- [x] **5.5** **Critical**: Verify the Worker name in `wrangler.jsonc` (`fermenta`) matches the Worker name on the dashboard. Mismatches cause build failure with: `The name in your Wrangler configuration file must match the name of your Worker`.
+- [x] **5.6** Push a test commit to `main` to trigger the first automated build+deploy. Verify in Dashboard > Deployments > View Build History.
+- [x] **5.7** **Edge case - non-production branches (preview)**: By default, pushes to branches other than `main` run `npx wrangler versions upload` (creates a preview version without promoting to production). Non-production branch builds must be explicitly enabled in Settings > Builds > Build branches if you want PR preview URLs.
+- [x] **5.8** **Edge case - build timeout**: Workers Builds has a 20-minute max build duration. Current Astro build is fast (~15s), but if npm install + build exceeds this, enable build caching in Settings > Builds.
 
 ---
 
 ## Phase 6: Observability & Rollback
 
-- [ ] **6.1** Verify observability active: `npx wrangler tail` after deploy - confirm request logs stream
-- [ ] **6.2** Test rollback: `npx wrangler rollback` reverts to previous version (<5s)
-- [ ] **6.3** Caveat: Worker rollback does NOT revert Supabase database migrations
+- [x] **6.1** Verify observability active: `npx wrangler tail` after deploy - confirm request logs stream
+- [x] **6.2** Test rollback: `npx wrangler rollback` reverts to previous version (<5s)
+- [x] **6.3** Caveat: Worker rollback does NOT revert Supabase database migrations
 
 ---
 
 ## Phase 7: Edge Cases & Hardening
 
-- [ ] **7.1** **Bundle size monitoring**: Currently 391 KB gzipped (free limit 3 MB). Check build logs for size after each deploy. Monitor as React islands grow.
-- [ ] **7.2** **CPU time on free tier**: 10ms CPU limit. If SSR + Supabase auth approaches this, upgrade to Workers Paid ($5/mo). Detect with `npx wrangler tail --status error` (look for `exceededCpu`).
-- [ ] **7.3** **`wrangler.jsonc` quirks**: Less community documentation than `.toml`. Trailing commas valid, uses `//` comments. The `$schema` field provides IDE autocomplete/validation.
-- [ ] **7.4** **Supabase on workerd**: Test full auth flows (signin, signup, signout, cookie persistence) locally via `npm run dev` (real workerd runtime). No connection pooling in stateless isolates - each request creates a fresh client.
-- [ ] **7.5** **Build secrets vs runtime secrets**: Workers Builds has two separate secret scopes. Build secrets (Phase 5.4) are available during `npm run build` only. Runtime secrets (Phase 4.1) are available to the running Worker. Both must be configured separately. If you change a Supabase key, update BOTH.
-- [ ] **7.6** **Git integration token**: Workers Builds auto-generates an API token with broad permissions (Account Settings read, Workers Scripts edit, KV/R2 edit, Workers Routes edit). Review the auto-generated token in My Profile > API Tokens after connecting and consider scoping it down.
+- [x] **7.1** **Bundle size monitoring**: Currently 391 KB gzipped (free limit 3 MB). Check build logs for size after each deploy. Monitor as React islands grow.
+- [x] **7.2** **CPU time on free tier**: 10ms CPU limit. If SSR + Supabase auth approaches this, upgrade to Workers Paid ($5/mo). Detect with `npx wrangler tail --status error` (look for `exceededCpu`).
+- [x] **7.3** **`wrangler.jsonc` quirks**: Less community documentation than `.toml`. Trailing commas valid, uses `//` comments. The `$schema` field provides IDE autocomplete/validation.
+- [x] **7.4** **Supabase on workerd**: Test full auth flows (signin, signup, signout, cookie persistence) locally via `npm run dev` (real workerd runtime). No connection pooling in stateless isolates - each request creates a fresh client.
+- [x] **7.5** **Build secrets vs runtime secrets**: Workers Builds has two separate secret scopes. Build secrets (Phase 5.4) are available during `npm run build` only. Runtime secrets (Phase 4.1) are available to the running Worker. Both must be configured separately. If you change a Supabase key, update BOTH.
+- [x] **7.6** **Git integration token**: Workers Builds auto-generates an API token with broad permissions (Account Settings read, Workers Scripts edit, KV/R2 edit, Workers Routes edit). Review the auto-generated token in My Profile > API Tokens after connecting and consider scoping it down.
 
 ---
 
@@ -172,3 +172,35 @@ Deploy the Fermenta Astro 6 app to Cloudflare Workers using **Cloudflare Workers
 1. **Custom domain** - not in this plan. Add later via `routes` in `wrangler.jsonc` or Dashboard. Requires domain on Cloudflare DNS already.
 2. **Supabase redirect URLs** - production URL MUST be added to Supabase Auth config before auth works (included in Phase 4).
 3. **Workers Paid upgrade** - if CPU errors appear, $5/mo removes the 10ms limit (raises to 30s).
+
+---
+
+## Lessons Learned
+
+### 1. Three distinct Supabase environments — know which keys go where
+
+This project has three Supabase contexts with different credentials:
+
+| Context | URL source | Key format | Used in |
+|---------|-----------|------------|---------|
+| **Local dev** (`supabase start`) | `http://127.0.0.1:54321` | Local anon key (printed by `supabase start`) | `.dev.vars` |
+| **Hosted production** (supabase.com) | `https://<ref>.supabase.co` | Modern publishable key (`sb_publishable_...`) | `wrangler secret put` + Workers Builds dashboard |
+| **Legacy format** (same hosted project) | Same URL | JWT anon key (`eyJhbG...`) | Avoid — use publishable key instead |
+
+**Before deploying**, confirm which hosted Supabase project is the production target and retrieve its publishable key from Dashboard > Settings > API (or via MCP `get_publishable_keys`). Do not assume `.env.local` or `.dev.vars` contain production credentials — they typically point to local Supabase.
+
+### 2. Use modern publishable keys (`sb_publishable_...`), not legacy JWT anon keys
+
+Supabase now issues two key formats for the same `anon` role. The modern `sb_publishable_` format supports independent rotation and is the recommended format. Both work identically with `@supabase/supabase-js` v2.x and `@supabase/ssr`, but standardizing on the publishable format simplifies rotation and avoids confusion with the `service_role` JWT.
+
+### 3. `wrangler rollback` may proceed despite aborting a sub-prompt
+
+During rollback testing, the CLI warned that secrets had changed since the target version and asked for confirmation. Answering "no" to the secrets sub-prompt still resulted in the version being deployed. This appears to be a wrangler quirk where the version deployment is a separate operation from the secrets check. **Lesson**: always have a fresh `wrangler deploy` ready to restore the latest version after testing rollback.
+
+### 4. Runtime secrets and build secrets are independently scoped but use the same values
+
+Cloudflare Workers Builds separates "build-time variables" (available during `npm run build`) from "runtime secrets" (available to the running Worker). For this project, `SUPABASE_URL` and `SUPABASE_KEY` must be set in **both** scopes with the **same production values**:
+- Runtime: `npx wrangler secret put`
+- Build-time: Cloudflare Dashboard > Worker > Settings > Builds > Build variables
+
+Since `astro.config.mjs` declares them as `optional: true`, build secrets are technically not required — the build succeeds without them. But if the schema ever changes to `optional: false`, the Workers Builds job will fail without build secrets configured.

@@ -355,33 +355,33 @@ Complete the batch list page with card/table layout toggle (localStorage persist
 
 #### Automated
 
-- [x] 1.1 zod installed and importable
-- [x] 1.2 Batch schemas compile and export expected types
-- [x] 1.3 Types file compiles
-- [x] 1.4 API helpers compile
-- [x] 1.5 Build passes with all foundation files
-- [x] 1.6 Lint passes
+- [x] 1.1 zod installed and importable — 879a020
+- [x] 1.2 Batch schemas compile and export expected types — 879a020
+- [x] 1.3 Types file compiles — 879a020
+- [x] 1.4 API helpers compile — 879a020
+- [x] 1.5 Build passes with all foundation files — 879a020
+- [x] 1.6 Lint passes — 879a020
 
 #### Manual
 
-- [ ] 1.7 Unauthenticated access to /batches redirects to signin
+- [x] 1.7 Unauthenticated access to /batches redirects to signin — 879a020
 
 ### Phase 2: API Routes
 
 #### Automated
 
-- [ ] 2.1 POST /api/batches creates batch and returns 201
-- [ ] 2.2 GET /api/batches returns user's batches
-- [ ] 2.3 GET /api/batches/[id] returns single batch
-- [ ] 2.4 PUT /api/batches/[id] updates batch
-- [ ] 2.5 POST with invalid data returns 400 with field errors
-- [ ] 2.6 Build passes
-- [ ] 2.7 Lint passes
+- [x] 2.1 POST /api/batches creates batch and returns 201
+- [x] 2.2 GET /api/batches returns user's batches
+- [x] 2.3 GET /api/batches/[id] returns single batch
+- [x] 2.4 PUT /api/batches/[id] updates batch
+- [x] 2.5 POST with invalid data returns 400 with field errors
+- [x] 2.6 Build passes
+- [x] 2.7 Lint passes
 
 #### Manual
 
-- [ ] 2.8 API rejects unauthenticated requests
-- [ ] 2.9 RLS prevents cross-user batch access
+- [x] 2.8 API rejects unauthenticated requests
+- [x] 2.9 RLS prevents cross-user batch access
 
 ### Phase 3: Batch Creation UI
 

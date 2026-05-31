@@ -3,7 +3,7 @@ project: "Fermenta"
 version: 1
 status: draft
 created: 2026-05-29
-updated: 2026-05-29
+updated: 2026-05-31
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -27,8 +27,8 @@ A home winemaker today juggles paper forms, mental math, and scattered notes —
 
 | ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
 |---|---|---|---|---|---|
-| F-01 | batch-schema-with-rls | (foundation) batch/ingredient/process tables + RLS for per-user isolation | — | Access Control, NFR | ready |
-| S-01 | batch-crud-and-params | create a batch with parameters and yeast, list their batches | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-007 | proposed |
+| F-01 | batch-schema-with-rls | (foundation) batch/ingredient/process tables + RLS for per-user isolation | — | Access Control, NFR | done |
+| S-01 | batch-crud-and-params | create a batch with parameters and yeast, list their batches | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-007 | ready |
 | S-02 | ingredients-calculation-validation | add ingredients, see calculated sugar needs, see validation warnings | S-01 | US-01, FR-006, FR-008, FR-009 | proposed |
 | S-03 | process-plan-generation | receive a generated process plan and edit/add/remove entries | S-01 | US-01, FR-010, FR-011 | proposed |
 
@@ -65,7 +65,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Sequenced first because every vertical slice depends on these tables and RLS correctness. If RLS policies are wrong, data leaks between users — a hard NFR violation. Independent verification before building on top is the safe path.
-- **Status:** ready
+- **Status:** done
 
 ## Slices
 
@@ -79,7 +79,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Straightforward CRUD with no complex logic; risk is low. Sequenced after F-01 because it needs tables. FR-001/FR-002 (auth) are already present — this slice consumes them, doesn't re-implement them.
-- **Status:** proposed
+- **Status:** ready
 
 ### S-02: Ingredients, sugar calculation, and validation warnings
 
@@ -109,8 +109,8 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 
 | Roadmap ID | Change ID | Suggested issue title | Ready for `/10x-plan` | Notes |
 |---|---|---|---|---|
-| F-01 | batch-schema-with-rls | Set up batch/ingredient/process schema with RLS | yes | Run `/10x-plan batch-schema-with-rls` |
-| S-01 | batch-crud-and-params | Batch creation form, parameters, and list page | no | Needs F-01 |
+| F-01 | batch-schema-with-rls | Set up batch/ingredient/process schema with RLS | done | — |
+| S-01 | batch-crud-and-params | Batch creation form, parameters, and list page | yes | Run `/10x-plan batch-crud-and-params` |
 | S-02 | ingredients-calculation-validation | Ingredient management with sugar calculation and validation | no | Needs S-01; north star slice |
 | S-03 | process-plan-generation | Process plan generation and editing | no | Needs S-01; parallel with S-02 |
 

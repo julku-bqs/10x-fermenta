@@ -36,11 +36,11 @@ Three tables exist in the public schema (`batches`, `ingredients`, `diary_entrie
 - No seed data.
 - No reference/catalog tables (v2 scope).
 - No per-operation RLS policies — using single ALL policy for MVP simplicity.
-- No triggers or stored procedures for calculations (S-02 scope — calc lives in app layer).
+- No triggers or stored procedures for calculations (S-02 scope — calc lives in app layer). `moddatetime` for `updated_at` is included as operational infrastructure.
 
 ## Implementation Approach
 
-Single migration file containing all DDL: enum types → tables → RLS enable → policies → indexes. Applied via Supabase MCP tool for immediate verification, and also saved locally for git tracking.
+Single migration file containing all DDL: enum types → tables → RLS enable → policies → indexes → moddatetime triggers. Applied via Supabase MCP tool for immediate verification, and also saved locally for git tracking.
 
 ## Phase 1: Schema Migration
 
@@ -78,6 +78,10 @@ Indexes:
 - `batches(user_id)` — fast per-user listing
 - `ingredients(batch_id)` — fast per-batch lookup
 - `diary_entries(batch_id)` — fast per-batch lookup
+
+Triggers:
+- `moddatetime` extension enabled
+- BEFORE UPDATE trigger on all three tables setting `updated_at = now()` via `moddatetime`
 
 ### Success Criteria:
 

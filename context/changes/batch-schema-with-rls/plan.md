@@ -200,12 +200,12 @@ Prove that RLS policies correctly isolate user data by running targeted SQL quer
 
 #### Automated
 
-- [x] 2.1 SELECT as user A returns 0 rows from user B data
-- [x] 2.2 SELECT as user B returns 0 rows from user A data
-- [x] 2.3 Security advisor returns no warnings
-- [x] 2.4 FK cascade verified (DELETE batch removes child rows)
-- [x] 2.5 Test data cleaned up
+- [x] 2.1 SELECT as user A returns 0 rows from user B data — 76c6e98
+- [x] 2.2 SELECT as user B returns 0 rows from user A data — 76c6e98
+- [x] 2.3 Security advisor returns no warnings — 76c6e98
+- [x] 2.4 FK cascade verified (DELETE batch removes child rows) — 76c6e98
+- [x] 2.5 Test data cleaned up — 76c6e98
 
 #### Manual
 
-- [x] 2.6 Review verification output confirms isolation
+- [x] 2.6 Review verification output confirms isolation — 76c6e98

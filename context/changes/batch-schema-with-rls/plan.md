@@ -40,7 +40,7 @@ Three tables exist in the public schema (`batches`, `ingredients`, `diary_entrie
 
 ## Implementation Approach
 
-Single migration file containing all DDL: enum types → tables → RLS enable → policies → indexes → moddatetime triggers. Applied via Supabase MCP tool for immediate verification, and also saved locally for git tracking.
+Single migration file containing all DDL: enum types → tables → RLS enable → policies → indexes → moddatetime triggers. Applied via **local Supabase MCP** (`supabase-dev` tool) for development validation, then promoted to production (`supabase` tool) when ready. The local instance runs via `npx supabase start` in WSL with MCP exposed at `http://127.0.0.1:54321/mcp`.
 
 ## Phase 1: Schema Migration
 
@@ -64,7 +64,7 @@ Enums:
 - `ingredient_type`: `user_input`, `fermentation_sugar`, `sweetness_sugar`
 
 Tables:
-- `batches`: `id` (uuid PK, default gen_random_uuid()), `user_id` (uuid NOT NULL, references auth.users), `name` (text NOT NULL), `batch_date` (date), `process_type` (process_type enum NOT NULL), `target_volume_liters` (numeric), `target_abv` (numeric), `planned_sweetness` (sweetness_level NOT NULL DEFAULT 'dry'), `yeast_name` (text), `yeast_alcohol_tolerance` (numeric), `measured_sugar_content` (numeric, nullable — user fills after must/juice preparation, before adding sugar or yeast; used by S-02 calculation for accurate fermentation sugar target), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
+- `batches`: `id` (uuid PK, default gen_random_uuid()), `user_id` (uuid NOT NULL, references auth.users), `name` (text NOT NULL), `batch_date` (date), `process_type` (process_type enum NOT NULL), `target_volume_liters` (numeric), `target_abv` (numeric), `planned_sweetness` (sweetness_level NOT NULL DEFAULT 'dry'), `yeast_name` (text), `yeast_alcohol_tolerance` (numeric), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 - `ingredients`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `type` (ingredient_type NOT NULL DEFAULT 'user_input'), `name` (text NOT NULL), `amount` (numeric), `unit` (text), `sugar_content_percent` (numeric — sugar content as percentage of ingredient weight/volume), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 - `diary_entries`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `description` (text NOT NULL), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 
@@ -187,10 +187,10 @@ Prove that RLS policies correctly isolate user data by running targeted SQL quer
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly via Supabase MCP apply_migration
-- [ ] 1.2 list_tables returns all three tables with expected columns
-- [ ] 1.3 Security advisor reports no RLS warnings
-- [ ] 1.4 Migration file exists at supabase/migrations/
+- [x] 1.1 Migration applies cleanly via Supabase MCP apply_migration
+- [x] 1.2 list_tables returns all three tables with expected columns
+- [x] 1.3 Security advisor reports no RLS warnings
+- [x] 1.4 Migration file exists at supabase/migrations/
 
 #### Manual
 

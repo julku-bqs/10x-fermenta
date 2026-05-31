@@ -1,7 +1,7 @@
 ---
 change_id: batch-schema-with-rls
 title: Batch data schema with row-level security
-status: plan_reviewed
+status: implementing
 created: 2026-05-30
 updated: 2026-05-31
 archived_at: null

@@ -187,25 +187,25 @@ Prove that RLS policies correctly isolate user data by running targeted SQL quer
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly via Supabase MCP apply_migration
-- [x] 1.2 list_tables returns all three tables with expected columns
-- [x] 1.3 Security advisor reports no RLS warnings
-- [x] 1.4 Migration file exists at supabase/migrations/
+- [x] 1.1 Migration applies cleanly via Supabase MCP apply_migration — 8d0b2d3
+- [x] 1.2 list_tables returns all three tables with expected columns — 8d0b2d3
+- [x] 1.3 Security advisor reports no RLS warnings — 8d0b2d3
+- [x] 1.4 Migration file exists at supabase/migrations/ — 8d0b2d3
 
 #### Manual
 
-- [ ] 1.5 Review migration file confirms schema matches PRD
+- [x] 1.5 Review migration file confirms schema matches PRD — 8d0b2d3
 
 ### Phase 2: RLS Verification
 
 #### Automated
 
-- [ ] 2.1 SELECT as user A returns 0 rows from user B data
-- [ ] 2.2 SELECT as user B returns 0 rows from user A data
-- [ ] 2.3 Security advisor returns no warnings
-- [ ] 2.4 FK cascade verified (DELETE batch removes child rows)
-- [ ] 2.5 Test data cleaned up
+- [x] 2.1 SELECT as user A returns 0 rows from user B data
+- [x] 2.2 SELECT as user B returns 0 rows from user A data
+- [x] 2.3 Security advisor returns no warnings
+- [x] 2.4 FK cascade verified (DELETE batch removes child rows)
+- [x] 2.5 Test data cleaned up
 
 #### Manual
 
-- [ ] 2.6 Review verification output confirms isolation
+- [x] 2.6 Review verification output confirms isolation

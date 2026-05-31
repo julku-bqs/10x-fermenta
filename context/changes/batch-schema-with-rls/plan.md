@@ -61,11 +61,11 @@ Create the migration SQL with all tables, enums, RLS policies, and indexes. Appl
 Enums:
 - `process_type`: `pulp`, `juice`
 - `sweetness_level`: `dry`, `semi_dry`, `semi_sweet`, `sweet`
-- `ingredient_type`: `fruit`, `sugar`, `sugar_for_fermentation`, `sugar_for_sweetness`
+- `ingredient_type`: `user_input`, `fermentation_sugar`, `sweetness_sugar`
 
 Tables:
 - `batches`: `id` (uuid PK, default gen_random_uuid()), `user_id` (uuid NOT NULL, references auth.users), `name` (text NOT NULL), `batch_date` (date), `process_type` (process_type enum NOT NULL), `target_volume_liters` (numeric), `target_abv` (numeric), `planned_sweetness` (sweetness_level NOT NULL DEFAULT 'dry'), `yeast_name` (text), `yeast_alcohol_tolerance` (numeric), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
-- `ingredients`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `user_id` (uuid NOT NULL, references auth.users), `type` (ingredient_type NOT NULL DEFAULT 'fruit'), `name` (text NOT NULL), `amount` (numeric), `sugar_content` (numeric), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
+- `ingredients`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `user_id` (uuid NOT NULL, references auth.users), `type` (ingredient_type NOT NULL DEFAULT 'user_input'), `name` (text NOT NULL), `amount` (numeric), `unit` (text), `sugar_content` (numeric), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 - `diary_entries`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `user_id` (uuid NOT NULL, references auth.users), `description` (text NOT NULL), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 
 RLS:
@@ -147,7 +147,7 @@ Prove that RLS policies correctly isolate user data by running targeted SQL quer
 ### Integration Tests:
 
 - RLS isolation proof via direct SQL (Phase 2).
-- FK cascade verification: deleting a batch cascades to its ingredients and process_entries.
+- FK cascade verification: deleting a batch cascades to its ingredients and diary_entries.
 
 ### Manual Testing Steps:
 
@@ -157,7 +157,7 @@ Prove that RLS policies correctly isolate user data by running targeted SQL quer
 
 ## Performance Considerations
 
-- Indexes on `user_id` (batches) and `batch_id` (ingredients, process_entries) ensure RLS-filtered queries use index scans, not sequential scans.
+- Indexes on `user_id` (batches) and `batch_id` (ingredients, diary_entries) ensure RLS-filtered queries use index scans, not sequential scans.
 - At MVP scale (small data volume per PRD), no further optimization needed.
 
 ## Migration Notes

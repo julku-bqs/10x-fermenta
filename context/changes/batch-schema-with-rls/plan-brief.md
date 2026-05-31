@@ -4,7 +4,7 @@
 
 ## What & Why
 
-Create the foundational database tables (batches, ingredients, process_entries) with Row-Level Security for Fermenta's batch planning domain. Every vertical slice (S-01 through S-03) depends on these tables existing with correct RLS — this must be verified in isolation before user-facing code is built on top.
+Create the foundational database tables (batches, ingredients, diary_entries) with Row-Level Security for Fermenta's batch planning domain. Every vertical slice (S-01 through S-03) depends on these tables existing with correct RLS — this must be verified in isolation before user-facing code is built on top.
 
 ## Starting Point
 
@@ -20,6 +20,8 @@ Three tables with enums, indexes, and RLS policies exist in the public schema. A
 |----------|--------|-------------------|
 | Yeast modeling | Nullable columns on batch table | Simplest approach matching the common single-yeast case; extensible to catalog FK in v2. |
 | Sweetness representation | Postgres enum (dry, semi_dry, semi_sweet, sweet) | Covers standard winemaking levels needed for calculation branching logic. |
+| Ingredient type model | Technical enum: user_input, fermentation_sugar, sweetness_sugar | Not user-facing; user enters ingredients freely, only auto-generated sugar entries carry technical types. |
+| Primary keys | UUIDv4 (gen_random_uuid) + created_at for ordering | Zero custom code; standard Supabase pattern; UUIDv7 adds complexity with marginal benefit at MVP scale. |
 | Process entry ordering | Integer sort_order column | Simple, allows reordering via UPDATE without linked-list complexity. |
 | RLS granularity | Single ALL policy per table | Minimal SQL for MVP flat-user model; trivial to split into per-operation later. |
 | Deployment method | Supabase MCP + local migration file | Immediate verification + git-tracked migration for CI/CD. |
@@ -29,7 +31,7 @@ Three tables with enums, indexes, and RLS policies exist in the public schema. A
 
 **In scope:**
 - `batches` table with params, yeast columns, timestamps
-- `ingredients` table with type enum, sugar_content, sort_order
+- `ingredients` table with type enum (user_input, fermentation_sugar, sweetness_sugar), sugar_content, unit, sort_order
 - `diary_entries` table with description, sort_order (the user's working diary; pre-populated by process generation in S-03, freely editable)
 - Postgres enums: process_type, sweetness_level, ingredient_type
 - RLS enabled + ALL policy on each table

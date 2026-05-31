@@ -64,8 +64,8 @@ Enums:
 - `ingredient_type`: `user_input`, `fermentation_sugar`, `sweetness_sugar`
 
 Tables:
-- `batches`: `id` (uuid PK, default gen_random_uuid()), `user_id` (uuid NOT NULL, references auth.users), `name` (text NOT NULL), `batch_date` (date), `process_type` (process_type enum NOT NULL), `target_volume_liters` (numeric), `target_abv` (numeric), `planned_sweetness` (sweetness_level NOT NULL DEFAULT 'dry'), `yeast_name` (text), `yeast_alcohol_tolerance` (numeric), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
-- `ingredients`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `user_id` (uuid NOT NULL, references auth.users), `type` (ingredient_type NOT NULL DEFAULT 'user_input'), `name` (text NOT NULL), `amount` (numeric), `unit` (text), `sugar_content` (numeric), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
+- `batches`: `id` (uuid PK, default gen_random_uuid()), `user_id` (uuid NOT NULL, references auth.users), `name` (text NOT NULL), `batch_date` (date), `process_type` (process_type enum NOT NULL), `target_volume_liters` (numeric), `target_abv` (numeric), `planned_sweetness` (sweetness_level NOT NULL DEFAULT 'dry'), `yeast_name` (text), `yeast_alcohol_tolerance` (numeric), `measured_sugar_content` (numeric, nullable — user fills after must/juice preparation, before adding sugar or yeast; used by S-02 calculation for accurate fermentation sugar target), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
+- `ingredients`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `user_id` (uuid NOT NULL, references auth.users), `type` (ingredient_type NOT NULL DEFAULT 'user_input'), `name` (text NOT NULL), `amount` (numeric), `unit` (text), `sugar_content_percent` (numeric — sugar content as percentage of ingredient weight/volume), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 - `diary_entries`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `user_id` (uuid NOT NULL, references auth.users), `description` (text NOT NULL), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 
 RLS:
@@ -128,6 +128,7 @@ Prove that RLS policies correctly isolate user data by running targeted SQL quer
 - SELECT as user A returns 0 rows from user B's data
 - SELECT as user B returns 0 rows from user A's data
 - Supabase security advisor returns no warnings for `batches`, `ingredients`, `diary_entries`
+- DELETE test batch confirms child rows in ingredients and diary_entries are cascaded
 - Test data is cleaned up (no orphan rows remain)
 
 #### Manual Verification:
@@ -196,8 +197,9 @@ Prove that RLS policies correctly isolate user data by running targeted SQL quer
 - [ ] 2.1 SELECT as user A returns 0 rows from user B data
 - [ ] 2.2 SELECT as user B returns 0 rows from user A data
 - [ ] 2.3 Security advisor returns no warnings
-- [ ] 2.4 Test data cleaned up
+- [ ] 2.4 FK cascade verified (DELETE batch removes child rows)
+- [ ] 2.5 Test data cleaned up
 
 #### Manual
 
-- [ ] 2.5 Review verification output confirms isolation
+- [ ] 2.6 Review verification output confirms isolation

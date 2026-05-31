@@ -134,6 +134,8 @@ Install zod, create shared types/schemas, add API response helpers, and update m
 
 Create the JSON API endpoints for batch CRUD: create (POST), list (GET), get single (GET), and update (PUT). All routes use zod validation, the Supabase client with RLS, and the response helpers from Phase 1.
 
+**Shared guard pattern**: Both endpoints begin with a null-guard: if `createClient()` returns null or `context.locals.user` is null → `jsonError("Server configuration error", 500)`. This is defensive only (middleware guarantees auth on protected routes) but satisfies TypeScript narrowing.
+
 ### Changes Required:
 
 #### 1. Create & List endpoint
@@ -189,7 +191,7 @@ Build the React form for creating a new batch and the Astro page that hosts it. 
 
 **Intent**: A single scrollable React form with three visual sections (Batch Basics, Parameters, Yeast) that validates on submit using `createBatchSchema` and POSTs to `/api/batches`. Shows field-level errors inline and server errors as a dismissible banner at the top.
 
-**Contract**: Props: `{ mode: "create" | "edit"; initialData?: Batch; onSuccess?: (batch: Batch) => void }`. On submit: validates → fetch POST (or PUT for edit mode) → calls `onSuccess` with response or displays errors. Uses `window.location.href` for redirect after create.
+**Contract**: Props: `{ mode: "create" | "edit"; initialData?: Batch; onSuccess?: (batch: Batch) => void }`. On submit: validates → disables submit button with loading state → fetch POST (or PUT for edit mode) → calls `onSuccess` with response or displays errors → re-enables button. Uses `window.location.href` for redirect after create.
 
 #### 2. Batch creation page
 
@@ -393,6 +395,7 @@ Complete the batch list page with card/table layout toggle (localStorage persist
 - [ ] 3.3 Form renders with 3 sections at /batches/new
 - [ ] 3.4 Client-side validation shows inline errors
 - [ ] 3.5 Valid submission creates batch and redirects to detail
+- [ ] 3.6 Server error banner displays correctly
 
 ### Phase 4: Batch List & Detail UI
 

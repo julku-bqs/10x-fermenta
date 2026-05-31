@@ -22,7 +22,7 @@ Create the foundational database schema for Fermenta: tables for batches, ingred
 Three tables exist in the public schema (`batches`, `ingredients`, `diary_entries`) with:
 - Appropriate columns matching PRD requirements.
 - Postgres enums for `process_type`, `sweetness_level`, and `ingredient_type`.
-- RLS enabled on all tables with a single ALL policy per table enforcing `auth.uid() = user_id`.
+- RLS enabled on all tables with a single ALL policy per table. `batches` enforces `auth.uid() = user_id`; `ingredients` and `diary_entries` derive ownership through `batch_id -> batches.user_id`.
 - Foreign key relationships from `ingredients` and `diary_entries` to `batches`.
 - Sort order columns on `ingredients` and `diary_entries` for user-controlled ordering.
 - Timestamps (`created_at`, `updated_at`) on all tables.
@@ -65,12 +65,14 @@ Enums:
 
 Tables:
 - `batches`: `id` (uuid PK, default gen_random_uuid()), `user_id` (uuid NOT NULL, references auth.users), `name` (text NOT NULL), `batch_date` (date), `process_type` (process_type enum NOT NULL), `target_volume_liters` (numeric), `target_abv` (numeric), `planned_sweetness` (sweetness_level NOT NULL DEFAULT 'dry'), `yeast_name` (text), `yeast_alcohol_tolerance` (numeric), `measured_sugar_content` (numeric, nullable — user fills after must/juice preparation, before adding sugar or yeast; used by S-02 calculation for accurate fermentation sugar target), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
-- `ingredients`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `user_id` (uuid NOT NULL, references auth.users), `type` (ingredient_type NOT NULL DEFAULT 'user_input'), `name` (text NOT NULL), `amount` (numeric), `unit` (text), `sugar_content_percent` (numeric — sugar content as percentage of ingredient weight/volume), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
-- `diary_entries`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `user_id` (uuid NOT NULL, references auth.users), `description` (text NOT NULL), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
+- `ingredients`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `type` (ingredient_type NOT NULL DEFAULT 'user_input'), `name` (text NOT NULL), `amount` (numeric), `unit` (text), `sugar_content_percent` (numeric — sugar content as percentage of ingredient weight/volume), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
+- `diary_entries`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `description` (text NOT NULL), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 
 RLS:
 - `ALTER TABLE <table> ENABLE ROW LEVEL SECURITY;` on all three tables
-- One ALL policy per table: `USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)`
+- One ALL policy on `batches`: `USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)`
+- One ALL policy on `ingredients`: `USING (EXISTS (SELECT 1 FROM batches b WHERE b.id = ingredients.batch_id AND b.user_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM batches b WHERE b.id = ingredients.batch_id AND b.user_id = auth.uid()))`
+- One ALL policy on `diary_entries`: `USING (EXISTS (SELECT 1 FROM batches b WHERE b.id = diary_entries.batch_id AND b.user_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM batches b WHERE b.id = diary_entries.batch_id AND b.user_id = auth.uid()))`
 
 Indexes:
 - `batches(user_id)` — fast per-user listing
@@ -158,7 +160,7 @@ Prove that RLS policies correctly isolate user data by running targeted SQL quer
 
 ## Performance Considerations
 
-- Indexes on `user_id` (batches) and `batch_id` (ingredients, diary_entries) ensure RLS-filtered queries use index scans, not sequential scans.
+- Indexes on `user_id` (batches) and `batch_id` (ingredients, diary_entries) support the ownership checks and keep per-batch access patterns efficient.
 - At MVP scale (small data volume per PRD), no further optimization needed.
 
 ## Migration Notes

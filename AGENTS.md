@@ -44,6 +44,13 @@ Pre-commit hooks: husky + lint-staged runs `eslint --fix` on `*.{ts,tsx,astro}` 
 
 Environment setup and deployment: see @README.md.
 
+### Supabase workflow
+
+- **Local dev**: `supabase-dev` MCP tools (connected to local instance at `http://127.0.0.1:54321/mcp`, started via `npx supabase start` in WSL).
+- **Production**: `supabase` MCP tools (connected to hosted project).
+- **Rule**: Always validate migrations locally (`supabase-dev-apply_migration`) before promoting to production.
+- Migrations live in `supabase/migrations/` with format `YYYYMMDDHHmmss_short_description.sql`.
+
 ## CI
 
 GitHub Actions workflow (`.github/workflows/ci.yml`) runs lint + build on every push and PR to master. Requires `SUPABASE_URL` and `SUPABASE_KEY` repository secrets for the build step.

@@ -355,12 +355,12 @@ Complete the batch list page with card/table layout toggle (localStorage persist
 
 #### Automated
 
-- [ ] 1.1 zod installed and importable
-- [ ] 1.2 Batch schemas compile and export expected types
-- [ ] 1.3 Types file compiles
-- [ ] 1.4 API helpers compile
-- [ ] 1.5 Build passes with all foundation files
-- [ ] 1.6 Lint passes
+- [x] 1.1 zod installed and importable
+- [x] 1.2 Batch schemas compile and export expected types
+- [x] 1.3 Types file compiles
+- [x] 1.4 API helpers compile
+- [x] 1.5 Build passes with all foundation files
+- [x] 1.6 Lint passes
 
 #### Manual
 

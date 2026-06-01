@@ -466,12 +466,12 @@ Remove the placeholder dashboard page and update navigation so the Topbar links 
 
 #### Automated
 
-- [x] 5.1 Build passes after dashboard removal
-- [x] 5.2 Lint passes
-- [x] 5.3 No references to /dashboard in source
+- [x] 5.1 Build passes after dashboard removal — e5e2416
+- [x] 5.2 Lint passes — e5e2416
+- [x] 5.3 No references to /dashboard in source — e5e2416
 
 #### Manual
 
-- [x] 5.4 Topbar shows "Batches" link for authenticated users
-- [x] 5.5 Clicking "Batches" navigates to /batches
-- [x] 5.6 /dashboard returns 404
+- [x] 5.4 Topbar shows "Batches" link for authenticated users — e5e2416
+- [x] 5.5 Clicking "Batches" navigates to /batches — e5e2416
+- [x] 5.6 /dashboard returns 404 — e5e2416

@@ -3,7 +3,7 @@ project: "Fermenta"
 version: 1
 status: draft
 created: 2026-05-29
-updated: 2026-05-31
+updated: 2026-06-01
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -28,9 +28,10 @@ A home winemaker today juggles paper forms, mental math, and scattered notes —
 | ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
 |---|---|---|---|---|---|
 | F-01 | batch-schema-with-rls | (foundation) batch/ingredient/process tables + RLS for per-user isolation | — | Access Control, NFR | done |
-| S-01 | batch-crud-and-params | create a batch with parameters and yeast, list their batches | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-007 | ready |
-| S-02 | ingredients-calculation-validation | add ingredients, see calculated sugar needs, see validation warnings | S-01 | US-01, FR-006, FR-008, FR-009 | proposed |
-| S-03 | process-plan-generation | receive a generated process plan and edit/add/remove entries | S-01 | US-01, FR-010, FR-011 | proposed |
+| S-01 | batch-crud-and-params | create a batch with parameters and yeast, list their batches | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-007 | done |
+| S-02 | ingredients-calculation-validation | add ingredients, see calculated sugar needs, see validation warnings | S-01 | US-01, FR-006, FR-008, FR-009 | ready |
+| S-03 | process-plan-generation | receive a generated process plan and edit/add/remove entries | S-01 | US-01, FR-010, FR-011 | ready |
+| S-04 | visual-identity | experience a consistent, modern UI tailored to the home winery context | S-01 | NFR | ready |
 
 ## Streams
 
@@ -40,6 +41,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 |---|---|---|---|
 | A | Calculation core | `F-01` → `S-01` → `S-02` | Critical path to north star; carries the highest-risk guardrail (calculation correctness). |
 | B | Process diary | `S-03` | Parallel with S-02 after S-01 lands; completes the full planning flow. |
+| C | Visual identity | `S-04` | Independent of A/B; establishes the design language. Once landed, existing S-01 pages are restyled to match. |
 
 ## Baseline
 
@@ -79,7 +81,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Straightforward CRUD with no complex logic; risk is low. Sequenced after F-01 because it needs tables. FR-001/FR-002 (auth) are already present — this slice consumes them, doesn't re-implement them.
-- **Status:** ready
+- **Status:** done
 
 ### S-02: Ingredients, sugar calculation, and validation warnings
 
@@ -91,7 +93,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Contains the highest-risk guardrail: "Sugar calculation must be mathematically correct — wrong math destroys user trust immediately." Calculation correctness must be verified against known test cases before this slice can be considered done.
-- **Status:** proposed
+- **Status:** ready
 
 ### S-03: Process plan generation and editing
 
@@ -103,16 +105,29 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Template logic for two process types with parameter-driven conditional steps requires clear specification. Lower risk than calculation but unclear templates could produce unhelpful defaults that users delete entirely (violates secondary Success Criterion).
-- **Status:** proposed
+- **Status:** ready
+
+### S-04: Visual identity and design system
+
+- **Outcome:** The application has a consistent, modern visual identity tailored to the home winery community — cohesive color palette, typography, layout structure (topbar, content area), and component styling. All existing pages (auth, batch list, batch form, batch detail) are restyled to the new design. The design system is documented enough (via Tailwind theme tokens and component patterns) that future slices inherit it automatically.
+- **Change ID:** visual-identity
+- **PRD refs:** NFR (every field and output is editable or optional — UI must convey editability clearly), User & Persona (less technical hobbyist — warm, approachable, not clinical)
+- **Prerequisites:** S-01 (pages to restyle must exist)
+- **Parallel with:** S-02, S-03
+- **Blockers:** —
+- **Unknowns:** Exact color palette, typography choices, and layout details to be defined during `/10x-plan` session. User wants a modern look — specifics are open for design discussion.
+- **Risk:** Medium — purely UI work with no data-layer risk, but scope can creep if not bounded. Plan should define a finite set of pages/components to restyle and a "done" checklist. If S-02 or S-03 land before S-04, their pages will need a restyle pass (acceptable since S-04 is independent).
+- **Status:** ready
 
 ## Backlog Handoff
 
 | Roadmap ID | Change ID | Suggested issue title | Ready for `/10x-plan` | Notes |
 |---|---|---|---|---|
 | F-01 | batch-schema-with-rls | Set up batch/ingredient/process schema with RLS | done | — |
-| S-01 | batch-crud-and-params | Batch creation form, parameters, and list page | yes | Run `/10x-plan batch-crud-and-params` |
-| S-02 | ingredients-calculation-validation | Ingredient management with sugar calculation and validation | no | Needs S-01; north star slice |
-| S-03 | process-plan-generation | Process plan generation and editing | no | Needs S-01; parallel with S-02 |
+| S-01 | batch-crud-and-params | Batch creation form, parameters, and list page | done | — |
+| S-02 | ingredients-calculation-validation | Ingredient management with sugar calculation and validation | yes | Run `/10x-plan ingredients-calculation-validation` |
+| S-03 | process-plan-generation | Process plan generation and editing | yes | Run `/10x-plan process-plan-generation` |
+| S-04 | visual-identity | Visual identity and design system for home winery context | yes | Run `/10x-plan visual-identity` |
 
 ## Open Roadmap Questions
 
@@ -128,4 +143,5 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 
 ## Done
 
-(Empty on first generation. Entries appended here when a change is archived.)
+- **F-01** (`batch-schema-with-rls`) — Implemented 2026-05-30. Migration `20260530213000_batch_schema_with_rls.sql` live.
+- **S-01** (`batch-crud-and-params`) — Implemented 2026-06-01. Batch list, creation form with params/yeast, detail page operational.

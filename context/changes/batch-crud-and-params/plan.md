@@ -435,32 +435,32 @@ Remove the placeholder dashboard page and update navigation so the Topbar links 
 
 #### Automated
 
-- [x] 3.1 Build passes with form component and page
-- [x] 3.2 Lint passes
+- [x] 3.1 Build passes with form component and page — 3a6152e
+- [x] 3.2 Lint passes — 3a6152e
 
 #### Manual
 
-- [x] 3.3 Form renders with 3 sections at /batches/new
-- [x] 3.4 Client-side validation shows inline errors
-- [x] 3.5 Valid submission creates batch and redirects to detail
-- [x] 3.6 Server error banner displays correctly
+- [x] 3.3 Form renders with 3 sections at /batches/new — 3a6152e
+- [x] 3.4 Client-side validation shows inline errors — 3a6152e
+- [x] 3.5 Valid submission creates batch and redirects to detail — 3a6152e
+- [x] 3.6 Server error banner displays correctly — 3a6152e
 
 ### Phase 4: Batch List & Detail UI
 
 #### Automated
 
-- [ ] 4.1 Build passes with all list and detail components
-- [ ] 4.2 Lint passes
+- [x] 4.1 Build passes with all list and detail components
+- [x] 4.2 Lint passes
 
 #### Manual
 
-- [ ] 4.3 Empty state displays when no batches
-- [ ] 4.4 Batch list shows cards with expand for details
-- [ ] 4.5 Table view toggle works and persists in localStorage
-- [ ] 4.6 Batch detail page shows all data in editable form
-- [ ] 4.7 Edit and save updates batch successfully
-- [ ] 4.8 Delete button visible but disabled
-- [ ] 4.9 Non-existent batch ID returns 404
+- [x] 4.3 Empty state displays when no batches
+- [x] 4.4 Batch list shows cards with expand for details
+- [x] 4.5 Table view toggle works and persists in localStorage
+- [x] 4.6 Batch detail page shows all data in editable form
+- [x] 4.7 Edit and save updates batch successfully
+- [x] 4.8 Delete button visible but disabled
+- [x] 4.9 Non-existent batch ID returns 404
 
 ### Phase 5: Dashboard Removal & Navigation Update
 

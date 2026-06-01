@@ -37,6 +37,7 @@ A logged-in user can create a batch via a single-page form (name, date, process 
 - Zod validation schemas (shared client/server)
 - TypeScript types for batch domain
 - Middleware protection for /batches routes
+- Dashboard removal + Topbar navigation to /batches
 
 **Out of scope:**
 - Batch deletion (button visible but disabled)
@@ -69,9 +70,10 @@ Pages fetch data server-side for SSR. React forms submit to JSON API routes. Sha
 | 2. API Routes | POST/GET/PUT endpoints for batches | Low — straightforward CRUD with RLS |
 | 3. Batch Creation UI | React form + /batches/new page | Medium — first interactive domain component |
 | 4. Batch List & Detail UI | Card/table list + detail/edit page | Medium — most UI surface area |
+| 5. Dashboard Removal | Delete placeholder, Topbar links to /batches | Low — 3 file changes, pure cleanup |
 
 **Prerequisites:** F-01 schema deployed (done), auth working (done)
-**Estimated effort:** ~2 sessions across 4 phases
+**Estimated effort:** ~2 sessions across 5 phases
 
 ## Open Risks & Assumptions
 

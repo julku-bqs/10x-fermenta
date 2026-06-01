@@ -55,7 +55,7 @@ export function BatchForm({ mode, initialData, onSuccess }: BatchFormProps) {
     const payload = {
       name: form.name,
       batch_date: form.batch_date || null,
-      process_type: form.process_type || undefined,
+      process_type: form.process_type === "" ? undefined : form.process_type,
       target_volume_liters: form.target_volume_liters ? parseFloat(form.target_volume_liters) : null,
       target_abv: form.target_abv ? parseFloat(form.target_abv) : null,
       planned_sweetness: form.planned_sweetness,
@@ -181,7 +181,7 @@ export function BatchForm({ mode, initialData, onSuccess }: BatchFormProps) {
             }}
             className={cn(inputClass, fieldErrors.process_type && inputErrorClass)}
           >
-            <option value="">Select process type…</option>
+            {mode === "create" && <option value="">Select process type…</option>}
             <option value="juice">Juice</option>
             <option value="pulp">Pulp</option>
           </select>

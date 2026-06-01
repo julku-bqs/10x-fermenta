@@ -70,6 +70,8 @@ const astroConfig = tseslint.config({
 
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
+  // eslint-plugin-astro crashes on dynamic route filenames ([id].astro) due to a parser bug
+  { ignores: ["**/*\\[*\\]*.astro"] },
   baseConfig,
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],

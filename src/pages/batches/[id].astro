@@ -1,0 +1,45 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { BatchForm } from "@/components/batches/BatchForm";
+import { createClient } from "@/lib/supabase";
+import type { Batch } from "@/types";
+
+const { id } = Astro.params;
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+
+if (!supabase || !id) {
+  return Astro.redirect("/batches");
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const { data, error } = await supabase.from("batches").select("*").eq("id", id).single();
+
+if (error || !data) {
+  return new Response(null, { status: 404 });
+}
+
+const batch = data as Batch;
+---
+
+<Layout title={batch.name}>
+  <div class="mx-auto max-w-xl px-4 py-10">
+    <div class="mb-8">
+      <a href="/batches" class="text-sm text-gray-500 hover:text-gray-700">← My Batches</a>
+      <h1 class="mt-2 text-2xl font-bold text-gray-900">{batch.name}</h1>
+    </div>
+
+    <BatchForm client:load mode="edit" initialData={batch} />
+
+    <div class="mt-8 border-t border-gray-200 pt-6">
+      <button
+        type="button"
+        disabled
+        title="Coming soon"
+        class="cursor-not-allowed rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-400 opacity-50"
+      >
+        Delete Batch
+      </button>
+    </div>
+  </div>
+</Layout>

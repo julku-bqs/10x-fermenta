@@ -304,6 +304,54 @@ Complete the batch list page with card/table layout toggle (localStorage persist
 
 ---
 
+## Phase 5: Dashboard Removal & Navigation Update
+
+### Overview
+
+Remove the placeholder dashboard page and update navigation so the Topbar links directly to `/batches` — the actual domain entry point. This eliminates a dead-end page and gives authenticated users a one-click path to their batches.
+
+### Changes Required:
+
+#### 1. Delete dashboard page
+
+**File**: `src/pages/dashboard.astro`
+
+**Intent**: Remove the placeholder page that serves no domain purpose.
+
+**Contract**: Delete the file entirely. No redirect needed — no external links reference it.
+
+#### 2. Update Topbar navigation link
+
+**File**: `src/components/Topbar.astro`
+
+**Intent**: Replace the "Dashboard" link with a "Batches" link pointing to `/batches`.
+
+**Contract**: Change `<a href="/dashboard" ...>Dashboard</a>` to `<a href="/batches" ...>Batches</a>`. No other changes to the component.
+
+#### 3. Remove /dashboard from protected routes
+
+**File**: `src/middleware.ts`
+
+**Intent**: Clean up the middleware — `/dashboard` no longer exists, so it shouldn't be in the protected routes array.
+
+**Contract**: Remove `"/dashboard"` from `PROTECTED_ROUTES`. The array becomes `["/batches", "/api/batches"]`.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- Build passes: `npm run build`
+- Lint passes: `npm run lint`
+- No references to `/dashboard` remain in source (grep check)
+
+#### Manual Verification:
+
+- Topbar shows "Batches" link for authenticated users
+- Clicking "Batches" navigates to `/batches`
+- Visiting `/dashboard` returns 404 (page removed)
+
+---
+
 ## Testing Strategy
 
 ### Unit Tests:
@@ -338,8 +386,8 @@ Complete the batch list page with card/table layout toggle (localStorage persist
 ## Migration Notes
 
 - No database migration needed — F-01 schema already has all required columns.
-- Protected routes addition is backward-compatible — dashboard redirect still works.
-- Dashboard page (`/dashboard`) can be deprecated/redirected in a future change; for now both routes work.
+- Protected routes addition is backward-compatible.
+- Dashboard page is removed in Phase 5 — no redirect needed since it was never externally linked.
 
 ## References
 
@@ -387,15 +435,15 @@ Complete the batch list page with card/table layout toggle (localStorage persist
 
 #### Automated
 
-- [ ] 3.1 Build passes with form component and page
-- [ ] 3.2 Lint passes
+- [x] 3.1 Build passes with form component and page
+- [x] 3.2 Lint passes
 
 #### Manual
 
-- [ ] 3.3 Form renders with 3 sections at /batches/new
-- [ ] 3.4 Client-side validation shows inline errors
-- [ ] 3.5 Valid submission creates batch and redirects to detail
-- [ ] 3.6 Server error banner displays correctly
+- [x] 3.3 Form renders with 3 sections at /batches/new
+- [x] 3.4 Client-side validation shows inline errors
+- [x] 3.5 Valid submission creates batch and redirects to detail
+- [x] 3.6 Server error banner displays correctly
 
 ### Phase 4: Batch List & Detail UI
 
@@ -413,3 +461,17 @@ Complete the batch list page with card/table layout toggle (localStorage persist
 - [ ] 4.7 Edit and save updates batch successfully
 - [ ] 4.8 Delete button visible but disabled
 - [ ] 4.9 Non-existent batch ID returns 404
+
+### Phase 5: Dashboard Removal & Navigation Update
+
+#### Automated
+
+- [ ] 5.1 Build passes after dashboard removal
+- [ ] 5.2 Lint passes
+- [ ] 5.3 No references to /dashboard in source
+
+#### Manual
+
+- [ ] 5.4 Topbar shows "Batches" link for authenticated users
+- [ ] 5.5 Clicking "Batches" navigates to /batches
+- [ ] 5.6 /dashboard returns 404

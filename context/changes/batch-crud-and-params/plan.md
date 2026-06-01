@@ -449,29 +449,29 @@ Remove the placeholder dashboard page and update navigation so the Topbar links 
 
 #### Automated
 
-- [x] 4.1 Build passes with all list and detail components
-- [x] 4.2 Lint passes
+- [x] 4.1 Build passes with all list and detail components — 6da9aaf
+- [x] 4.2 Lint passes — 6da9aaf
 
 #### Manual
 
-- [x] 4.3 Empty state displays when no batches
-- [x] 4.4 Batch list shows cards with expand for details
-- [x] 4.5 Table view toggle works and persists in localStorage
-- [x] 4.6 Batch detail page shows all data in editable form
-- [x] 4.7 Edit and save updates batch successfully
-- [x] 4.8 Delete button visible but disabled
-- [x] 4.9 Non-existent batch ID returns 404
+- [x] 4.3 Empty state displays when no batches — 6da9aaf
+- [x] 4.4 Batch list shows cards with expand for details — 6da9aaf
+- [x] 4.5 Table view toggle works and persists in localStorage — 6da9aaf
+- [x] 4.6 Batch detail page shows all data in editable form — 6da9aaf
+- [x] 4.7 Edit and save updates batch successfully — 6da9aaf
+- [x] 4.8 Delete button visible but disabled — 6da9aaf
+- [x] 4.9 Non-existent batch ID returns 404 — 6da9aaf
 
 ### Phase 5: Dashboard Removal & Navigation Update
 
 #### Automated
 
-- [ ] 5.1 Build passes after dashboard removal
-- [ ] 5.2 Lint passes
-- [ ] 5.3 No references to /dashboard in source
+- [x] 5.1 Build passes after dashboard removal
+- [x] 5.2 Lint passes
+- [x] 5.3 No references to /dashboard in source
 
 #### Manual
 
-- [ ] 5.4 Topbar shows "Batches" link for authenticated users
-- [ ] 5.5 Clicking "Batches" navigates to /batches
-- [ ] 5.6 /dashboard returns 404
+- [x] 5.4 Topbar shows "Batches" link for authenticated users
+- [x] 5.5 Clicking "Batches" navigates to /batches
+- [x] 5.6 /dashboard returns 404

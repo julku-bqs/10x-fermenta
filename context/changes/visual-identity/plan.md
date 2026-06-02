@@ -368,8 +368,8 @@ Restyle the batch list page with the new palette, then restructure the batch for
 
 #### Automated
 
-- [x] 1.1 Build succeeds with new theme tokens
-- [x] 1.2 Lint passes
+- [x] 1.1 Build succeeds with new theme tokens — ffbf2b0
+- [x] 1.2 Lint passes — ffbf2b0
 
 #### Manual
 
@@ -379,8 +379,8 @@ Restyle the batch list page with the new palette, then restructure the batch for
 
 #### Automated
 
-- [x] 2.1 Build succeeds with AppLayout
-- [x] 2.2 Lint passes
+- [x] 2.1 Build succeeds with AppLayout — ffbf2b0
+- [x] 2.2 Lint passes — ffbf2b0
 
 #### Manual
 
@@ -391,8 +391,8 @@ Restyle the batch list page with the new palette, then restructure the batch for
 
 #### Automated
 
-- [x] 3.1 Build succeeds
-- [x] 3.2 Lint passes
+- [x] 3.1 Build succeeds — ffbf2b0
+- [x] 3.2 Lint passes — ffbf2b0
 
 #### Manual
 
@@ -404,8 +404,8 @@ Restyle the batch list page with the new palette, then restructure the batch for
 
 #### Automated
 
-- [x] 4.1 Build succeeds
-- [x] 4.2 Lint passes
+- [x] 4.1 Build succeeds — ffbf2b0
+- [x] 4.2 Lint passes — ffbf2b0
 
 #### Manual
 

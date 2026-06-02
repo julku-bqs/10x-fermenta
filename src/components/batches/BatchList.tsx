@@ -70,6 +70,7 @@ interface BatchListProps {
 
 export function BatchList({ batches }: BatchListProps) {
   return (
+    // grid-template-rows:masonry is intentionally experimental — works in Firefox natively, silently ignored elsewhere (accepted)
     <div
       className={cn("grid [grid-template-rows:masonry] items-start gap-4", "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}
     >

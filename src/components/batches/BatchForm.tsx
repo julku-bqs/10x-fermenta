@@ -294,7 +294,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
         </section>
       </div>
 
-      <div className="flex items-center gap-4 pt-2">
+      <div className="flex items-center justify-end gap-4 pt-2">
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Saving…" : mode === "create" ? "Create Batch" : "Save Changes"}
         </Button>

@@ -70,7 +70,7 @@ interface BatchListProps {
 
 export function BatchList({ batches }: BatchListProps) {
   return (
-    <div className={cn("grid gap-4", "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
+    <div className={cn("grid items-start gap-4", "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
       {batches.map((batch) => (
         <BatchCard key={batch.id} batch={batch} />
       ))}

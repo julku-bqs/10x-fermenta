@@ -1,4 +1,6 @@
 ---
+import { UserMenu } from "@/components/UserMenu";
+
 const { user } = Astro.locals;
 ---
 
@@ -12,12 +14,7 @@ const { user } = Astro.locals;
         <a href="/batches" class="hover:text-secondary transition-colors">
           Batches
         </a>
-        <span class="text-primary-foreground/60">{user.email}</span>
-        <form method="POST" action="/api/auth/signout">
-          <button type="submit" class="hover:text-secondary transition-colors">
-            Sign out
-          </button>
-        </form>
+        <UserMenu email={user.email ?? ""} client:load />
       </div>
     ) : (
       <div class="flex gap-4">

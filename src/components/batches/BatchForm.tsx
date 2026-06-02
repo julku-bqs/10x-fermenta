@@ -7,6 +7,7 @@ import { IngredientsList } from "./IngredientsList";
 
 interface BatchFormProps {
   mode: "create" | "edit";
+  title: string;
   initialData?: Batch;
   onSuccess?: (batch: Batch) => void;
 }
@@ -28,7 +29,7 @@ const inputClass =
 const inputErrorClass = "border-red-400 focus:border-red-500 focus:ring-red-400/30";
 const errorMsgClass = "mt-1 text-xs text-red-600";
 
-export function BatchForm({ mode, initialData, onSuccess }: BatchFormProps) {
+export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProps) {
   const [form, setForm] = useState<FormState>({
     name: initialData?.name ?? "",
     batch_date: initialData?.batch_date ?? "",
@@ -133,13 +134,16 @@ export function BatchForm({ mode, initialData, onSuccess }: BatchFormProps) {
         </div>
       )}
 
-      <div className="flex items-center gap-4">
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Saving…" : mode === "create" ? "Create Batch" : "Save Changes"}
-        </Button>
-        <a href="/batches" className="text-muted-foreground hover:text-foreground text-sm">
-          Cancel
-        </a>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">{title}</h1>
+        <div className="flex items-center gap-4">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Saving…" : mode === "create" ? "Create Batch" : "Save Changes"}
+          </Button>
+          <a href="/batches" className="text-muted-foreground hover:text-foreground text-sm">
+            Cancel
+          </a>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

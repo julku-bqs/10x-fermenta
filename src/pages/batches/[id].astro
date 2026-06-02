@@ -23,12 +23,9 @@ const batch = data as Batch;
 ---
 
 <AppLayout title={batch.name}>
-  <div class="mb-8">
-    <a href="/batches" class="text-sm text-muted-foreground hover:text-foreground">← My Batches</a>
-    <h1 class="mt-2 text-2xl font-bold">{batch.name}</h1>
-  </div>
+  <a href="/batches" class="text-muted-foreground hover:text-foreground mb-6 inline-block text-sm">← My Batches</a>
 
-  <BatchForm client:load mode="edit" initialData={batch} />
+  <BatchForm client:load mode="edit" title={batch.name} initialData={batch} />
 
   <div class="mt-8 border-t pt-6">
     <button

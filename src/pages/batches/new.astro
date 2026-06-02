@@ -4,9 +4,6 @@ import { BatchForm } from "@/components/batches/BatchForm";
 ---
 
 <AppLayout title="New Batch">
-  <div class="mb-8">
-    <a href="/batches" class="text-muted-foreground hover:text-foreground text-sm">← My Batches</a>
-    <h1 class="mt-2 text-2xl font-bold">New Batch</h1>
-  </div>
-  <BatchForm client:load mode="create" />
+  <a href="/batches" class="text-muted-foreground hover:text-foreground mb-6 inline-block text-sm">← My Batches</a>
+  <BatchForm client:load mode="create" title="New Batch" />
 </AppLayout>

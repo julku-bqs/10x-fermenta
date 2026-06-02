@@ -51,6 +51,30 @@ Environment setup and deployment: see @README.md.
 - **Rule**: Always validate migrations locally (`supabase-dev-apply_migration`) before promoting to production.
 - Migrations live in `supabase/migrations/` with format `YYYYMMDDHHmmss_short_description.sql`.
 
+## GitHub Issues & PRs
+
+### Issue conventions
+
+- **Title format:** `[<roadmap-id>] Short description` — e.g., `[S-01] Batch creation form, parameters, and list page`
+- **Roadmap ID prefixes:** `F-*` for foundation, `S-*` for slices
+- **Labels:**
+  - Type: `foundation` or `slice` (matches roadmap prefix)
+  - Status: `status: proposed` → `status: ready` → `status: in-progress` → (closed)
+  - Special: `north-star` for the validation milestone slice
+- **Body:** Blockquote user story, then metadata table (Roadmap ID, Change ID, PRD refs, Prerequisites, Status)
+- **Assignee:** Always assign to the implementing user
+
+### PR conventions
+
+- **Title:** Matches the linked issue title
+- **Body:** Must include `Closes #<issue-number>`, a summary section, and a list of key changes
+- **Base branch:** `main`
+- **Merge strategy:** Squash merge preferred
+
+### Workflow
+
+After implementation is committed, use `/submit-pr` skill to automate: push → issue → PR → link output. Merge is always manual after review.
+
 ## CI
 
 GitHub Actions workflow (`.github/workflows/ci.yml`) runs lint + build on every push and PR to master. Requires `SUPABASE_URL` and `SUPABASE_KEY` repository secrets for the build step.

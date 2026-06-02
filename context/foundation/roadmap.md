@@ -3,7 +3,7 @@ project: "Fermenta"
 version: 1
 status: draft
 created: 2026-05-29
-updated: 2026-06-01
+updated: 2026-06-02
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -31,7 +31,7 @@ A home winemaker today juggles paper forms, mental math, and scattered notes —
 | S-01 | batch-crud-and-params | create a batch with parameters and yeast, list their batches | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-007 | done |
 | S-02 | ingredients-calculation-validation | add ingredients, see calculated sugar needs, see validation warnings | S-01 | US-01, FR-006, FR-008, FR-009 | ready |
 | S-03 | process-plan-generation | receive a generated process plan and edit/add/remove entries | S-01 | US-01, FR-010, FR-011 | ready |
-| S-04 | visual-identity | experience a consistent, modern UI tailored to the home winery context | S-01 | NFR | ready |
+| S-04 | visual-identity | experience a consistent, modern UI tailored to the home winery context | S-01 | NFR | done |
 
 ## Streams
 
@@ -117,7 +117,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** Exact color palette, typography choices, and layout details to be defined during `/10x-plan` session. User wants a modern look — specifics are open for design discussion.
 - **Risk:** Medium — purely UI work with no data-layer risk, but scope can creep if not bounded. Plan should define a finite set of pages/components to restyle and a "done" checklist. If S-02 or S-03 land before S-04, their pages will need a restyle pass (acceptable since S-04 is independent).
-- **Status:** ready
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -127,7 +127,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 | S-01 | batch-crud-and-params | Batch creation form, parameters, and list page | done | — |
 | S-02 | ingredients-calculation-validation | Ingredient management with sugar calculation and validation | yes | Run `/10x-plan ingredients-calculation-validation` |
 | S-03 | process-plan-generation | Process plan generation and editing | yes | Run `/10x-plan process-plan-generation` |
-| S-04 | visual-identity | Visual identity and design system for home winery context | yes | Run `/10x-plan visual-identity` |
+| S-04 | visual-identity | Visual identity and design system for home winery context | done | — |
 
 ## Open Roadmap Questions
 
@@ -145,3 +145,4 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 
 - **F-01** (`batch-schema-with-rls`) — Implemented 2026-05-30. Migration `20260530213000_batch_schema_with_rls.sql` live.
 - **S-01** (`batch-crud-and-params`) — Implemented 2026-06-01. Batch list, creation form with params/yeast, detail page operational.
+- **S-04** (`visual-identity`) — Implemented 2026-06-02. Warm winery design system, AppLayout with floating topbar, ingredient card inline-edit pattern. Merged as #8.

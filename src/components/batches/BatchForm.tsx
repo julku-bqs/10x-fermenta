@@ -259,49 +259,20 @@ export function BatchForm({ mode, initialData, onSuccess }: BatchFormProps) {
         <section className="bg-muted space-y-4 rounded-lg p-5">
           <h2 className="text-base font-semibold">Ingredients</h2>
 
-          <div>
-            <label htmlFor="yeast_name" className={labelClass}>
-              Yeast Name
-            </label>
-            <input
-              id="yeast_name"
-              type="text"
-              value={form.yeast_name}
-              onChange={(e) => {
-                set("yeast_name", e.target.value);
-              }}
-              placeholder="e.g. Lalvin EC-1118"
-              className={cn(inputClass, fieldErrors.yeast_name && inputErrorClass)}
-            />
-            {fieldErrors.yeast_name && <p className={errorMsgClass}>{fieldErrors.yeast_name}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="yeast_alcohol_tolerance" className={labelClass}>
-              Yeast Alcohol Tolerance (%)
-            </label>
-            <input
-              id="yeast_alcohol_tolerance"
-              type="number"
-              min="0"
-              max="100"
-              step="0.5"
-              value={form.yeast_alcohol_tolerance}
-              onChange={(e) => {
-                set("yeast_alcohol_tolerance", e.target.value);
-              }}
-              placeholder="e.g. 18"
-              className={cn(inputClass, fieldErrors.yeast_alcohol_tolerance && inputErrorClass)}
-            />
-            {fieldErrors.yeast_alcohol_tolerance && (
-              <p className={errorMsgClass}>{fieldErrors.yeast_alcohol_tolerance}</p>
-            )}
-          </div>
-
           <IngredientsList
-            yeastName={form.yeast_name || null}
-            yeastTolerance={form.yeast_alcohol_tolerance ? parseFloat(form.yeast_alcohol_tolerance) : null}
+            yeastName={form.yeast_name}
+            yeastTolerance={form.yeast_alcohol_tolerance}
+            onYeastNameChange={(v) => {
+              set("yeast_name", v);
+            }}
+            onYeastToleranceChange={(v) => {
+              set("yeast_alcohol_tolerance", v);
+            }}
+            yeastNameError={fieldErrors.yeast_name}
+            yeastToleranceError={fieldErrors.yeast_alcohol_tolerance}
           />
+
+          <p className="text-muted-foreground text-xs">More ingredients — coming soon</p>
         </section>
 
         {/* Section 4: Diary placeholder */}

@@ -8,7 +8,7 @@ interface LayoutToggleProps {
 
 export function LayoutToggle({ layout, onChange }: LayoutToggleProps) {
   return (
-    <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 p-0.5">
+    <div className="border-border bg-muted flex items-center gap-1 rounded-md border p-0.5">
       <button
         type="button"
         onClick={() => {
@@ -17,7 +17,7 @@ export function LayoutToggle({ layout, onChange }: LayoutToggleProps) {
         aria-label="Card view"
         className={cn(
           "rounded p-1.5 transition-colors",
-          layout === "cards" ? "bg-white text-blue-600 shadow-xs" : "text-gray-500 hover:text-gray-700",
+          layout === "cards" ? "bg-card text-primary shadow-xs" : "text-muted-foreground hover:text-foreground",
         )}
       >
         <LayoutGrid className="size-4" />
@@ -30,7 +30,7 @@ export function LayoutToggle({ layout, onChange }: LayoutToggleProps) {
         aria-label="Table view"
         className={cn(
           "rounded p-1.5 transition-colors",
-          layout === "table" ? "bg-white text-blue-600 shadow-xs" : "text-gray-500 hover:text-gray-700",
+          layout === "table" ? "bg-card text-primary shadow-xs" : "text-muted-foreground hover:text-foreground",
         )}
       >
         <List className="size-4" />

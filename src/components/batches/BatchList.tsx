@@ -15,13 +15,13 @@ function BatchCard({ batch }: { batch: BatchListItem }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-xs transition-shadow hover:shadow-sm">
+    <div className="bg-card rounded-lg shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between p-4">
         <a href={`/batches/${batch.id}`} className="min-w-0 flex-1">
-          <p className="truncate font-medium text-gray-900 hover:text-blue-600">{batch.name}</p>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <p className="text-foreground hover:text-primary truncate font-medium">{batch.name}</p>
+          <p className="text-muted-foreground mt-0.5 text-sm">
             {batch.batch_date ?? "No date"} &middot;{" "}
-            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+            <span className="bg-secondary/50 text-secondary-foreground inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">
               {PROCESS_LABELS[batch.process_type] ?? batch.process_type}
             </span>
           </p>
@@ -31,7 +31,7 @@ function BatchCard({ batch }: { batch: BatchListItem }) {
           onClick={() => {
             setExpanded((v) => !v);
           }}
-          className="ml-3 shrink-0 rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground ml-3 shrink-0 rounded p-1"
           aria-label={expanded ? "Collapse details" : "Expand details"}
         >
           {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
@@ -39,21 +39,21 @@ function BatchCard({ batch }: { batch: BatchListItem }) {
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100 px-4 pt-3 pb-4">
+        <div className="border-border border-t px-4 pt-3 pb-4">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             <div>
-              <dt className="text-gray-500">Volume</dt>
-              <dd className="font-medium text-gray-900">
+              <dt className="text-muted-foreground">Volume</dt>
+              <dd className="text-foreground font-medium">
                 {batch.target_volume_liters != null ? `${batch.target_volume_liters} L` : "—"}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">Target ABV</dt>
-              <dd className="font-medium text-gray-900">{batch.target_abv != null ? `${batch.target_abv}%` : "—"}</dd>
+              <dt className="text-muted-foreground">Target ABV</dt>
+              <dd className="text-foreground font-medium">{batch.target_abv != null ? `${batch.target_abv}%` : "—"}</dd>
             </div>
             <div>
-              <dt className="text-gray-500">Sweetness</dt>
-              <dd className="font-medium text-gray-900">
+              <dt className="text-muted-foreground">Sweetness</dt>
+              <dd className="text-foreground font-medium">
                 {SWEETNESS_LABELS[batch.planned_sweetness] ?? batch.planned_sweetness}
               </dd>
             </div>

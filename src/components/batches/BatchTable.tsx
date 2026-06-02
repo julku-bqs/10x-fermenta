@@ -14,40 +14,42 @@ interface BatchTableProps {
 
 export function BatchTable({ batches }: BatchTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200 text-sm">
-        <thead className="bg-gray-50">
+    <div className="border-border overflow-x-auto rounded-lg border">
+      <table className="divide-border min-w-full divide-y text-sm">
+        <thead className="bg-muted">
           <tr>
             {["Name", "Date", "Type", "Volume (L)", "ABV (%)", "Sweetness"].map((h) => (
               <th
                 key={h}
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase"
+                className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wide uppercase"
               >
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 bg-white">
+        <tbody className="divide-border bg-card divide-y">
           {batches.map((batch) => (
             <tr
               key={batch.id}
               onClick={() => {
                 window.location.href = `/batches/${batch.id}`;
               }}
-              className="cursor-pointer hover:bg-gray-50"
+              className="hover:bg-muted cursor-pointer"
             >
-              <td className="px-4 py-3 font-medium text-gray-900">{batch.name}</td>
-              <td className="px-4 py-3 text-gray-600">{batch.batch_date ?? "—"}</td>
+              <td className="text-foreground px-4 py-3 font-medium">{batch.name}</td>
+              <td className="text-muted-foreground px-4 py-3">{batch.batch_date ?? "—"}</td>
               <td className="px-4 py-3">
-                <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                <span className="bg-secondary/50 text-secondary-foreground inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">
                   {PROCESS_LABELS[batch.process_type] ?? batch.process_type}
                 </span>
               </td>
-              <td className="px-4 py-3 text-gray-600">{batch.target_volume_liters ?? "—"}</td>
-              <td className="px-4 py-3 text-gray-600">{batch.target_abv != null ? `${batch.target_abv}%` : "—"}</td>
-              <td className="px-4 py-3 text-gray-600">
+              <td className="text-muted-foreground px-4 py-3">{batch.target_volume_liters ?? "—"}</td>
+              <td className="text-muted-foreground px-4 py-3">
+                {batch.target_abv != null ? `${batch.target_abv}%` : "—"}
+              </td>
+              <td className="text-muted-foreground px-4 py-3">
                 {SWEETNESS_LABELS[batch.planned_sweetness] ?? batch.planned_sweetness}
               </td>
             </tr>

@@ -25,23 +25,23 @@ export function BatchListPage({ batches }: BatchListPageProps) {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">
+          <span className="text-muted-foreground text-sm">
             {batches.length} {batches.length === 1 ? "batch" : "batches"}
           </span>
           <LayoutToggle layout={layout} onChange={handleLayoutChange} />
         </div>
         <a
           href="/batches/new"
-          className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-blue-700"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium shadow-xs"
         >
           + New Batch
         </a>
       </div>
 
       {batches.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 py-16 text-center">
-          <p className="text-gray-500">No batches yet.</p>
-          <a href="/batches/new" className="mt-2 inline-block text-sm text-blue-600 hover:underline">
+        <div className="border-border bg-muted rounded-lg border border-dashed py-16 text-center">
+          <p className="text-muted-foreground">No batches yet.</p>
+          <a href="/batches/new" className="text-primary mt-2 inline-block text-sm hover:underline">
             Create your first batch →
           </a>
         </div>

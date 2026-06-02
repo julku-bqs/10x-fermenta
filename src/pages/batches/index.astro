@@ -1,5 +1,5 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import { BatchListPage } from "@/components/batches/BatchListPage";
 import { createClient } from "@/lib/supabase";
 import type { BatchListItem } from "@/types";
@@ -16,9 +16,7 @@ if (supabase) {
 }
 ---
 
-<Layout title="My Batches">
-  <div class="mx-auto max-w-4xl px-4 py-10">
-    <h1 class="mb-8 text-2xl font-bold text-gray-900">My Batches</h1>
-    <BatchListPage client:only="react" batches={batches} />
-  </div>
-</Layout>
+<AppLayout title="My Batches">
+  <h1 class="mb-8 text-2xl font-bold">My Batches</h1>
+  <BatchListPage client:only="react" batches={batches} />
+</AppLayout>

@@ -3,9 +3,11 @@ import type { Batch } from "@/types";
 import { createBatchSchema } from "@/lib/schemas/batch";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { IngredientsList } from "./IngredientsList";
 
 interface BatchFormProps {
   mode: "create" | "edit";
+  title: string;
   initialData?: Batch;
   onSuccess?: (batch: Batch) => void;
 }
@@ -21,13 +23,13 @@ interface FormState {
   yeast_alcohol_tolerance: string;
 }
 
-const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+const labelClass = "block text-sm font-medium text-foreground mb-1";
 const inputClass =
-  "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30";
+  "w-full rounded-md border border-border bg-card px-3 py-2 text-sm shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 const inputErrorClass = "border-red-400 focus:border-red-500 focus:ring-red-400/30";
 const errorMsgClass = "mt-1 text-xs text-red-600";
 
-export function BatchForm({ mode, initialData, onSuccess }: BatchFormProps) {
+export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProps) {
   const [form, setForm] = useState<FormState>({
     name: initialData?.name ?? "",
     batch_date: initialData?.batch_date ?? "",
@@ -115,7 +117,7 @@ export function BatchForm({ mode, initialData, onSuccess }: BatchFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {serverError && (
         <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
           <span>{serverError}</span>
@@ -132,176 +134,171 @@ export function BatchForm({ mode, initialData, onSuccess }: BatchFormProps) {
         </div>
       )}
 
-      {/* Section 1: Batch Basics */}
-      <section className="space-y-4">
-        <h2 className="text-base font-semibold text-gray-900">Batch Basics</h2>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">{title}</h1>
+        <div className="flex items-center gap-4">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Saving…" : mode === "create" ? "Create Batch" : "Save Changes"}
+          </Button>
+          <a href="/batches" className="text-muted-foreground hover:text-foreground text-sm">
+            Cancel
+          </a>
+        </div>
+      </div>
 
-        <div>
-          <label htmlFor="name" className={labelClass}>
-            Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="name"
-            type="text"
-            value={form.name}
-            onChange={(e) => {
-              set("name", e.target.value);
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Section 1: Batch Basics */}
+        <section className="bg-muted space-y-4 rounded-lg p-5">
+          <h2 className="text-base font-semibold">Batch Basics</h2>
+
+          <div>
+            <label htmlFor="name" className={labelClass}>
+              Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={form.name}
+              onChange={(e) => {
+                set("name", e.target.value);
+              }}
+              placeholder="e.g. Apple Cider 2025"
+              className={cn(inputClass, fieldErrors.name && inputErrorClass)}
+            />
+            {fieldErrors.name && <p className={errorMsgClass}>{fieldErrors.name}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="batch_date" className={labelClass}>
+              Batch Date
+            </label>
+            <input
+              id="batch_date"
+              type="date"
+              value={form.batch_date}
+              onChange={(e) => {
+                set("batch_date", e.target.value);
+              }}
+              className={cn(inputClass, fieldErrors.batch_date && inputErrorClass)}
+            />
+            {fieldErrors.batch_date && <p className={errorMsgClass}>{fieldErrors.batch_date}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="process_type" className={labelClass}>
+              Process Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="process_type"
+              value={form.process_type}
+              onChange={(e) => {
+                set("process_type", e.target.value);
+              }}
+              className={cn(inputClass, fieldErrors.process_type && inputErrorClass)}
+            >
+              {mode === "create" && <option value="">Select process type…</option>}
+              <option value="juice">Juice</option>
+              <option value="pulp">Pulp</option>
+            </select>
+            {fieldErrors.process_type && <p className={errorMsgClass}>{fieldErrors.process_type}</p>}
+          </div>
+        </section>
+
+        {/* Section 2: Parameters */}
+        <section className="bg-muted space-y-4 rounded-lg p-5">
+          <h2 className="text-base font-semibold">Parameters</h2>
+
+          <div>
+            <label htmlFor="target_volume_liters" className={labelClass}>
+              Target Volume (liters)
+            </label>
+            <input
+              id="target_volume_liters"
+              type="number"
+              min="0"
+              step="0.1"
+              value={form.target_volume_liters}
+              onChange={(e) => {
+                set("target_volume_liters", e.target.value);
+              }}
+              placeholder="e.g. 20"
+              className={cn(inputClass, fieldErrors.target_volume_liters && inputErrorClass)}
+            />
+            {fieldErrors.target_volume_liters && <p className={errorMsgClass}>{fieldErrors.target_volume_liters}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="target_abv" className={labelClass}>
+              Target ABV (%)
+            </label>
+            <input
+              id="target_abv"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              value={form.target_abv}
+              onChange={(e) => {
+                set("target_abv", e.target.value);
+              }}
+              placeholder="e.g. 12"
+              className={cn(inputClass, fieldErrors.target_abv && inputErrorClass)}
+            />
+            {fieldErrors.target_abv && <p className={errorMsgClass}>{fieldErrors.target_abv}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="planned_sweetness" className={labelClass}>
+              Planned Sweetness
+            </label>
+            <select
+              id="planned_sweetness"
+              value={form.planned_sweetness}
+              onChange={(e) => {
+                set("planned_sweetness", e.target.value);
+              }}
+              className={cn(inputClass, fieldErrors.planned_sweetness && inputErrorClass)}
+            >
+              <option value="dry">Dry (default)</option>
+              <option value="semi_dry">Semi-Dry</option>
+              <option value="semi_sweet">Semi-Sweet</option>
+              <option value="sweet">Sweet</option>
+            </select>
+            {fieldErrors.planned_sweetness && <p className={errorMsgClass}>{fieldErrors.planned_sweetness}</p>}
+          </div>
+        </section>
+
+        {/* Section 3: Ingredients */}
+        <section className="bg-muted space-y-4 rounded-lg p-5">
+          <h2 className="text-base font-semibold">Ingredients</h2>
+
+          <IngredientsList
+            yeastName={form.yeast_name}
+            yeastTolerance={form.yeast_alcohol_tolerance}
+            onYeastNameChange={(v) => {
+              set("yeast_name", v);
             }}
-            placeholder="e.g. Apple Cider 2025"
-            className={cn(inputClass, fieldErrors.name && inputErrorClass)}
+            onYeastToleranceChange={(v) => {
+              set("yeast_alcohol_tolerance", v);
+            }}
+            yeastNameError={fieldErrors.yeast_name}
+            yeastToleranceError={fieldErrors.yeast_alcohol_tolerance}
           />
-          {fieldErrors.name && <p className={errorMsgClass}>{fieldErrors.name}</p>}
-        </div>
 
-        <div>
-          <label htmlFor="batch_date" className={labelClass}>
-            Batch Date
-          </label>
-          <input
-            id="batch_date"
-            type="date"
-            value={form.batch_date}
-            onChange={(e) => {
-              set("batch_date", e.target.value);
-            }}
-            className={cn(inputClass, fieldErrors.batch_date && inputErrorClass)}
-          />
-          {fieldErrors.batch_date && <p className={errorMsgClass}>{fieldErrors.batch_date}</p>}
-        </div>
+          <p className="text-muted-foreground text-xs">More ingredients — coming soon</p>
+        </section>
 
-        <div>
-          <label htmlFor="process_type" className={labelClass}>
-            Process Type <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="process_type"
-            value={form.process_type}
-            onChange={(e) => {
-              set("process_type", e.target.value);
-            }}
-            className={cn(inputClass, fieldErrors.process_type && inputErrorClass)}
-          >
-            {mode === "create" && <option value="">Select process type…</option>}
-            <option value="juice">Juice</option>
-            <option value="pulp">Pulp</option>
-          </select>
-          {fieldErrors.process_type && <p className={errorMsgClass}>{fieldErrors.process_type}</p>}
-        </div>
-      </section>
+        {/* Section 4: Diary placeholder */}
+        <section className="bg-muted flex items-center justify-center rounded-lg p-5">
+          <p className="text-muted-foreground text-sm italic">Process diary — coming soon</p>
+        </section>
+      </div>
 
-      {/* Section 2: Parameters */}
-      <section className="space-y-4">
-        <h2 className="text-base font-semibold text-gray-900">Parameters</h2>
-
-        <div>
-          <label htmlFor="target_volume_liters" className={labelClass}>
-            Target Volume (liters)
-          </label>
-          <input
-            id="target_volume_liters"
-            type="number"
-            min="0"
-            step="0.1"
-            value={form.target_volume_liters}
-            onChange={(e) => {
-              set("target_volume_liters", e.target.value);
-            }}
-            placeholder="e.g. 20"
-            className={cn(inputClass, fieldErrors.target_volume_liters && inputErrorClass)}
-          />
-          {fieldErrors.target_volume_liters && <p className={errorMsgClass}>{fieldErrors.target_volume_liters}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="target_abv" className={labelClass}>
-            Target ABV (%)
-          </label>
-          <input
-            id="target_abv"
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            value={form.target_abv}
-            onChange={(e) => {
-              set("target_abv", e.target.value);
-            }}
-            placeholder="e.g. 12"
-            className={cn(inputClass, fieldErrors.target_abv && inputErrorClass)}
-          />
-          {fieldErrors.target_abv && <p className={errorMsgClass}>{fieldErrors.target_abv}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="planned_sweetness" className={labelClass}>
-            Planned Sweetness
-          </label>
-          <select
-            id="planned_sweetness"
-            value={form.planned_sweetness}
-            onChange={(e) => {
-              set("planned_sweetness", e.target.value);
-            }}
-            className={cn(inputClass, fieldErrors.planned_sweetness && inputErrorClass)}
-          >
-            <option value="dry">Dry (default)</option>
-            <option value="semi_dry">Semi-Dry</option>
-            <option value="semi_sweet">Semi-Sweet</option>
-            <option value="sweet">Sweet</option>
-          </select>
-          {fieldErrors.planned_sweetness && <p className={errorMsgClass}>{fieldErrors.planned_sweetness}</p>}
-        </div>
-      </section>
-
-      {/* Section 3: Yeast */}
-      <section className="space-y-4">
-        <h2 className="text-base font-semibold text-gray-900">Yeast (optional)</h2>
-
-        <div>
-          <label htmlFor="yeast_name" className={labelClass}>
-            Yeast Name
-          </label>
-          <input
-            id="yeast_name"
-            type="text"
-            value={form.yeast_name}
-            onChange={(e) => {
-              set("yeast_name", e.target.value);
-            }}
-            placeholder="e.g. Lalvin EC-1118"
-            className={cn(inputClass, fieldErrors.yeast_name && inputErrorClass)}
-          />
-          {fieldErrors.yeast_name && <p className={errorMsgClass}>{fieldErrors.yeast_name}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="yeast_alcohol_tolerance" className={labelClass}>
-            Yeast Alcohol Tolerance (%)
-          </label>
-          <input
-            id="yeast_alcohol_tolerance"
-            type="number"
-            min="0"
-            max="100"
-            step="0.5"
-            value={form.yeast_alcohol_tolerance}
-            onChange={(e) => {
-              set("yeast_alcohol_tolerance", e.target.value);
-            }}
-            placeholder="e.g. 18"
-            className={cn(inputClass, fieldErrors.yeast_alcohol_tolerance && inputErrorClass)}
-          />
-          {fieldErrors.yeast_alcohol_tolerance && (
-            <p className={errorMsgClass}>{fieldErrors.yeast_alcohol_tolerance}</p>
-          )}
-        </div>
-      </section>
-
-      <div className="flex items-center gap-4 pt-2">
+      <div className="flex items-center justify-end gap-4 pt-2">
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Saving…" : mode === "create" ? "Create Batch" : "Save Changes"}
         </Button>
-        <a href="/batches" className="text-sm text-gray-500 hover:text-gray-700">
+        <a href="/batches" className="text-muted-foreground hover:text-foreground text-sm">
           Cancel
         </a>
       </div>

@@ -1,37 +1,30 @@
 ---
+import { UserMenu } from "@/components/UserMenu";
+
 const { user } = Astro.locals;
 ---
 
-<div
-  class="mb-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80"
+<nav
+  class="bg-foreground/95 text-primary-foreground mx-4 mt-4 flex items-center justify-between rounded-xl px-5 py-2.5 text-sm shadow-md"
 >
+  <a href="/" class="font-['Playfair_Display'] text-lg font-semibold tracking-wide">Fermenta</a>
   {
     user ? (
-      <>
-        <span class="text-blue-100/70">{user.email}</span>
-        <div class="flex items-center gap-3">
-          <a href="/batches" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-            Batches
-          </a>
-          <form method="POST" action="/api/auth/signout">
-            <button type="submit" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-              Sign out
-            </button>
-          </form>
-        </div>
-      </>
+      <div class="flex items-center gap-4">
+        <a href="/batches" class="hover:text-secondary transition-colors">
+          Batches
+        </a>
+        <UserMenu email={user.email ?? ""} client:load />
+      </div>
     ) : (
-      <>
-        <span class="text-blue-100/70">Not signed in</span>
-        <div class="flex gap-3">
-          <a href="/auth/signin" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-            Sign in
-          </a>
-          <a href="/auth/signup" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-            Sign up
-          </a>
-        </div>
-      </>
+      <div class="flex gap-4">
+        <a href="/auth/signin" class="hover:text-secondary transition-colors">
+          Sign in
+        </a>
+        <a href="/auth/signup" class="hover:text-secondary transition-colors">
+          Sign up
+        </a>
+      </div>
     )
   }
-</div>
+</nav>

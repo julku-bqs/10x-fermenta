@@ -1,14 +1,9 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import { BatchForm } from "@/components/batches/BatchForm";
 ---
 
-<Layout title="New Batch">
-  <div class="mx-auto max-w-xl px-4 py-10">
-    <div class="mb-8">
-      <a href="/batches" class="text-sm text-gray-500 hover:text-gray-700">← My Batches</a>
-      <h1 class="mt-2 text-2xl font-bold text-gray-900">New Batch</h1>
-    </div>
-    <BatchForm client:load mode="create" />
-  </div>
-</Layout>
+<AppLayout title="New Batch">
+  <a href="/batches" class="text-muted-foreground hover:text-foreground mb-6 inline-block text-sm">← My Batches</a>
+  <BatchForm client:load mode="create" title="New Batch" />
+</AppLayout>

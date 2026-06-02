@@ -1,11 +1,13 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import Topbar from "@/components/Topbar.astro";
 import SignUpForm from "@/components/auth/SignUpForm";
 
 const error = Astro.url.searchParams.get("error");
 ---
 
 <Layout title="Sign up">
+  <Topbar />
   <div class="bg-background flex min-h-screen items-center justify-center p-4">
     <div class="border-border bg-card w-full max-w-sm rounded-2xl border p-8 shadow-sm">
       <h1 class="text-foreground mb-6 text-center font-['Playfair_Display'] text-2xl font-bold">Sign up</h1>

@@ -133,6 +133,15 @@ export function BatchForm({ mode, initialData, onSuccess }: BatchFormProps) {
         </div>
       )}
 
+      <div className="flex items-center gap-4">
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Saving…" : mode === "create" ? "Create Batch" : "Save Changes"}
+        </Button>
+        <a href="/batches" className="text-muted-foreground hover:text-foreground text-sm">
+          Cancel
+        </a>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Section 1: Batch Basics */}
         <section className="bg-muted space-y-4 rounded-lg p-5">

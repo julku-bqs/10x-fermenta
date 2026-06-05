@@ -470,30 +470,30 @@ Behavior:
 
 #### Automated
 
-- [x] 1.1 Vitest runs successfully: npm run test
-- [x] 1.2 All calculation unit tests pass (minimum 10 test cases)
-- [x] 1.3 All validation unit tests pass (minimum 12 test cases)
-- [x] 1.4 Lint passes: npm run lint
+- [x] 1.1 Vitest runs successfully: npm run test — f47205b
+- [x] 1.2 All calculation unit tests pass (minimum 10 test cases) — f47205b
+- [x] 1.3 All validation unit tests pass (minimum 12 test cases) — f47205b
+- [x] 1.4 Lint passes: npm run lint — f47205b
 
 #### Manual
 
-- [ ] 1.5 Review test cases cover domain scenarios from fermenta-details1.md
-- [x] 1.6 Migration applies cleanly against local Supabase
+- [x] 1.5 Review test cases cover domain scenarios from fermenta-details1.md — f47205b
+- [x] 1.6 Migration applies cleanly against local Supabase — f47205b
 
 ### Phase 2: API Extension — Batch Save with Nested Ingredients
 
 #### Automated
 
-- [ ] 2.1 All tests pass: npm run test
-- [ ] 2.2 Lint passes: npm run lint
-- [ ] 2.3 Build succeeds: npm run build
+- [x] 2.1 All tests pass: npm run test
+- [x] 2.2 Lint passes: npm run lint
+- [x] 2.3 Build succeeds: npm run build
 
 #### Manual
 
-- [ ] 2.4 PUT with ingredients persists and returns correctly
-- [ ] 2.5 GET returns ingredients in batch response
-- [ ] 2.6 Partial PUT without ingredients doesn't clear them
-- [ ] 2.7 Zod rejects malformed ingredients
+- [x] 2.4 PUT with ingredients persists and returns correctly
+- [x] 2.5 GET returns ingredients in batch response
+- [x] 2.6 Partial PUT without ingredients doesn't clear them
+- [x] 2.7 Zod rejects malformed ingredients
 
 ### Phase 3: UI Components & Integration
 

@@ -470,15 +470,15 @@ Behavior:
 
 #### Automated
 
-- [ ] 1.1 Vitest runs successfully: npm run test
-- [ ] 1.2 All calculation unit tests pass (minimum 10 test cases)
-- [ ] 1.3 All validation unit tests pass (minimum 12 test cases)
-- [ ] 1.4 Lint passes: npm run lint
+- [x] 1.1 Vitest runs successfully: npm run test
+- [x] 1.2 All calculation unit tests pass (minimum 10 test cases)
+- [x] 1.3 All validation unit tests pass (minimum 12 test cases)
+- [x] 1.4 Lint passes: npm run lint
 
 #### Manual
 
 - [ ] 1.5 Review test cases cover domain scenarios from fermenta-details1.md
-- [ ] 1.6 Migration applies cleanly against local Supabase
+- [x] 1.6 Migration applies cleanly against local Supabase
 
 ### Phase 2: API Extension — Batch Save with Nested Ingredients
 

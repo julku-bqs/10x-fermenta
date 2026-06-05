@@ -19,7 +19,7 @@ export function IngredientsList({
   yeastToleranceError,
 }: IngredientsListProps) {
   const hasYeast = yeastName.trim().length > 0 || yeastTolerance.trim().length > 0;
-  const [editing, setEditing] = useState(!hasYeast);
+  const [editing, setEditing] = useState(false);
 
   const inputClass =
     "w-full rounded-md border border-border bg-card px-3 py-2 text-sm shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
@@ -96,14 +96,16 @@ export function IngredientsList({
     >
       <span className="text-base">🧪</span>
       <div className="min-w-0 flex-1">
-        <span className="text-foreground text-sm font-medium">{yeastName.trim() || "Yeast"}</span>
+        <span className="text-foreground text-sm font-medium">
+          {hasYeast ? yeastName.trim() || "Yeast" : "Add yeast"}
+        </span>
       </div>
       {yeastTolerance && (
         <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
           {yeastTolerance}% tol.
         </span>
       )}
-      {!hasYeast && <span className="text-muted-foreground text-xs italic">tap to add</span>}
+      {!hasYeast && <span className="text-primary text-xs font-medium">tap to add →</span>}
     </button>
   );
 }

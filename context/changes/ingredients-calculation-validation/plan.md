@@ -484,24 +484,24 @@ Behavior:
 
 #### Automated
 
-- [x] 2.1 All tests pass: npm run test
-- [x] 2.2 Lint passes: npm run lint
-- [x] 2.3 Build succeeds: npm run build
+- [x] 2.1 All tests pass: npm run test — 42a6405
+- [x] 2.2 Lint passes: npm run lint — 42a6405
+- [x] 2.3 Build succeeds: npm run build — 42a6405
 
 #### Manual
 
-- [x] 2.4 PUT with ingredients persists and returns correctly
-- [x] 2.5 GET returns ingredients in batch response
-- [x] 2.6 Partial PUT without ingredients doesn't clear them
-- [x] 2.7 Zod rejects malformed ingredients
+- [x] 2.4 PUT with ingredients persists and returns correctly — 42a6405
+- [x] 2.5 GET returns ingredients in batch response — 42a6405
+- [x] 2.6 Partial PUT without ingredients doesn't clear them — 42a6405
+- [x] 2.7 Zod rejects malformed ingredients — 42a6405
 
 ### Phase 3: UI Components & Integration
 
 #### Automated
 
-- [ ] 3.1 Build succeeds: npm run build
-- [ ] 3.2 Lint passes: npm run lint
-- [ ] 3.3 All tests still pass: npm run test
+- [x] 3.1 Build succeeds: npm run build
+- [x] 3.2 Lint passes: npm run lint
+- [x] 3.3 All tests still pass: npm run test
 
 #### Manual
 

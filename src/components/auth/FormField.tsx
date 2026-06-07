@@ -48,12 +48,15 @@ export function FormField({
             onChange(e.target.value);
           }}
           placeholder={placeholder}
-          className={cn(inputBase, error ? "border-destructive/60 focus:ring-destructive" : "border-border focus:ring-primary")}
+          className={cn(
+            inputBase,
+            error ? "border-destructive/60 focus:ring-destructive" : "border-border focus:ring-primary",
+          )}
         />
         {endContent}
       </div>
       {error ? (
-        <p className="mt-1 flex items-center gap-1 text-xs text-destructive">
+        <p className="text-destructive mt-1 flex items-center gap-1 text-xs">
           <CircleAlert className="size-3" />
           {error}
         </p>

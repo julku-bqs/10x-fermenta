@@ -282,7 +282,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       )}
 
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">{title}</h1>
+        <h1 className="text-2xl font-bold">{form.name || title}</h1>
         <div className="flex items-center gap-4">
           <Button type="submit" disabled={isLoading}>
             {isLoading ? "Saving…" : mode === "create" ? "Create Batch" : "Save Changes"}

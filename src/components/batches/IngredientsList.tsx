@@ -30,6 +30,18 @@ export function IngredientsList({
         <div className="flex items-center gap-2">
           <span className="text-base">🧪</span>
           <span className="text-foreground text-sm font-medium">Yeast</span>
+          <button
+            type="button"
+            onClick={() => {
+              onYeastNameChange("");
+              onYeastToleranceChange("");
+              setEditing(false);
+            }}
+            className="text-muted-foreground ml-auto text-xs transition-colors hover:text-red-600"
+            aria-label="Remove yeast"
+          >
+            ✕ Remove
+          </button>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
@@ -71,19 +83,6 @@ export function IngredientsList({
             {yeastToleranceError && <p className="mt-1 text-xs text-red-600">{yeastToleranceError}</p>}
           </div>
         </div>
-        {hasYeast && (
-          <button
-            type="button"
-            onClick={() => {
-              onYeastNameChange("");
-              onYeastToleranceChange("");
-              setEditing(false);
-            }}
-            className="text-muted-foreground text-xs transition-colors hover:text-red-600"
-          >
-            Clear yeast
-          </button>
-        )}
         <button
           type="button"
           onClick={() => {
@@ -98,41 +97,25 @@ export function IngredientsList({
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => {
-          setEditing(true);
-        }}
-        className="border-border bg-card hover:bg-muted flex flex-1 items-center gap-3 rounded-lg border p-4 text-left transition-colors"
-      >
-        <span className="text-base">🧪</span>
-        <div className="min-w-0 flex-1">
-          <span className="text-foreground text-sm font-medium">
-            {hasYeast ? yeastName.trim() || "Yeast" : "Add yeast"}
-          </span>
-        </div>
-        {yeastTolerance && (
-          <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
-            {yeastTolerance}% tol.
-          </span>
-        )}
-        {!hasYeast && <span className="text-primary text-xs font-medium">tap to add →</span>}
-      </button>
-      {hasYeast && (
-        <button
-          type="button"
-          onClick={() => {
-            onYeastNameChange("");
-            onYeastToleranceChange("");
-          }}
-          className="text-muted-foreground shrink-0 p-2 transition-colors hover:text-red-600"
-          aria-label="Clear yeast"
-          title="Clear yeast"
-        >
-          ✕
-        </button>
+    <button
+      type="button"
+      onClick={() => {
+        setEditing(true);
+      }}
+      className="border-border bg-card hover:bg-muted flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+    >
+      <span className="text-base">🧪</span>
+      <div className="min-w-0 flex-1">
+        <span className="text-foreground text-sm font-medium">
+          {hasYeast ? yeastName.trim() || "Yeast" : "Add yeast"}
+        </span>
+      </div>
+      {yeastTolerance && (
+        <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
+          {yeastTolerance}% tol.
+        </span>
       )}
-    </div>
+      {!hasYeast && <span className="text-primary text-xs font-medium">tap to add →</span>}
+    </button>
   );
 }

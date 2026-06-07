@@ -67,28 +67,12 @@ export function IngredientsSection({ ingredients, onChange, batchParams }: Ingre
     const fermIdx = updated.findIndex((i) => i.type === "fermentation_sugar");
     if (fermIdx >= 0) {
       updated[fermIdx] = { ...updated[fermIdx], amount_liters: result.fermentation_sugar_kg };
-    } else {
-      updated.unshift({
-        type: "fermentation_sugar",
-        name: "Fermentation Sugar",
-        amount_liters: result.fermentation_sugar_kg,
-        sugar_content_percent: null,
-        sort_order: -2,
-      });
     }
 
     if (planned_sweetness !== "dry") {
       const sweetIdx = updated.findIndex((i) => i.type === "sweetness_sugar");
       if (sweetIdx >= 0) {
         updated[sweetIdx] = { ...updated[sweetIdx], amount_liters: result.sweetness_sugar_kg };
-      } else {
-        updated.push({
-          type: "sweetness_sugar",
-          name: "Sweetness Sugar",
-          amount_liters: result.sweetness_sugar_kg,
-          sugar_content_percent: null,
-          sort_order: -1,
-        });
       }
     }
 

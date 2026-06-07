@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { Batch, Ingredient, SweetnessLevel } from "@/types";
 import { createBatchSchema, updateBatchSchema } from "@/lib/schemas/batch";
+import { calculateSugar } from "@/lib/services/sugar-calculation";
+import type { CalculationResult } from "@/lib/services/sugar-calculation";
 import { validateBatch } from "@/lib/services/batch-validation";
 import type { ValidationWarning } from "@/lib/services/batch-validation";
 import { Button } from "@/components/ui/button";
@@ -45,14 +47,77 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
     yeast_alcohol_tolerance: initialData?.yeast_alcohol_tolerance?.toString() ?? "",
   });
 
-  const [ingredients, setIngredients] = useState<Ingredient[]>(initialData?.ingredients ?? []);
-  const [warnings, setWarnings] = useState<ValidationWarning[]>([]);
+  const [ingredients, setIngredients] = useState<Ingredient[]>(() => {
+    const base = initialData?.ingredients ?? [];
+    const result = [...base];
+    const sweetness = initialData?.planned_sweetness ?? "dry";
+    if (!result.some((i) => i.type === "fermentation_sugar")) {
+      result.unshift({
+        type: "fermentation_sugar",
+        name: "Fermentation Sugar",
+        amount_liters: 0,
+        sugar_content_percent: null,
+        sort_order: -2,
+      });
+    }
+    if (sweetness !== "dry" && !result.some((i) => i.type === "sweetness_sugar")) {
+      result.push({
+        type: "sweetness_sugar",
+        name: "Sweetness Sugar",
+        amount_liters: 0,
+        sugar_content_percent: null,
+        sort_order: -1,
+      });
+    }
+    return result;
+  });
+  function computeWarnings(formState: FormState, ingredientList: Ingredient[]): ValidationWarning[] {
+    const abv = formState.target_abv ? parseFloat(formState.target_abv) : null;
+    const volume = formState.target_volume_liters ? parseFloat(formState.target_volume_liters) : null;
+    let calcResult: CalculationResult | null = null;
+    if (abv !== null && volume !== null) {
+      calcResult = calculateSugar({
+        target_volume_liters: volume,
+        target_abv: abv,
+        planned_sweetness: formState.planned_sweetness,
+        ingredients: ingredientList,
+      });
+    }
+    return validateBatch(
+      {
+        target_abv: abv,
+        target_volume_liters: volume,
+        planned_sweetness: formState.planned_sweetness,
+        yeast_alcohol_tolerance: formState.yeast_alcohol_tolerance
+          ? parseFloat(formState.yeast_alcohol_tolerance)
+          : null,
+        has_yeast: Boolean(formState.yeast_name.trim() || formState.yeast_alcohol_tolerance.trim()),
+        ingredients: ingredientList,
+      },
+      calcResult,
+    );
+  }
+
+  const [warnings, setWarnings] = useState<ValidationWarning[]>(() => {
+    if (mode !== "edit" || !initialData) return [];
+    const initialFormState: FormState = {
+      name: initialData.name,
+      batch_date: initialData.batch_date ?? "",
+      process_type: initialData.process_type,
+      target_volume_liters: initialData.target_volume_liters?.toString() ?? "",
+      target_abv: initialData.target_abv?.toString() ?? "",
+      planned_sweetness: initialData.planned_sweetness,
+      yeast_name: initialData.yeast_name ?? "",
+      yeast_alcohol_tolerance: initialData.yeast_alcohol_tolerance?.toString() ?? "",
+    };
+    return computeWarnings(initialFormState, initialData.ingredients);
+  });
   const [warningsDismissed, setWarningsDismissed] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [initialValues] = useState(() => ({
+  const [initialValues, setInitialValues] = useState(() => ({
     form: {
       name: initialData?.name ?? "",
       batch_date: initialData?.batch_date ?? "",
@@ -116,16 +181,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
 
   function handleBlur() {
     setWarningsDismissed(false);
-    setWarnings(
-      validateBatch({
-        target_abv: form.target_abv ? parseFloat(form.target_abv) : null,
-        target_volume_liters: form.target_volume_liters ? parseFloat(form.target_volume_liters) : null,
-        planned_sweetness: form.planned_sweetness,
-        yeast_alcohol_tolerance: form.yeast_alcohol_tolerance ? parseFloat(form.yeast_alcohol_tolerance) : null,
-        has_yeast: Boolean(form.yeast_name.trim() || form.yeast_alcohol_tolerance.trim()),
-        ingredients,
-      }),
-    );
+    setWarnings(computeWarnings(form, ingredients));
   }
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -182,6 +238,9 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       }
 
       if (json.data) {
+        // Mark form as clean before navigation/callback to prevent spurious beforeunload prompt
+        setInitialValues({ form: { ...form }, ingredients: [...ingredients] });
+        isDirtyRef.current = false;
         if (onSuccess) {
           onSuccess(json.data);
         } else if (mode === "create") {

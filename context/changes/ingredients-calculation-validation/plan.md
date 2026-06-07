@@ -499,26 +499,26 @@ Behavior:
 
 #### Automated
 
-- [x] 3.1 Build succeeds: npm run build
-- [x] 3.2 Lint passes: npm run lint
-- [x] 3.3 All tests still pass: npm run test
+- [x] 3.1 Build succeeds: npm run build — 8470f2a
+- [x] 3.2 Lint passes: npm run lint — 8470f2a
+- [x] 3.3 All tests still pass: npm run test — 8470f2a
 
 #### Manual
 
-- [x] 3.4 Can add an ingredient with name, amount (L), sugar content (%)
-- [x] 3.5 Can edit an ingredient inline — form state updates
-- [x] 3.6 Can delete a user ingredient — removed from form
-- [x] 3.7 Cannot delete sugar entries — no delete button shown
-- [x] 3.8 Sugar entries appear at top of list (below yeast)
-- [x] 3.9 Calculate button fills fermentation sugar amount (dry wine)
-- [x] 3.10 Calculate button fills both fermentation + sweetness sugar (non-dry)
-- [x] 3.11 Changing sweetness to dry removes sweetness entry from form
-- [x] 3.12 Changing sweetness to non-dry adds sweetness entry
-- [x] 3.13 Warnings banner appears on blur with correct warnings for each rule
-- [x] 3.14 No yeast → "wild yeast" warning shown
-- [x] 3.15 No target ABV → "incomplete" warning shown
-- [x] 3.16 Save persists all ingredients atomically
-- [x] 3.17 Cancel discards all unsaved changes (ingredients revert)
-- [x] 3.18 beforeunload prompt fires when form is dirty
-- [x] 3.19 No regressions in batch create/edit flow
-- [x] 3.20 Warning banner is informative but not overwhelming (collapsible if many)
+- [x] 3.4 Can add an ingredient with name, amount (L), sugar content (%) — 8470f2a
+- [x] 3.5 Can edit an ingredient inline — form state updates — 8470f2a
+- [x] 3.6 Can delete a user ingredient — removed from form — 8470f2a
+- [x] 3.7 Cannot delete sugar entries — no delete button shown — 8470f2a
+- [x] 3.8 Sugar entries appear at top of list (below yeast) — 8470f2a
+- [x] 3.9 Calculate button fills fermentation sugar amount (dry wine) — 8470f2a
+- [x] 3.10 Calculate button fills both fermentation + sweetness sugar (non-dry) — 8470f2a
+- [x] 3.11 Changing sweetness to dry removes sweetness entry from form — 8470f2a
+- [x] 3.12 Changing sweetness to non-dry adds sweetness entry — 8470f2a
+- [x] 3.13 Warnings banner appears on blur with correct warnings for each rule — 8470f2a
+- [x] 3.14 No yeast → "wild yeast" warning shown — 8470f2a
+- [x] 3.15 No target ABV → "incomplete" warning shown — 8470f2a
+- [x] 3.16 Save persists all ingredients atomically — 8470f2a
+- [x] 3.17 Cancel discards all unsaved changes (ingredients revert) — 8470f2a
+- [x] 3.18 beforeunload prompt fires when form is dirty — 8470f2a
+- [x] 3.19 No regressions in batch create/edit flow — 8470f2a
+- [x] 3.20 Warning banner is informative but not overwhelming (collapsible if many) — 8470f2a

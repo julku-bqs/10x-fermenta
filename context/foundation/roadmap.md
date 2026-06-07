@@ -3,7 +3,7 @@ project: "Fermenta"
 version: 1
 status: draft
 created: 2026-05-29
-updated: 2026-06-02
+updated: 2026-06-08
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -29,7 +29,7 @@ A home winemaker today juggles paper forms, mental math, and scattered notes —
 |---|---|---|---|---|---|
 | F-01 | batch-schema-with-rls | (foundation) batch/ingredient/process tables + RLS for per-user isolation | — | Access Control, NFR | done |
 | S-01 | batch-crud-and-params | create a batch with parameters and yeast, list their batches | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-007 | done |
-| S-02 | ingredients-calculation-validation | add ingredients, see calculated sugar needs, see validation warnings | S-01 | US-01, FR-006, FR-008, FR-009 | ready |
+| S-02 | ingredients-calculation-validation | add ingredients, see calculated sugar needs, see validation warnings | S-01 | US-01, FR-006, FR-008, FR-009 | done |
 | S-03 | process-plan-generation | receive a generated process plan and edit/add/remove entries | S-01 | US-01, FR-010, FR-011 | ready |
 | S-04 | visual-identity | experience a consistent, modern UI tailored to the home winery context | S-01 | NFR | done |
 
@@ -93,7 +93,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Contains the highest-risk guardrail: "Sugar calculation must be mathematically correct — wrong math destroys user trust immediately." Calculation correctness must be verified against known test cases before this slice can be considered done.
-- **Status:** ready
+- **Status:** done
 
 ### S-03: Process plan generation and editing
 
@@ -125,7 +125,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 |---|---|---|---|---|
 | F-01 | batch-schema-with-rls | Set up batch/ingredient/process schema with RLS | done | — |
 | S-01 | batch-crud-and-params | Batch creation form, parameters, and list page | done | — |
-| S-02 | ingredients-calculation-validation | Ingredient management with sugar calculation and validation | yes | Run `/10x-plan ingredients-calculation-validation` |
+| S-02 | ingredients-calculation-validation | Ingredient management with sugar calculation and validation | done | — |
 | S-03 | process-plan-generation | Process plan generation and editing | yes | Run `/10x-plan process-plan-generation` |
 | S-04 | visual-identity | Visual identity and design system for home winery context | done | — |
 
@@ -146,3 +146,4 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **F-01** (`batch-schema-with-rls`) — Implemented 2026-05-30. Migration `20260530213000_batch_schema_with_rls.sql` live.
 - **S-01** (`batch-crud-and-params`) — Implemented 2026-06-01. Batch list, creation form with params/yeast, detail page operational.
 - **S-04** (`visual-identity`) — Implemented 2026-06-02. Warm winery design system, AppLayout with floating topbar, ingredient card inline-edit pattern. Merged as #8.
+- **S-02** (`ingredients-calculation-validation`) — Implemented 2026-06-08. Ingredient management, sugar calculation (fermentation + sweetness), 9-rule validation engine, atomic save. PR #15. 57 tests.

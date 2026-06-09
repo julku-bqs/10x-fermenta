@@ -1,9 +1,9 @@
 ---
 change_id: batch-crud-and-params
 title: Batch CRUD with parameters and yeast
-status: implemented
+status: impl_reviewed
 created: 2026-05-31
-updated: 2026-06-01
+updated: 2026-06-09
 archived_at: null
 ---
 

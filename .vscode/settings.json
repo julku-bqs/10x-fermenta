@@ -80,6 +80,7 @@
     "/^npm\\s+run\\s+test\\b/": true,
     "/^npm\\s+test\\b/": true,
     "/^npx\\s+eslint\\b/": true,
+    "/^npx\\s+vitest\\b/": true,
     "npm ci": true,
     "/^yarn\\s+install\\s+--frozen-lockfile\\b/": true,
     "/^pnpm\\s+install\\s+--frozen-lockfile\\b/": true,

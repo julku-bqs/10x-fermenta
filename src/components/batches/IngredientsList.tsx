@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { batchInputClass } from "./styles";
 
 interface IngredientsListProps {
   yeastName: string;
@@ -20,9 +21,6 @@ export function IngredientsList({
 }: IngredientsListProps) {
   const hasYeast = yeastName.trim().length > 0 || yeastTolerance.trim().length > 0;
   const [editing, setEditing] = useState(false);
-
-  const inputClass =
-    "w-full rounded-md border border-border bg-card px-3 py-2 text-sm shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   if (editing) {
     return (
@@ -56,7 +54,10 @@ export function IngredientsList({
                 onYeastNameChange(e.target.value);
               }}
               placeholder="e.g. Lalvin EC-1118"
-              className={cn(inputClass, yeastNameError && "border-red-400 focus:border-red-500 focus:ring-red-400/30")}
+              className={cn(
+                batchInputClass,
+                yeastNameError && "border-red-400 focus:border-red-500 focus:ring-red-400/30",
+              )}
             />
             {yeastNameError && <p className="mt-1 text-xs text-red-600">{yeastNameError}</p>}
           </div>
@@ -76,7 +77,7 @@ export function IngredientsList({
               }}
               placeholder="e.g. 18"
               className={cn(
-                inputClass,
+                batchInputClass,
                 yeastToleranceError && "border-red-400 focus:border-red-500 focus:ring-red-400/30",
               )}
             />

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { Ingredient } from "@/types";
+import { batchInputClass } from "./styles";
 
 interface IngredientCardProps {
   ingredient: Ingredient;
@@ -25,9 +26,6 @@ function formatAmount(ingredient: Ingredient): string {
   }
   return `${parseFloat(ingredient.amount_liters.toFixed(3))} kg`;
 }
-
-const inputClass =
-  "w-full rounded-md border border-border bg-card px-3 py-2 text-sm shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 export function IngredientCard({ ingredient, onChange, onDelete, isEditing, onToggleEdit }: IngredientCardProps) {
   const isSugar = ingredient.type !== "user_input";
@@ -64,7 +62,7 @@ export function IngredientCard({ ingredient, onChange, onDelete, isEditing, onTo
                   onChange({ name: e.target.value });
                 }}
                 placeholder="e.g. Apple juice"
-                className={inputClass}
+                className={batchInputClass}
               />
             </div>
           )}
@@ -80,7 +78,7 @@ export function IngredientCard({ ingredient, onChange, onDelete, isEditing, onTo
                 onChange({ amount_liters: parseFloat(e.target.value) || 0 });
               }}
               placeholder="0"
-              className={inputClass}
+              className={batchInputClass}
             />
           </div>
 
@@ -99,7 +97,7 @@ export function IngredientCard({ ingredient, onChange, onDelete, isEditing, onTo
                   });
                 }}
                 placeholder="e.g. 15"
-                className={inputClass}
+                className={batchInputClass}
               />
             </div>
           )}

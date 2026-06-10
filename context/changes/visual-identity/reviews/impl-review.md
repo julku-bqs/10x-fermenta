@@ -28,7 +28,7 @@
 - **Location**: src/components/batches/IngredientsList.tsx
 - **Detail**: Plan specified a read-only display component with props `{ yeastName: string | null; yeastTolerance: number | null }` and a "Coming soon" placeholder. Actual implementation is a full inline editor with toggle, callbacks, and error props. This makes sense functionally (the form needs to edit yeast), but contradicts the plan which deferred interactivity to S-02.
 - **Fix**: Accept as-is — the plan was internally contradictory (moved yeast editing here while calling it "read-only"). Document the drift in plan Progress notes.
-- **Decision**: PENDING
+- **Decision**: DISMISSED — false positive; IngredientsList was updated by S-02, not this change
 
 ### F2 — Unplanned scope additions: LayoutToggle, PasswordToggle, SignUpForm validation
 
@@ -47,7 +47,7 @@
   - Tradeoff: Doesn't undo current additions (they're already shipped).
   - Confidence: MEDIUM — depends on team preference for scope discipline.
   - Blind spot: May be too strict for small quality-of-life additions.
-- **Decision**: PENDING
+- **Decision**: ACCEPTED (Fix A) — scope expansion accepted as shipped; plan addendum noted
 
 ### F3 — Render-blocking Google Fonts CSS import
 
@@ -57,7 +57,7 @@
 - **Location**: src/styles/global.css:1
 - **Detail**: `@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:...")` inside CSS is render-blocking — the browser must fetch the remote stylesheet before any painting. This adds a full network round-trip to the critical rendering path. The plan noted using `font-display: swap` to avoid layout shift but didn't prescribe the loading method.
 - **Fix**: Move the font load to `<link rel="preconnect">` + `<link rel="stylesheet">` in `src/layouts/Layout.astro`'s `<head>`, removing the CSS `@import`.
-- **Decision**: PENDING
+- **Decision**: FIXED — moved to <link> in Layout.astro <head>
 
 ### F4 — BatchForm uses hard-coded red error colors instead of semantic tokens
 
@@ -67,7 +67,7 @@
 - **Location**: src/components/batches/BatchForm.tsx:35-36, 260, 269
 - **Detail**: `inputErrorClass = "border-red-400 focus:border-red-500 focus:ring-red-400/30"` and error banner uses `text-red-600`, `bg-red-50`, `border-red-300`. Meanwhile auth components (`ServerError.tsx`, `FormField.tsx`) correctly use the `--destructive` semantic token (`text-destructive`, `border-destructive/30`, `bg-destructive/10`). The batch form errors won't respond to palette changes.
 - **Fix**: Replace `border-red-400` → `border-destructive/60`, `text-red-600` → `text-destructive`, `bg-red-50` → `bg-destructive/10`, `border-red-300` → `border-destructive/30` to match auth error patterns.
-- **Decision**: PENDING
+- **Decision**: FIXED — replaced with semantic destructive token classes
 
 ### F5 — Auth API routes missing zod input validation
 
@@ -86,7 +86,7 @@
   - Tradeoff: Expands this change's scope further.
   - Confidence: HIGH — straightforward implementation.
   - Blind spot: May need to update signup route too.
-- **Decision**: PENDING
+- **Decision**: FIXED (Fix B) — added zod schemas for signin/signup API routes
 
 ### F6 — Redundant `font-['Playfair_Display']` on h1 elements
 
@@ -96,4 +96,4 @@
 - **Location**: src/components/Welcome.astro:10, src/pages/auth/signin.astro:13, src/pages/auth/signup.astro:13, src/pages/auth/confirm-email.astro:25
 - **Detail**: `global.css` applies `font-family: "Playfair Display"` to all h1/h2/h3 in `@layer base`. Yet every `<h1>` also carries `font-['Playfair_Display']` as a Tailwind arbitrary value. This is redundant — if the brand font changes, both locations need updating.
 - **Fix**: Remove `font-['Playfair_Display']` from `<h1>` elements since they inherit from the base layer. Keep it only on non-heading elements (e.g., the Topbar `<a>` link).
-- **Decision**: PENDING
+- **Decision**: FIXED — removed redundant font class from all h1 elements

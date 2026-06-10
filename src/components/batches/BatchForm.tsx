@@ -32,8 +32,8 @@ interface FormState {
 const labelClass = "block text-sm font-medium text-foreground mb-1";
 const inputClass =
   "w-full rounded-md border border-border bg-card px-3 py-2 text-sm shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
-const inputErrorClass = "border-red-400 focus:border-red-500 focus:ring-red-400/30";
-const errorMsgClass = "mt-1 text-xs text-red-600";
+const inputErrorClass = "border-destructive/60 focus:border-destructive focus:ring-destructive/30";
+const errorMsgClass = "mt-1 text-xs text-destructive";
 
 export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProps) {
   const [form, setForm] = useState<FormState>({
@@ -257,14 +257,14 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
   return (
     <form onSubmit={handleSubmit} onBlur={handleBlur} className="space-y-6">
       {serverError && (
-        <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <span>{serverError}</span>
           <button
             type="button"
             onClick={() => {
               setServerError(null);
             }}
-            className="ml-auto shrink-0 text-red-500 hover:text-red-700"
+            className="ml-auto shrink-0 text-destructive/70 hover:text-destructive"
             aria-label="Dismiss"
           >
             ✕

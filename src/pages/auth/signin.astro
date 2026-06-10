@@ -10,7 +10,7 @@ const error = Astro.url.searchParams.get("error");
   <Topbar />
   <div class="bg-background flex min-h-screen items-center justify-center p-4">
     <div class="border-border bg-card w-full max-w-sm rounded-2xl border p-8 shadow-sm">
-      <h1 class="text-foreground mb-6 text-center font-['Playfair_Display'] text-2xl font-bold">Sign in</h1>
+      <h1 class="text-foreground mb-6 text-center text-2xl font-bold">Sign in</h1>
       <SignInForm serverError={error} client:load />
       <p class="text-muted-foreground mt-4 text-center text-sm">
         Don't have an account? <a href="/auth/signup" class="text-primary hover:underline">Sign up</a>

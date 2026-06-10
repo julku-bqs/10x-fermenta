@@ -29,7 +29,8 @@ export const POST: APIRoute = async (context) => {
     .single();
 
   if (error) {
-    return jsonError(error.message, 500);
+    console.error("Failed to create batch:", error.message);
+    return jsonError("Failed to create batch", 500);
   }
 
   return jsonCreated(data);
@@ -44,7 +45,8 @@ export const GET: APIRoute = async (context) => {
   const { data, error } = await supabase.from("batches").select("*").order("created_at", { ascending: false });
 
   if (error) {
-    return jsonError(error.message, 500);
+    console.error("Failed to fetch batches:", error.message);
+    return jsonError("Failed to fetch batches", 500);
   }
 
   return jsonOk(data);

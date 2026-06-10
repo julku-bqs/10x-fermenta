@@ -1,9 +1,9 @@
 ---
 change_id: visual-identity
 title: Visual identity and design system for home winery context
-status: implemented
+status: impl_reviewed
 created: 2026-06-02
-updated: 2026-06-02
+updated: 2026-06-09
 archived_at: null
 ---
 

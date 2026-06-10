@@ -8,6 +8,7 @@ import type { ValidationWarning } from "@/lib/services/batch-validation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { IngredientsList } from "./IngredientsList";
+import { batchInputClass, batchInputErrorClass, batchLabelClass, batchErrorMsgClass } from "./styles";
 import { IngredientsSection } from "./IngredientsSection";
 import { ValidationWarnings } from "./ValidationWarnings";
 
@@ -28,12 +29,6 @@ interface FormState {
   yeast_name: string;
   yeast_alcohol_tolerance: string;
 }
-
-const labelClass = "block text-sm font-medium text-foreground mb-1";
-const inputClass =
-  "w-full rounded-md border border-border bg-card px-3 py-2 text-sm shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
-const inputErrorClass = "border-red-400 focus:border-red-500 focus:ring-red-400/30";
-const errorMsgClass = "mt-1 text-xs text-red-600";
 
 export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProps) {
   const [form, setForm] = useState<FormState>({
@@ -257,14 +252,14 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
   return (
     <form onSubmit={handleSubmit} onBlur={handleBlur} className="space-y-6">
       {serverError && (
-        <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="border-destructive/30 bg-destructive/10 text-destructive flex items-start gap-2 rounded-md border px-4 py-3 text-sm">
           <span>{serverError}</span>
           <button
             type="button"
             onClick={() => {
               setServerError(null);
             }}
-            className="ml-auto shrink-0 text-red-500 hover:text-red-700"
+            className="text-destructive/70 hover:text-destructive ml-auto shrink-0"
             aria-label="Dismiss"
           >
             ✕
@@ -299,7 +294,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
           <h2 className="text-base font-semibold">Batch Basics</h2>
 
           <div>
-            <label htmlFor="name" className={labelClass}>
+            <label htmlFor="name" className={batchLabelClass}>
               Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -310,13 +305,13 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
                 set("name", e.target.value);
               }}
               placeholder="e.g. Apple Cider 2025"
-              className={cn(inputClass, fieldErrors.name && inputErrorClass)}
+              className={cn(batchInputClass, fieldErrors.name && batchInputErrorClass)}
             />
-            {fieldErrors.name && <p className={errorMsgClass}>{fieldErrors.name}</p>}
+            {fieldErrors.name && <p className={batchErrorMsgClass}>{fieldErrors.name}</p>}
           </div>
 
           <div>
-            <label htmlFor="batch_date" className={labelClass}>
+            <label htmlFor="batch_date" className={batchLabelClass}>
               Batch Date
             </label>
             <input
@@ -326,13 +321,13 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 set("batch_date", e.target.value);
               }}
-              className={cn(inputClass, fieldErrors.batch_date && inputErrorClass)}
+              className={cn(batchInputClass, fieldErrors.batch_date && batchInputErrorClass)}
             />
-            {fieldErrors.batch_date && <p className={errorMsgClass}>{fieldErrors.batch_date}</p>}
+            {fieldErrors.batch_date && <p className={batchErrorMsgClass}>{fieldErrors.batch_date}</p>}
           </div>
 
           <div>
-            <label htmlFor="process_type" className={labelClass}>
+            <label htmlFor="process_type" className={batchLabelClass}>
               Process Type <span className="text-red-500">*</span>
             </label>
             <select
@@ -341,13 +336,13 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 set("process_type", e.target.value);
               }}
-              className={cn(inputClass, fieldErrors.process_type && inputErrorClass)}
+              className={cn(batchInputClass, fieldErrors.process_type && batchInputErrorClass)}
             >
               {mode === "create" && <option value="">Select process type…</option>}
               <option value="juice">Juice</option>
               <option value="pulp">Pulp</option>
             </select>
-            {fieldErrors.process_type && <p className={errorMsgClass}>{fieldErrors.process_type}</p>}
+            {fieldErrors.process_type && <p className={batchErrorMsgClass}>{fieldErrors.process_type}</p>}
           </div>
         </section>
 
@@ -356,7 +351,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
           <h2 className="text-base font-semibold">Parameters</h2>
 
           <div>
-            <label htmlFor="target_volume_liters" className={labelClass}>
+            <label htmlFor="target_volume_liters" className={batchLabelClass}>
               Target Volume (liters)
             </label>
             <input
@@ -369,13 +364,15 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
                 set("target_volume_liters", e.target.value);
               }}
               placeholder="e.g. 20"
-              className={cn(inputClass, fieldErrors.target_volume_liters && inputErrorClass)}
+              className={cn(batchInputClass, fieldErrors.target_volume_liters && batchInputErrorClass)}
             />
-            {fieldErrors.target_volume_liters && <p className={errorMsgClass}>{fieldErrors.target_volume_liters}</p>}
+            {fieldErrors.target_volume_liters && (
+              <p className={batchErrorMsgClass}>{fieldErrors.target_volume_liters}</p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="target_abv" className={labelClass}>
+            <label htmlFor="target_abv" className={batchLabelClass}>
               Target ABV (%)
             </label>
             <input
@@ -389,13 +386,13 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
                 set("target_abv", e.target.value);
               }}
               placeholder="e.g. 12"
-              className={cn(inputClass, fieldErrors.target_abv && inputErrorClass)}
+              className={cn(batchInputClass, fieldErrors.target_abv && batchInputErrorClass)}
             />
-            {fieldErrors.target_abv && <p className={errorMsgClass}>{fieldErrors.target_abv}</p>}
+            {fieldErrors.target_abv && <p className={batchErrorMsgClass}>{fieldErrors.target_abv}</p>}
           </div>
 
           <div>
-            <label htmlFor="planned_sweetness" className={labelClass}>
+            <label htmlFor="planned_sweetness" className={batchLabelClass}>
               Planned Sweetness
             </label>
             <select
@@ -404,14 +401,14 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 handleSweetnessChange(e.target.value);
               }}
-              className={cn(inputClass, fieldErrors.planned_sweetness && inputErrorClass)}
+              className={cn(batchInputClass, fieldErrors.planned_sweetness && batchInputErrorClass)}
             >
               <option value="dry">Dry (default)</option>
               <option value="semi_dry">Semi-Dry</option>
               <option value="semi_sweet">Semi-Sweet</option>
               <option value="sweet">Sweet</option>
             </select>
-            {fieldErrors.planned_sweetness && <p className={errorMsgClass}>{fieldErrors.planned_sweetness}</p>}
+            {fieldErrors.planned_sweetness && <p className={batchErrorMsgClass}>{fieldErrors.planned_sweetness}</p>}
           </div>
         </section>
 

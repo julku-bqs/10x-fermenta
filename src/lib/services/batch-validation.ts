@@ -107,7 +107,7 @@ const totalSugarExceedsTarget: ValidationRule = (input, calcResult) => {
 // Guard: calcResult exists, non-dry wine, volume known, sweetness entry present.
 // Domain: sugar g/L ratio falls outside the sweetness band.
 const sweetnessOutOfRange: ValidationRule = (input, calcResult) => {
-  if (calcResult === null || input.planned_sweetness === "dry" || input.target_volume_liters === null) return null;
+  if (calcResult === null || input.planned_sweetness === "dry" || !input.target_volume_liters) return null;
   const sweetnessEntry = input.ingredients.find((i) => i.type === "sweetness_sugar");
   if (!sweetnessEntry) return null;
   const sweetnessSugarGPerL = (sweetnessEntry.amount_liters * 1000) / input.target_volume_liters;

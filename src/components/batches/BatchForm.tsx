@@ -11,6 +11,7 @@ import { IngredientsList } from "./IngredientsList";
 import { batchInputClass, batchInputErrorClass, batchLabelClass, batchErrorMsgClass } from "./styles";
 import { IngredientsSection } from "./IngredientsSection";
 import { ValidationWarnings } from "./ValidationWarnings";
+import { DiaryMockupSwitcher } from "./diary/DiaryMockupSwitcher";
 
 interface BatchFormProps {
   mode: "create" | "edit";
@@ -440,9 +441,9 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
           />
         </section>
 
-        {/* Section 4: Diary placeholder */}
-        <section className="bg-muted flex items-center justify-center rounded-lg p-5">
-          <p className="text-muted-foreground text-sm italic">Process diary — coming soon</p>
+        {/* Section 4: Diary mockup exploration (Phase 0 — temporary) */}
+        <section className="space-y-4">
+          <DiaryMockupSwitcher />
         </section>
       </div>
 

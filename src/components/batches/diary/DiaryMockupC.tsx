@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Pencil } from "lucide-react";
 import { batchInputClass } from "../styles";
 import type { MockDiaryEntry } from "./mockData";
 import type { DiaryActions } from "./DiaryMockupSwitcher";
@@ -124,9 +125,9 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
                 onClick={() => {
                   setEditing(true);
                 }}
-                className="text-muted-foreground hover:text-foreground shrink-0 text-base leading-none"
+                className="text-muted-foreground hover:text-foreground shrink-0 p-0.5"
               >
-                ✎
+                <Pencil className="h-3.5 w-3.5" />
               </button>
             </div>
 

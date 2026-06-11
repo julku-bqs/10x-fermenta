@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Pencil, StickyNote } from "lucide-react";
 import { batchInputClass } from "../styles";
 import type { MockDiaryEntry } from "./mockData";
 import type { DiaryActions } from "./DiaryMockupSwitcher";
@@ -90,7 +91,7 @@ function EntryRow({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAct
 
   return (
     <div className={cn("border-border border-b last:border-b-0", entry.completed && "bg-muted/30")}>
-      <div className="grid w-full grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-2.5">
+      <div className="grid w-full grid-cols-[3rem_1fr_auto] items-center gap-2 px-3 py-2.5">
         {/* Date column */}
         <span className="text-muted-foreground text-xs font-medium tabular-nums">{formatDate(entry.entry_date)}</span>
 
@@ -100,11 +101,11 @@ function EntryRow({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAct
           onClick={() => {
             setExpanded(!expanded);
           }}
-          className="text-left"
+          className="min-w-0 text-left"
         >
           <span
             className={cn(
-              "truncate text-sm",
+              "block truncate text-sm",
               entry.completed ? "text-muted-foreground line-through" : "text-foreground",
             )}
           >
@@ -113,16 +114,16 @@ function EntryRow({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAct
         </button>
 
         {/* Actions column */}
-        <div className="flex items-center gap-2">
-          {entry.notes && <span className="text-muted-foreground text-base leading-none">📝</span>}
+        <div className="flex shrink-0 items-center gap-1.5">
+          {entry.notes && <StickyNote className="text-muted-foreground h-3.5 w-3.5" />}
           <button
             type="button"
             onClick={() => {
               setEditing(true);
             }}
-            className="text-muted-foreground hover:text-foreground text-base leading-none"
+            className="text-muted-foreground hover:text-foreground p-0.5"
           >
-            ✎
+            <Pencil className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"

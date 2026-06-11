@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { ChevronRight, Pencil } from "lucide-react";
 import { batchInputClass } from "../styles";
 import type { MockDiaryEntry } from "./mockData";
 import type { DiaryActions } from "./DiaryMockupSwitcher";
@@ -144,23 +145,20 @@ function EntryCard({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAc
           onClick={() => {
             setEditing(true);
           }}
-          className="text-muted-foreground hover:text-foreground shrink-0 text-base leading-none"
+          className="text-muted-foreground hover:text-foreground shrink-0 p-0.5"
         >
-          ✎
+          <Pencil className="h-3.5 w-3.5" />
         </button>
 
         {/* Expand indicator */}
         <button
           type="button"
-          className={cn(
-            "text-muted-foreground hover:text-foreground shrink-0 cursor-pointer text-base leading-none transition-transform outline-none",
-            expanded && "rotate-90",
-          )}
+          className="text-muted-foreground hover:text-foreground shrink-0 p-0.5 focus-visible:outline-none"
           onClick={() => {
             setExpanded(!expanded);
           }}
         >
-          ▶
+          <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-90")} />
         </button>
       </div>
 

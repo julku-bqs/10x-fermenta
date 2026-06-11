@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { batchInputClass } from "../styles";
 import type { MockDiaryEntry } from "./mockData";
+import type { DiaryActions } from "./DiaryMockupSwitcher";
 
 interface DiaryMockupBProps {
   entries: MockDiaryEntry[];
+  actions: DiaryActions;
 }
 
 function formatDate(dateStr: string): string {
@@ -11,53 +14,230 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-function EntryRow({ entry }: { entry: MockDiaryEntry }) {
+function EntryRow({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryActions }) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editDesc, setEditDesc] = useState(entry.description);
+  const [editDate, setEditDate] = useState(entry.entry_date);
+  const [editNotes, setEditNotes] = useState(entry.notes ?? "");
+
+  function handleSave() {
+    actions.onEdit(entry.id, {
+      description: editDesc,
+      entry_date: editDate,
+      notes: editNotes.trim() ? editNotes.trim() : null,
+    });
+    setEditing(false);
+  }
+
+  function handleCancel() {
+    setEditDesc(entry.description);
+    setEditDate(entry.entry_date);
+    setEditNotes(entry.notes ?? "");
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div className="border-border space-y-2 border-b p-3 last:border-b-0">
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <input
+            type="text"
+            value={editDesc}
+            onChange={(e) => {
+              setEditDesc(e.target.value);
+            }}
+            className={batchInputClass}
+          />
+          <input
+            type="date"
+            value={editDate}
+            onChange={(e) => {
+              setEditDate(e.target.value);
+            }}
+            className={cn(batchInputClass, "w-36")}
+          />
+        </div>
+        <textarea
+          value={editNotes}
+          onChange={(e) => {
+            setEditNotes(e.target.value);
+          }}
+          placeholder="Notes (optional)"
+          rows={2}
+          className={cn(batchInputClass, "resize-y")}
+        />
+        <div className="flex items-center gap-3">
+          <button type="button" onClick={handleSave} className="text-primary text-xs font-medium hover:underline">
+            Save
+          </button>
+          <button type="button" onClick={handleCancel} className="text-muted-foreground text-xs hover:underline">
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              actions.onDelete(entry.id);
+            }}
+            className="text-muted-foreground ml-auto text-xs hover:text-red-600"
+          >
+            ✕ Delete
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("border-border border-b last:border-b-0", entry.completed && "bg-muted/30")}>
-      <button
-        type="button"
-        onClick={() => {
-          setExpanded(!expanded);
-        }}
-        className="grid w-full grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-2.5 text-left"
-      >
+      <div className="grid w-full grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-2.5">
         {/* Date column */}
         <span className="text-muted-foreground text-xs font-medium tabular-nums">{formatDate(entry.entry_date)}</span>
 
-        {/* Description column */}
-        <span
-          className={cn("truncate text-sm", entry.completed ? "text-muted-foreground line-through" : "text-foreground")}
+        {/* Description column — click to expand */}
+        <button
+          type="button"
+          onClick={() => {
+            setExpanded(!expanded);
+          }}
+          className="text-left"
         >
-          {entry.description}
-        </span>
-
-        {/* Status column */}
-        <div className="flex items-center gap-2">
-          {entry.notes && <span className="text-muted-foreground text-xs">📝</span>}
           <span
             className={cn(
-              "inline-flex h-5 w-5 items-center justify-center rounded text-xs",
-              entry.completed ? "bg-primary/15 text-primary" : "border-border border",
+              "truncate text-sm",
+              entry.completed ? "text-muted-foreground line-through" : "text-foreground",
+            )}
+          >
+            {entry.description}
+          </span>
+        </button>
+
+        {/* Actions column */}
+        <div className="flex items-center gap-2">
+          {entry.notes && <span className="text-muted-foreground text-base leading-none">📝</span>}
+          <button
+            type="button"
+            onClick={() => {
+              setEditing(true);
+            }}
+            className="text-muted-foreground hover:text-foreground text-base leading-none"
+          >
+            ✎
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              actions.onToggleComplete(entry.id);
+            }}
+            className={cn(
+              "inline-flex h-5 w-5 items-center justify-center rounded text-xs transition-colors",
+              entry.completed
+                ? "bg-primary/15 text-primary hover:bg-primary/25"
+                : "border-border hover:border-primary/50 border",
             )}
           >
             {entry.completed && "✓"}
-          </span>
+          </button>
         </div>
-      </button>
+      </div>
 
       {/* Expandable notes */}
-      {expanded && entry.notes && (
+      {expanded && (
         <div className="bg-muted/50 px-3 py-2.5 pl-[calc(3rem+0.75rem)]">
-          <p className="text-muted-foreground max-h-20 overflow-y-auto text-xs leading-relaxed">{entry.notes}</p>
+          <p className="text-muted-foreground max-h-20 overflow-y-auto text-xs leading-relaxed">
+            {entry.notes ?? <span className="italic">No notes</span>}
+          </p>
         </div>
       )}
     </div>
   );
 }
 
-export function DiaryMockupB({ entries }: DiaryMockupBProps) {
+function AddEntryRow({ onAdd }: { onAdd: DiaryActions["onAdd"] }) {
+  const [open, setOpen] = useState(false);
+  const [desc, setDesc] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [notes, setNotes] = useState("");
+
+  function handleSubmit() {
+    if (!desc.trim()) return;
+    onAdd({
+      description: desc.trim(),
+      entry_date: date,
+      completed: false,
+      notes: notes.trim() ? notes.trim() : null,
+      entry_type: "user",
+    });
+    setDesc("");
+    setNotes("");
+    setOpen(false);
+  }
+
+  if (!open) {
+    return (
+      <div className="px-3 py-2">
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(true);
+          }}
+          className="text-primary hover:text-primary/80 text-xs font-medium"
+        >
+          + Add entry
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2 p-3">
+      <div className="grid grid-cols-[1fr_auto] gap-2">
+        <input
+          type="text"
+          value={desc}
+          onChange={(e) => {
+            setDesc(e.target.value);
+          }}
+          placeholder="Description"
+          className={batchInputClass}
+        />
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => {
+            setDate(e.target.value);
+          }}
+          className={cn(batchInputClass, "w-36")}
+        />
+      </div>
+      <textarea
+        value={notes}
+        onChange={(e) => {
+          setNotes(e.target.value);
+        }}
+        placeholder="Notes (optional)"
+        rows={2}
+        className={cn(batchInputClass, "resize-y")}
+      />
+      <div className="flex items-center gap-3">
+        <button type="button" onClick={handleSubmit} className="text-primary text-xs font-medium hover:underline">
+          Add
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false);
+          }}
+          className="text-muted-foreground text-xs hover:underline"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function DiaryMockupB({ entries, actions }: DiaryMockupBProps) {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
@@ -75,8 +255,9 @@ export function DiaryMockupB({ entries }: DiaryMockupBProps) {
         </div>
         {/* Rows */}
         {entries.map((entry) => (
-          <EntryRow key={entry.id} entry={entry} />
+          <EntryRow key={entry.id} entry={entry} actions={actions} />
         ))}
+        <AddEntryRow onAdd={actions.onAdd} />
       </div>
     </div>
   );

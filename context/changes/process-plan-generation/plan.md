@@ -27,11 +27,13 @@ Implement S-03: auto-generate a process plan (winemaking diary entries) when a b
 A user creating a new batch sees auto-generated process diary entries immediately after creation. On the batch detail page, diary entries appear chronologically by date. The user can:
 1. See all diary entries sorted by `entry_date` (chronologically)
 2. Mark entries as "completed" via a visual toggle (icon/background, not a bare checkbox)
-3. Edit any entry's description and date
-4. Add new manual entries
-5. Delete any entry (auto or user)
-6. Click "Regenerate Plan" to atomically replace auto-generated entries (preserving user-added ones)
-7. Entries save individually (add/edit/delete each triggers an immediate API call — not batch-atomic)
+3. Edit any entry's description, date, and notes
+4. Expand an entry to see/edit free-text notes (expandable area with scrollable content to avoid layout exhaustion)
+5. Add new manual entries
+6. Delete any entry (auto or user)
+7. Click "Regenerate Plan" to atomically replace auto-generated entries (preserving user-modified and user-created ones)
+8. Entries save individually (add/edit/delete each triggers an immediate API call — not batch-atomic)
+9. In create mode, user can add manual diary entries locally; they are persisted atomically after batch creation
 
 Verification: unit tests prove generation logic correctness (conditions, date offsets); manual E2E confirms full flow.
 
@@ -44,7 +46,7 @@ Verification: unit tests prove generation logic correctness (conditions, date of
 - Offline support
 - E2E/Playwright tests (unit + manual only for MVP)
 - Auto-shifting diary dates when batch_date changes (dates are absolute, set once, user edits manually)
-- Regenerate confirmation dialog (silently replaces auto entries; user entries always preserved)
+- Regenerate confirmation dialog (silently replaces auto entries; user/promoted entries always preserved)
 - Malolactic fermentation steps (optional advanced technique, not standard for hobbyist persona)
 
 ## Implementation Approach
@@ -59,51 +61,43 @@ Phase 0 is exploratory: build 2-3 static alternatives, pick the winner, delete t
 
 Diary entry dates are **absolute** (`entry_date DATE`). On generation, they're computed as `batch_date + offset_days`. Once created, they never auto-update — if the user changes `batch_date`, existing diary dates remain unchanged. The user can always edit any entry's date manually.
 
-If `batch_date` is null at creation time, generated entries get `entry_date = NULL` (the user fills dates manually later).
+`batch_date` is **never null**. The batch form defaults to today's date on creation. If the user clears it, today is applied anyway (enforced at the schema/API level). A data migration backfills existing NULL `batch_date` values with `created_at`. This guarantees generated diary entries always receive a computed date.
+
+### Entry ownership promotion
+
+When a user edits a diary entry's `description` or `notes`, the entry's `entry_type` is automatically promoted from `'auto'` to `'user'` via a database UPDATE trigger. This prevents future regeneration from deleting entries the user has customized. The trigger fires on UPDATE to `description` or `notes` columns — if the new value differs from the old value and `entry_type = 'auto'`, it sets `entry_type = 'user'`.
 
 ### Atomicity of regenerate
 
-The "Regenerate Plan" operation must be atomic: DELETE all entries with `entry_type = 'auto'` for the batch AND INSERT new generated entries in a single transaction. A PostgreSQL function (`regenerate_diary_entries`) called via `supabase.rpc()` ensures this — if insert fails, delete rolls back.
+The "Regenerate Plan" operation must be atomic: DELETE all entries with `entry_type = 'auto'` for the batch AND INSERT new generated entries in a single transaction. A PostgreSQL function (`regenerate_diary_entries`) called via `supabase.rpc()` ensures this — if insert fails, delete rolls back. Note: entries whose `entry_type` was promoted to `'user'` by the ownership trigger are never deleted.
 
 ---
 
 ## Generated Step Definitions
 
-Steps are generated based on batch parameters. Format: `<description> (day offset) [conditions]`.
-
-**Always generated (both process types):**
+Steps are generated based on batch parameters. Format: `<description> (day offset) [conditions]`. All steps are a flat list — conditions determine inclusion; categories are not structural.
 
 | # | Description | Day Offset | Conditions |
 |---|---|---|---|
 | 1 | Prepare must — sulfite, acidity correction, nutrients | 0 | always |
-| 2 | Add fermentation sugar | 0 | fermentation_sugar_kg > 0 |
-| 3 | Pitch yeast | 1 | always |
-| 4 | Monitor primary fermentation — measure SG | 3 | always |
-| 5 | Rack to secondary fermenter | 10 | always |
-| 6 | Monitor secondary fermentation — measure SG | 14 | always |
-| 7 | Confirm fermentation complete (2× same SG reading) | 25 | always |
-| 8 | Rack off lees | 30 | always |
-| 9 | Bulk aging — check sediment | 60 | always |
-| 10 | Bottling | 90 | always |
+| 2 | Prepare fruit — crush and destem | 0 | process_type = 'pulp' |
+| 3 | Add fermentation sugar | 0 | fermentation_sugar_kg > 0 |
+| 4 | Pitch yeast | 1 | always |
+| 5 | Cap management — punch down 2–3× daily | 1 | process_type = 'pulp' |
+| 6 | Monitor primary fermentation — measure SG | 3 | always |
+| 7 | Press — separate wine from pomace | 7 | process_type = 'pulp' |
+| 8 | Rack to secondary fermenter | 10 | always |
+| 9 | Monitor secondary fermentation — measure SG | 14 | always |
+| 10 | Confirm fermentation complete (2× same SG reading) | 25 | always |
+| 11 | Rack off lees | 30 | always |
+| 12 | Bulk aging — check sediment | 60 | always |
+| 13 | Stabilize before sweetening (K-meta + K-sorbate) | 80 | planned_sweetness ≠ 'dry' |
+| 14 | Back-sweeten to target sweetness | 85 | planned_sweetness ≠ 'dry' |
+| 15 | Bottling | 90 | always |
 
-**Pulp-specific (process_type = 'pulp'):**
-
-| # | Description | Day Offset | Conditions |
-|---|---|---|---|
-| P1 | Prepare fruit — crush and destem | 0 | process_type = 'pulp' |
-| P2 | Cap management — punch down 2–3× daily | 1 | process_type = 'pulp' |
-| P3 | Press — separate wine from pomace | 7 | process_type = 'pulp' |
-
-**Non-dry wine (planned_sweetness ≠ 'dry'):**
-
-| # | Description | Day Offset | Conditions |
-|---|---|---|---|
-| S1 | Stabilize before sweetening (K-meta + K-sorbate) | 80 | sweetness ≠ 'dry' |
-| S2 | Back-sweeten to target sweetness | 85 | sweetness ≠ 'dry' |
-
-**Open questions for plan review:**
-1. Should "Add fermentation sugar" (step 2) be split into staggered additions for high-ABV wines (e.g., >14% → add in 2 phases on day 0 and day 3)? Alternative: keep single step but add a validation warning about osmotic shock risk.
-2. Step 8 originally included "+ add SO₂" — removed per user feedback (fermentation stop method is user's choice). Should the step description remain neutral ("Rack off lees") or hint at stabilization options without prescribing?
+**Open questions for plan review (separate session):**
+1. Should "Add fermentation sugar" (step 3) be split into staggered additions for high-ABV wines (e.g., >14% → add in 2 phases on day 0 and day 3)? Alternative: keep single step but add a validation warning about osmotic shock risk.
+2. Step 11 originally included "+ add SO₂" — removed per user feedback (fermentation stop method is user's choice). Should the step description remain neutral ("Rack off lees") or hint at stabilization options without prescribing?
 3. Are the day offsets reasonable starting points for the target persona? (e.g., day 10 for first rack, day 90 for bottling)
 
 ### Generation design pattern
@@ -116,7 +110,13 @@ interface StepTemplate {
   key: string;               // unique ID for localization
   description: string;       // display text (extractable constant)
   offsetDays: number;
-  condition: (params: GenerationInput) => boolean;
+  condition: (input: GenerationInput) => boolean;
+}
+
+// GenerationInput wraps the full batch + optional calculation result
+interface GenerationInput {
+  batch: Batch;
+  calculationResult?: SugarCalculationResult;
 }
 ```
 
@@ -145,25 +145,25 @@ Build 2-3 static UI alternatives for the diary section using mock data. No API c
 
 **File**: `src/components/batches/diary/DiaryMockupA.tsx` (card-based)
 
-**Intent**: Card layout similar to IngredientCard — each entry is a card with date, description, and completed indicator. Tapping expands for editing. Tests whether the ingredient pattern scales to richer content.
+**Intent**: Card layout similar to IngredientCard — each entry is a card with date, description, and completed indicator. Tapping expands to reveal notes area. Tests whether the ingredient pattern scales to richer content.
 
-**Contract**: React component accepting `entries: MockDiaryEntry[]` prop, rendering cards with date badge, description text, and a visual completed indicator (icon or background shift).
+**Contract**: React component accepting `entries: MockDiaryEntry[]` prop, rendering cards with date badge, description text, visual completed indicator (icon or background shift), and an expandable notes section (collapsible, with scrollable area for long notes).
 
 ---
 
 **File**: `src/components/batches/diary/DiaryMockupB.tsx` (compact list/table)
 
-**Intent**: Dense table-like layout — one row per entry with date column, description column, and completed toggle. Tests whether a denser format works better for 10-15 entries.
+**Intent**: Dense table-like layout — one row per entry with date column, description column, and completed toggle. Notes visible on expansion/hover. Tests whether a denser format works better for 10-15 entries.
 
-**Contract**: React component accepting `entries: MockDiaryEntry[]` prop, rendering a compact list with inline date, description, and completed toggle.
+**Contract**: React component accepting `entries: MockDiaryEntry[]` prop, rendering a compact list with inline date, description, completed toggle, and an expandable row for notes.
 
 ---
 
 **File**: `src/components/batches/diary/DiaryMockupC.tsx` (timeline)
 
-**Intent**: Vertical timeline layout with date markers and entry descriptions alongside. Tests whether a chronological visual metaphor communicates the process flow better.
+**Intent**: Vertical timeline layout with date markers and entry descriptions alongside. Notes shown in expandable section below each entry. Tests whether a chronological visual metaphor communicates the process flow better.
 
-**Contract**: React component accepting `entries: MockDiaryEntry[]` prop, rendering a vertical timeline with date nodes and content.
+**Contract**: React component accepting `entries: MockDiaryEntry[]` prop, rendering a vertical timeline with date nodes, content, and expandable notes.
 
 ---
 
@@ -171,7 +171,7 @@ Build 2-3 static UI alternatives for the diary section using mock data. No API c
 
 **Intent**: Shared mock data for all three alternatives — realistic diary entries covering both juice and pulp processes with completed/pending states.
 
-**Contract**: Export `MOCK_DIARY_ENTRIES: MockDiaryEntry[]` with ~12 entries spanning 90 days.
+**Contract**: Export `MOCK_DIARY_ENTRIES: MockDiaryEntry[]` with ~12 entries spanning 90 days. Each entry includes description, entry_date, completed state, and optional notes (some entries with notes, some without — to test expandable area behavior).
 
 ---
 
@@ -187,7 +187,8 @@ Build 2-3 static UI alternatives for the diary section using mock data. No API c
 
 - All three mockups render correctly on the batch detail page
 - Each shows date, description, and completed state clearly
-- Mock data represents realistic diary content (both short and long descriptions)
+- Notes section is expandable/collapsible with scrollable area for long text
+- Mock data represents realistic diary content (both short and long descriptions, some with notes)
 - Visual completed indicator is distinguishable from bare checkbox (no multi-select confusion)
 - Layout works on mobile viewport (responsive)
 
@@ -207,11 +208,35 @@ Migrate the `diary_entries` table (add `entry_date`, `completed`, `entry_type`; 
 
 **File**: `supabase/migrations/YYYYMMDDHHmmss_diary_entries_process_plan.sql`
 
-**Intent**: Evolve the diary_entries schema to support process plan generation — add entry_date for chronological sorting, completed for visual tracking, entry_type to distinguish auto-generated from user-created entries, and drop the premature sort_order column.
+**Intent**: Evolve the diary_entries schema to support process plan generation — add entry_date for chronological sorting, completed for visual tracking, entry_type to distinguish auto-generated from user-created entries, notes for free-text annotations, and drop the premature sort_order column. Add an UPDATE trigger that promotes entry_type from 'auto' to 'user' when description or notes are modified. Also enforce batch_date NOT NULL with a backfill migration.
 
-**Contract**: Migration adds columns `entry_date DATE DEFAULT NULL`, `completed BOOLEAN NOT NULL DEFAULT false`, `entry_type TEXT NOT NULL DEFAULT 'user' CHECK (entry_type IN ('auto', 'user'))`. Drops column `sort_order`. Creates the `regenerate_diary_entries` PostgreSQL function for atomic regeneration.
+**Contract**: Migration:
+1. Adds columns `entry_date DATE NOT NULL`, `completed BOOLEAN NOT NULL DEFAULT false`, `entry_type TEXT NOT NULL DEFAULT 'user' CHECK (entry_type IN ('auto', 'user'))`, `notes TEXT DEFAULT NULL`.
+2. Drops column `sort_order`.
+3. Backfills existing batches: `UPDATE batches SET batch_date = created_at::date WHERE batch_date IS NULL`.
+4. Alters batches: `ALTER TABLE batches ALTER COLUMN batch_date SET NOT NULL, ALTER COLUMN batch_date SET DEFAULT CURRENT_DATE`.
+5. Creates the ownership promotion trigger:
 
-The `regenerate_diary_entries` function signature:
+```sql
+CREATE OR REPLACE FUNCTION promote_diary_entry_type()
+RETURNS trigger AS $$
+BEGIN
+  IF OLD.entry_type = 'auto' AND (
+    NEW.description IS DISTINCT FROM OLD.description OR
+    NEW.notes IS DISTINCT FROM OLD.notes
+  ) THEN
+    NEW.entry_type := 'user';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_promote_diary_entry_type
+  BEFORE UPDATE ON diary_entries
+  FOR EACH ROW EXECUTE FUNCTION promote_diary_entry_type();
+```
+
+6. Creates the `regenerate_diary_entries` PostgreSQL function:
 
 ```sql
 CREATE OR REPLACE FUNCTION regenerate_diary_entries(
@@ -233,7 +258,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 **Intent**: Add the DiaryEntry type to the shared types module for use by API and UI components.
 
-**Contract**: Add `DiaryEntry` interface with fields: `id: string`, `batch_id: string`, `description: string`, `entry_date: string | null`, `completed: boolean`, `entry_type: 'auto' | 'user'`, `created_at: string`, `updated_at: string`. Add `DiaryEntryType` type alias.
+**Contract**: Add `DiaryEntry` interface with fields: `id: string`, `batch_id: string`, `description: string`, `notes: string | null`, `entry_date: string`, `completed: boolean`, `entry_type: 'auto' | 'user'`, `created_at: string`, `updated_at: string`. Add `DiaryEntryType` type alias. Update `Batch` interface: change `batch_date` from `string | null` to `string` (never null).
 
 #### 3. Generation logic module
 
@@ -241,7 +266,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 **Intent**: Pure domain logic that takes batch parameters and returns a list of diary entry drafts. Uses the rule-based step builder pattern — a flat array of step templates with condition predicates.
 
-**Contract**: Exports `generateProcessPlan(input: GenerationInput): DiaryEntryDraft[]` where `GenerationInput` includes `batch_date`, `process_type`, `planned_sweetness`, and `fermentation_sugar_kg`. Each `DiaryEntryDraft` has `description`, `entry_date` (computed from batch_date + offset, or null if batch_date is null), and `entry_type: 'auto'`. Also exports `STEP_TEMPLATES` constant array for testability and future localization.
+**Contract**: Exports `generateProcessPlan(input: GenerationInput): DiaryEntryDraft[]` where `GenerationInput` accepts the full `Batch` object plus an optional calculation result (sugar calculation output, if available). The function uses whichever batch fields and calculation results are relevant for step conditions — keeping the input flexible for future condition additions without signature changes. Each `DiaryEntryDraft` has `description`, `entry_date` (computed from `batch_date + offset`), and `entry_type: 'auto'`. Also exports `STEP_TEMPLATES` constant array for testability and future localization.
 
 #### 4. Step description constants
 
@@ -249,7 +274,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 **Intent**: All step description strings defined as named constants at module top — extractable for future localization without changing logic.
 
-**Contract**: Each step has a `key` (e.g., `STEP_PREPARE_MUST`) and `description` string. Grouped by category (always, pulp-specific, non-dry).
+**Contract**: Each step template has a `key` (e.g., `STEP_PREPARE_MUST`) and `description` string. Defined as a flat array — no artificial grouping by category (conditions are just predicates on the same flat list).
 
 #### 5. Unit tests for generation logic
 
@@ -263,8 +288,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 - Juice + semi_sweet → 12 steps (base + sugar + sweetness steps)
 - Pulp + dry → 12 steps (base + 3 pulp steps)
 - Pulp + sweet + fermentation_sugar > 0 → 15 steps (all conditions met)
-- Null batch_date → all entry_date values are null
 - Date computation: batch_date 2026-01-15 + offset 10 → entry_date 2026-01-25
+- All generated entries have entry_type 'auto'
 
 ### Success Criteria:
 
@@ -277,8 +302,11 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 #### Manual Verification:
 
-- Verify diary_entries table in Supabase Studio has new columns and no sort_order
+- Verify diary_entries table has new columns (entry_date, completed, entry_type, notes) and no sort_order
 - Verify `regenerate_diary_entries` function exists in database
+- Verify `promote_diary_entry_type` trigger exists on diary_entries
+- Verify batches.batch_date is NOT NULL with default CURRENT_DATE
+- Verify existing NULL batch_dates were backfilled
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -298,7 +326,7 @@ Create CRUD endpoints for diary entries, integrate auto-generation into batch cr
 
 **Intent**: Validation schemas for diary entry creation and update operations.
 
-**Contract**: Exports `createDiaryEntrySchema` (requires `description: string`; optional `entry_date: ISO date | null`, `completed: boolean`) and `updateDiaryEntrySchema` (partial of create). All user-created entries get `entry_type: 'user'` server-side (not in schema — server sets it).
+**Contract**: Exports `createDiaryEntrySchema` (requires `description: string`; optional `entry_date: ISO date`, `notes: string | null`, `completed: boolean`) and `updateDiaryEntrySchema` (partial of create). All user-created entries get `entry_type: 'user'` server-side (not in schema — server sets it). Note: entry_type promotion on edit is handled by the DB trigger, not the API.
 
 #### 2. Diary entries CRUD endpoint
 
@@ -306,7 +334,7 @@ Create CRUD endpoints for diary entries, integrate auto-generation into batch cr
 
 **Intent**: RESTful endpoint for listing and creating diary entries for a specific batch.
 
-**Contract**: `GET` returns all diary entries for the batch ordered by `entry_date ASC NULLS LAST, created_at ASC`. `POST` creates a new entry with `entry_type: 'user'`, validates with `createDiaryEntrySchema`. Both require authenticated user + batch ownership (RLS enforces).
+**Contract**: `GET` returns all diary entries for the batch ordered by `entry_date ASC, created_at ASC`. `POST` creates a new entry with `entry_type: 'user'`, validates with `createDiaryEntrySchema`. Both require authenticated user + batch ownership (RLS enforces).
 
 #### 3. Single diary entry endpoint
 
@@ -314,7 +342,7 @@ Create CRUD endpoints for diary entries, integrate auto-generation into batch cr
 
 **Intent**: Update and delete operations for individual diary entries.
 
-**Contract**: `PUT` updates entry fields (description, entry_date, completed) validated with `updateDiaryEntrySchema`. `DELETE` removes the entry. Both require authenticated user + batch ownership via RLS.
+**Contract**: `PUT` updates entry fields (description, entry_date, notes, completed) validated with `updateDiaryEntrySchema`. Note: updating description or notes triggers the DB ownership promotion trigger automatically. `DELETE` removes the entry. Both require authenticated user + batch ownership via RLS.
 
 #### 4. Regenerate endpoint
 
@@ -328,9 +356,12 @@ Create CRUD endpoints for diary entries, integrate auto-generation into batch cr
 
 **File**: `src/pages/api/batches/index.ts` (modify POST handler)
 
-**Intent**: After successfully creating a batch, auto-generate diary entries server-side before returning the response.
+**Intent**: After successfully creating a batch, auto-generate diary entries server-side before returning the response. Also accept optional user-added diary entries from the create form and persist them atomically.
 
-**Contract**: After the batch insert succeeds, call `generateProcessPlan()` with the new batch's parameters, then bulk-insert the generated entries into `diary_entries` with `entry_type: 'auto'`. If diary insertion fails, log the error but still return the created batch (diary generation is non-blocking — user can regenerate manually).
+**Contract**: The POST body gains an optional `diary_entries: { description, entry_date, notes? }[]` field (user-added entries from create mode). After the batch insert succeeds:
+1. Call `generateProcessPlan()` with the new batch, bulk-insert generated entries with `entry_type: 'auto'`.
+2. If user-added diary entries are present in the request, bulk-insert them with `entry_type: 'user'`.
+Both inserts happen via an RPC or sequential inserts within the same request. If diary insertion fails, log the error but still return the created batch (diary generation is non-blocking — user can regenerate manually).
 
 ### Success Criteria:
 
@@ -343,11 +374,13 @@ Create CRUD endpoints for diary entries, integrate auto-generation into batch cr
 #### Manual Verification:
 
 - POST /api/batches creates batch AND diary entries appear in database
+- POST /api/batches with diary_entries in body persists user entries alongside generated ones
 - GET /api/batches/[id]/diary returns entries sorted chronologically
 - POST /api/batches/[id]/diary creates a user entry
-- PUT /api/batches/[id]/diary/[entryId] updates description/date/completed
+- PUT /api/batches/[id]/diary/[entryId] updates description/date/notes/completed
+- PUT updating description on auto entry promotes entry_type to 'user' (trigger fires)
 - DELETE /api/batches/[id]/diary/[entryId] removes entry
-- POST /api/batches/[id]/diary/regenerate replaces auto entries, preserves user entries
+- POST /api/batches/[id]/diary/regenerate replaces auto entries, preserves user/promoted entries
 - RLS prevents accessing another user's diary entries
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
@@ -366,33 +399,33 @@ Build the diary section using the chosen mockup pattern (from Phase 0), wire it 
 
 **File**: `src/components/batches/diary/DiarySection.tsx`
 
-**Intent**: Main container component for the diary section — fetches entries on mount, manages local state, and orchestrates CRUD operations via API calls.
+**Intent**: Main container component for the diary section — fetches entries on mount (edit mode), manages local state, and orchestrates CRUD operations via API calls. In create mode, manages entries locally until batch is saved.
 
-**Contract**: Accepts `batchId: string` and `batchParams: { batch_date, process_type, planned_sweetness, fermentation_sugar_kg }` props. Fetches entries via GET on mount. Provides add/edit/delete/toggle-complete handlers that call the API immediately. Includes "Regenerate Plan" button that calls the regenerate endpoint.
+**Contract**: Accepts `batch: Batch` (the full batch object) and optional `calculationResult` (sugar calculation output) props, plus a `mode: 'create' | 'edit'` prop. In edit mode: fetches entries via GET on mount, provides add/edit/delete/toggle-complete handlers that call the API immediately. In create mode: manages entries in local state, exposes them to the parent form for inclusion in the batch creation request. Includes "Regenerate Plan" button (edit mode only) that calls the regenerate endpoint.
 
 #### 2. Diary entry display component
 
 **File**: `src/components/batches/diary/DiaryEntry.tsx` (or similar based on chosen pattern)
 
-**Intent**: Individual entry rendering — shows date, description, completed state; supports inline editing.
+**Intent**: Individual entry rendering — shows date, description, completed state, and expandable notes; supports inline editing.
 
-**Contract**: Based on the chosen mockup from Phase 0. Accepts a single `DiaryEntry` + callbacks for `onUpdate`, `onDelete`, `onToggleComplete`. Visual completed indicator per Phase 0 decision (icon/background, not bare checkbox).
+**Contract**: Based on the chosen mockup from Phase 0. Accepts a single `DiaryEntry` + callbacks for `onUpdate`, `onDelete`, `onToggleComplete`. Visual completed indicator per Phase 0 decision (icon/background, not bare checkbox). Notes section is expandable/collapsible with scrollable area for long content.
 
 #### 3. Add entry component
 
 **File**: `src/components/batches/diary/AddEntryForm.tsx`
 
-**Intent**: Inline form for adding new diary entries — minimal fields (description + optional date).
+**Intent**: Inline form for adding new diary entries — fields for description, optional date, and optional notes.
 
-**Contract**: Form with description text input + date picker. On submit, calls POST endpoint and adds entry to local state on success.
+**Contract**: Form with description text input + date picker + optional notes textarea. On submit in edit mode, calls POST endpoint and adds entry to local state on success. In create mode, adds to local state only (persisted on batch creation).
 
 #### 4. Wire into BatchForm
 
 **File**: `src/components/batches/BatchForm.tsx`
 
-**Intent**: Replace the Phase 0 mockup placeholder with the real DiarySection component in edit mode. In create mode, diary section is not shown (entries are generated server-side on creation).
+**Intent**: Replace the Phase 0 mockup placeholder with the real DiarySection component. Both create and edit modes show the diary section — in create mode entries are managed locally and submitted with the batch.
 
-**Contract**: In edit mode (`mode === 'edit'`), render `<DiarySection batchId={batch.id} batchParams={...} />` in the diary section slot. In create mode, show informational text: "Process diary will be generated after batch creation."
+**Contract**: Render `<DiarySection batch={batch} calculationResult={calcResult} mode={mode} />` in the diary section slot. In create mode, DiarySection collects user-added entries locally and exposes them via a callback/ref so the form includes them in the POST request body. In edit mode, DiarySection fetches from API and operates independently.
 
 #### 5. Remove Phase 0 mockup artifacts
 
@@ -409,12 +442,16 @@ Build the diary section using the chosen mockup pattern (from Phase 0), wire it 
 #### Manual Verification:
 
 - Create a new batch → diary entries appear immediately on batch detail page
+- In create mode, user can add manual diary entries before saving
+- Manual entries from create mode persist after batch creation
 - Entries display chronologically by date
 - Click completed toggle → entry visual state changes, persists on reload
-- Click entry to edit → modify description/date → save → persists
+- Click entry to edit → modify description/date/notes → save → persists
+- Editing description or notes on auto entry promotes it to user type (verify via regenerate: it survives)
+- Notes section expands/collapses correctly with scrollable area
 - Click add → fill form → new entry appears in correct chronological position
 - Click delete → entry removed → persists
-- Click "Regenerate Plan" → auto entries replaced with fresh generation, user entries preserved
+- Click "Regenerate Plan" → auto entries replaced with fresh generation, user/promoted entries preserved
 - Responsive layout works on mobile viewport
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
@@ -429,21 +466,21 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 ### Changes Required:
 
-#### 1. Process type default to 'juice'
+#### 1. Process type default to 'juice' and batch_date default to today
 
 **File**: `src/components/batches/BatchForm.tsx`
 
-**Intent**: Preselect 'juice' in the process_type dropdown for new batches instead of forcing user to choose. Remove the empty option in create mode.
+**Intent**: Preselect 'juice' in the process_type dropdown and default batch_date to today for new batches. Remove the empty process_type option in create mode. Ensure batch_date is never cleared (if user empties it, re-apply today).
 
-**Contract**: Change initial form state for `process_type` from `""` to `"juice"` in create mode. Remove the empty `<option>` element.
+**Contract**: Change initial form state for `process_type` from `""` to `"juice"` and `batch_date` to today's ISO date in create mode. Remove the empty `<option>` element for process_type. On blur of batch_date, if empty, reset to today.
 
 #### 2. Edge case handling
 
 **File**: `src/components/batches/diary/DiarySection.tsx`
 
-**Intent**: Handle edge cases — loading state, empty state (no entries), error state (API failure), and entries with null dates.
+**Intent**: Handle edge cases — loading state, empty state (no entries), error state (API failure).
 
-**Contract**: Show skeleton/loading while fetching. Show "No diary entries yet" with "Generate Plan" button for legacy batches without entries. Show error toast on API failure. Entries with null dates appear at the end of the list.
+**Contract**: Show skeleton/loading while fetching. Show "No diary entries yet" with "Generate Plan" button for legacy batches without entries. Show error toast on API failure.
 
 #### 3. Chronological ordering consistency
 
@@ -451,7 +488,7 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 **Intent**: Ensure consistent ordering — entries sorted by `entry_date ASC NULLS LAST, created_at ASC` both in the API response and in the UI state after local mutations.
 
-**Contract**: API enforces ordering in query. UI re-sorts after add/edit to maintain chronological position.
+**Contract**: API enforces ordering in query (`entry_date ASC, created_at ASC`). UI re-sorts after add/edit to maintain chronological position.
 
 ### Success Criteria:
 
@@ -465,11 +502,11 @@ Process type default, edge cases, final polish, and end-to-end verification.
 #### Manual Verification:
 
 - New batch creation defaults to 'juice' process type
+- Batch form defaults batch_date to today (cannot be null)
 - Creating batch with 'juice' + 'dry' → ~9 diary entries generated
 - Creating batch with 'pulp' + 'semi_sweet' + sugar > 0 → ~15 entries generated
 - Legacy batch (no diary entries) shows empty state with "Generate Plan" button
 - Editing a batch's process_type does NOT auto-regenerate diary (user must click Regenerate)
-- Diary entries display correctly with no date (null) — positioned at end
 - API errors show user-friendly feedback (not raw error)
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
@@ -481,7 +518,7 @@ Process type default, edge cases, final polish, and end-to-end verification.
 ### Unit Tests:
 
 - Generation logic: step inclusion/exclusion for all parameter combinations
-- Date offset computation (batch_date + N days, null batch_date handling)
+- Date offset computation (batch_date + N days)
 - Edge cases: all conditions true, no conditions true, boundary values
 - Zod schema validation: valid/invalid inputs for diary entry create/update
 
@@ -489,13 +526,15 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 1. Create a new batch (juice, dry, no yeast) → verify ~9 diary entries
 2. Create a new batch (pulp, semi_sweet, with sugar) → verify ~15 entries with all conditional steps
-3. Edit a diary entry description and date → reload → persists
-4. Toggle completed on 3 entries → reload → state persists
-5. Add a manual entry with a specific date → appears in correct chronological position
-6. Delete an auto-generated entry → gone after reload
-7. Click "Regenerate Plan" → auto entries replaced, manual entries preserved
-8. Create batch with null batch_date → all diary entries have null dates
-9. Mobile viewport → layout is usable
+3. Add manual entries during batch creation → they persist after save
+4. Edit a diary entry description and date → reload → persists
+5. Edit an auto entry's description → verify entry_type promoted to 'user'
+6. Toggle completed on 3 entries → reload → state persists
+7. Add a manual entry with a specific date → appears in correct chronological position
+8. Edit notes on an entry → expand → verify scrollable area for long text
+9. Delete an auto-generated entry → gone after reload
+10. Click "Regenerate Plan" → auto entries replaced, user/promoted entries preserved
+11. Mobile viewport → layout is usable
 
 ## Performance Considerations
 
@@ -507,8 +546,11 @@ Process type default, edge cases, final polish, and end-to-end verification.
 ## Migration Notes
 
 - The `sort_order` column drop is safe — table has no production data (never used by any feature).
+- Existing batches with NULL `batch_date` are backfilled with `created_at::date` — safe since these batches were created recently during development.
+- `batch_date` becomes NOT NULL with DEFAULT CURRENT_DATE — all future batches always have a date.
 - Existing batches (created before S-03) will have zero diary entries. Empty state UI handles this gracefully.
 - The `regenerate_diary_entries` PostgreSQL function uses `SECURITY DEFINER` to bypass RLS within the function — the API layer validates ownership before calling it.
+- The ownership promotion trigger ensures user-modified auto entries survive regeneration without any API-level logic.
 
 ## References
 
@@ -528,9 +570,10 @@ Process type default, edge cases, final polish, and end-to-end verification.
 #### Manual
 
 - [ ] 0.1 Three mockup alternatives render correctly on batch detail page
-- [ ] 0.2 Visual completed indicator distinguishable from multi-select checkbox
-- [ ] 0.3 Layout works on mobile viewport
-- [ ] 0.4 Winner selected and losers deleted
+- [ ] 0.2 Notes section expandable/collapsible with scrollable area
+- [ ] 0.3 Visual completed indicator distinguishable from multi-select checkbox
+- [ ] 0.4 Layout works on mobile viewport
+- [ ] 0.5 Winner selected and losers deleted
 
 ### Phase 1: Schema Migration + Domain Logic
 
@@ -543,8 +586,11 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 #### Manual
 
-- [ ] 1.5 diary_entries table has new columns and no sort_order
+- [ ] 1.5 diary_entries table has new columns (entry_date, completed, entry_type, notes) and no sort_order
 - [ ] 1.6 regenerate_diary_entries function exists in database
+- [ ] 1.7 promote_diary_entry_type trigger exists on diary_entries
+- [ ] 1.8 batches.batch_date is NOT NULL with default CURRENT_DATE
+- [ ] 1.9 Existing NULL batch_dates were backfilled
 
 ### Phase 2: API Endpoints
 
@@ -559,10 +605,11 @@ Process type default, edge cases, final polish, and end-to-end verification.
 - [ ] 2.4 POST /api/batches creates batch AND diary entries
 - [ ] 2.5 GET /api/batches/[id]/diary returns entries sorted chronologically
 - [ ] 2.6 POST /api/batches/[id]/diary creates user entry
-- [ ] 2.7 PUT /api/batches/[id]/diary/[entryId] updates entry
+- [ ] 2.7 PUT /api/batches/[id]/diary/[entryId] updates entry (description, date, notes, completed)
 - [ ] 2.8 DELETE /api/batches/[id]/diary/[entryId] removes entry
-- [ ] 2.9 POST /api/batches/[id]/diary/regenerate replaces auto, preserves user
+- [ ] 2.9 POST /api/batches/[id]/diary/regenerate replaces auto, preserves user/promoted
 - [ ] 2.10 RLS prevents cross-user access
+- [ ] 2.11 Editing auto entry description/notes triggers ownership promotion
 
 ### Phase 3: UI Implementation
 
@@ -575,12 +622,15 @@ Process type default, edge cases, final polish, and end-to-end verification.
 #### Manual
 
 - [ ] 3.4 New batch creation shows diary entries immediately
-- [ ] 3.5 Completed toggle persists on reload
-- [ ] 3.6 Edit entry description/date persists
-- [ ] 3.7 Add manual entry appears in correct position
-- [ ] 3.8 Delete entry persists
-- [ ] 3.9 Regenerate replaces auto, preserves user entries
-- [ ] 3.10 Responsive layout on mobile
+- [ ] 3.5 Manual entries addable during batch creation (persist after save)
+- [ ] 3.6 Completed toggle persists on reload
+- [ ] 3.7 Edit entry description/date/notes persists
+- [ ] 3.8 Editing auto entry promotes to user type (survives regenerate)
+- [ ] 3.9 Notes section expandable with scrollable area
+- [ ] 3.10 Add manual entry appears in correct position
+- [ ] 3.11 Delete entry persists
+- [ ] 3.12 Regenerate replaces auto, preserves user/promoted entries
+- [ ] 3.13 Responsive layout on mobile
 
 ### Phase 4: Integration & Polish
 
@@ -594,8 +644,8 @@ Process type default, edge cases, final polish, and end-to-end verification.
 #### Manual
 
 - [ ] 4.5 Process type defaults to juice for new batches
-- [ ] 4.6 Juice + dry batch → ~9 entries generated
-- [ ] 4.7 Pulp + semi_sweet + sugar batch → ~15 entries generated
-- [ ] 4.8 Legacy batch shows empty state with Generate button
-- [ ] 4.9 Null batch_date → entries have null dates (positioned at end)
+- [ ] 4.6 Batch form defaults batch_date to today
+- [ ] 4.7 Juice + dry batch → ~9 entries generated
+- [ ] 4.8 Pulp + semi_sweet + sugar batch → ~15 entries generated
+- [ ] 4.9 Legacy batch shows empty state with Generate button
 - [ ] 4.10 API errors show user-friendly feedback

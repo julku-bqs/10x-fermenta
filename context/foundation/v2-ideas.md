@@ -34,6 +34,10 @@ Parameters are copied, ingredients and calculations too.
 
 Each diary entry could be amended with measurements - name of measurement, unit, value, optioanlly a quick note. Displayed and added under some expandable UI element
 
+### Ingredients view
+
+Enable drag&drop for ingredients reordering
+
 ## More ideas
 
 Update that document with more ideas not critical to the project, but nice to have in version 2.

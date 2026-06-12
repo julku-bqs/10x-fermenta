@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Pencil, StickyNote } from "lucide-react";
+import { Check, Pencil, Plus, StickyNote } from "lucide-react";
 import { batchInputClass } from "../styles";
 import type { MockDiaryEntry } from "./mockData";
 import type { DiaryActions } from "./DiaryMockupSwitcher";
@@ -90,23 +90,27 @@ function EntryRow({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAct
   }
 
   return (
-    <div className={cn("border-border border-b last:border-b-0", entry.completed && "bg-muted/30")}>
-      <div className="grid w-full grid-cols-[3rem_1fr_auto] items-center gap-2 px-3 py-2.5">
-        {/* Date column */}
-        <span className="text-muted-foreground text-xs font-medium tabular-nums">{formatDate(entry.entry_date)}</span>
-
-        {/* Description column — click to expand */}
+    <div
+      className={cn(
+        "border-border group border-b transition-colors duration-150 last:border-b-0",
+        entry.completed ? "bg-muted/30" : "hover:bg-muted/20",
+      )}
+    >
+      <div className="flex w-full items-center gap-2 px-3 py-2.5">
+        {/* Expandable area: date + description */}
         <button
           type="button"
           onClick={() => {
             setExpanded(!expanded);
           }}
-          className="min-w-0 text-left"
+          className="grid min-w-0 flex-1 grid-cols-[3rem_1fr] items-center gap-2 text-left"
         >
+          <span className="text-muted-foreground text-xs font-medium tabular-nums">{formatDate(entry.entry_date)}</span>
           <span
             className={cn(
-              "block truncate text-sm",
+              "block text-sm transition-colors duration-150",
               entry.completed ? "text-muted-foreground line-through" : "text-foreground",
+              !expanded && "truncate",
             )}
           >
             {entry.description}
@@ -115,13 +119,23 @@ function EntryRow({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAct
 
         {/* Actions column */}
         <div className="flex shrink-0 items-center gap-1.5">
-          {entry.notes && <StickyNote className="text-muted-foreground h-3.5 w-3.5" />}
+          {entry.notes && (
+            <button
+              type="button"
+              onClick={() => {
+                setExpanded(!expanded);
+              }}
+              className="text-muted-foreground hover:text-foreground rounded p-0.5 transition-colors duration-150"
+            >
+              <StickyNote className="h-3.5 w-3.5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
               setEditing(true);
             }}
-            className="text-muted-foreground hover:text-foreground p-0.5"
+            className="text-muted-foreground hover:text-foreground rounded p-0.5 transition-colors duration-150"
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
@@ -131,25 +145,32 @@ function EntryRow({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAct
               actions.onToggleComplete(entry.id);
             }}
             className={cn(
-              "inline-flex h-5 w-5 items-center justify-center rounded text-xs transition-colors",
+              "inline-flex h-5 w-5 items-center justify-center rounded transition-all duration-150",
               entry.completed
                 ? "bg-primary/15 text-primary hover:bg-primary/25"
-                : "border-border hover:border-primary/50 border",
+                : "border-border hover:border-primary/40 border",
             )}
           >
-            {entry.completed && "✓"}
+            {entry.completed && <Check className="h-3 w-3" />}
           </button>
         </div>
       </div>
 
-      {/* Expandable notes */}
-      {expanded && (
-        <div className="bg-muted/50 px-3 py-2.5 pl-[calc(3rem+0.75rem)]">
-          <p className="text-muted-foreground max-h-20 overflow-y-auto text-xs leading-relaxed">
-            {entry.notes ?? <span className="italic">No notes</span>}
-          </p>
+      {/* Expandable notes — animated */}
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows] duration-200 ease-out",
+          expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="bg-muted/40 px-3 py-2.5 pl-[calc(3rem+1rem)]">
+            <p className="text-muted-foreground max-h-20 overflow-y-auto text-xs leading-relaxed">
+              {entry.notes ?? <span className="italic">No notes</span>}
+            </p>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -182,9 +203,10 @@ function AddEntryRow({ onAdd }: { onAdd: DiaryActions["onAdd"] }) {
           onClick={() => {
             setOpen(true);
           }}
-          className="text-primary hover:text-primary/80 text-xs font-medium"
+          className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-xs font-medium transition-colors duration-150"
         >
-          + Add entry
+          <Plus className="h-3 w-3" />
+          Add entry
         </button>
       </div>
     );
@@ -247,9 +269,9 @@ export function DiaryMockupB({ entries, actions }: DiaryMockupBProps) {
           {entries.filter((e) => e.completed).length}/{entries.length} completed
         </span>
       </div>
-      <div className="border-border rounded-lg border">
+      <div className="border-border overflow-hidden rounded-lg border">
         {/* Header */}
-        <div className="border-border grid grid-cols-[3rem_1fr_auto] gap-3 border-b px-3 py-2">
+        <div className="bg-muted/30 border-border grid grid-cols-[3rem_1fr_auto] gap-2 border-b px-3 py-2">
           <span className="text-muted-foreground text-xs font-medium">Date</span>
           <span className="text-muted-foreground text-xs font-medium">Step</span>
           <span className="text-muted-foreground text-xs font-medium">Done</span>

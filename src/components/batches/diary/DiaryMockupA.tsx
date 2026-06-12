@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronRight, Pencil } from "lucide-react";
+import { Check, ChevronRight, Pencil, Plus, StickyNote } from "lucide-react";
 import { batchInputClass } from "../styles";
 import type { MockDiaryEntry } from "./mockData";
 import type { DiaryActions } from "./DiaryMockupSwitcher";
@@ -40,7 +40,7 @@ function EntryCard({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAc
 
   if (editing) {
     return (
-      <div className="border-border bg-card space-y-3 rounded-lg border p-4">
+      <div key="edit" className="animate-in fade-in border-border bg-card space-y-3 rounded-lg border p-4 duration-200">
         <div>
           <label className="text-muted-foreground mb-1 block text-xs">Description</label>
           <input
@@ -97,7 +97,11 @@ function EntryCard({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAc
 
   return (
     <div
-      className={cn("border-border rounded-lg border transition-colors", entry.completed ? "bg-muted/50" : "bg-card")}
+      key="view"
+      className={cn(
+        "animate-in fade-in border-border group rounded-lg border duration-200",
+        entry.completed ? "bg-muted/50" : "bg-card hover:border-border/80 hover:shadow-sm",
+      )}
     >
       <div className="flex w-full items-center gap-3 p-4">
         {/* Toggle complete */}
@@ -107,69 +111,70 @@ function EntryCard({ entry, actions }: { entry: MockDiaryEntry; actions: DiaryAc
             actions.onToggleComplete(entry.id);
           }}
           className={cn(
-            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs transition-colors",
+            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-150",
             entry.completed
               ? "bg-primary/15 text-primary hover:bg-primary/25"
-              : "bg-muted text-muted-foreground hover:bg-muted/80",
+              : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary/60 border",
           )}
         >
-          {entry.completed ? "✓" : "○"}
+          {entry.completed && <Check className="h-3.5 w-3.5" />}
         </button>
 
-        {/* Content — click to expand */}
+        {/* Content + date — click to expand */}
         <button
           type="button"
           onClick={() => {
             setExpanded(!expanded);
           }}
-          className="min-w-0 flex-1 text-left"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
         >
           <span
             className={cn(
-              "text-sm font-medium",
+              "min-w-0 flex-1 text-sm font-medium transition-colors duration-150",
               entry.completed ? "text-muted-foreground line-through" : "text-foreground",
             )}
           >
             {entry.description}
           </span>
+          {entry.notes && <StickyNote className="text-muted-foreground h-3.5 w-3.5 shrink-0" />}
+          <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
+            {formatDate(entry.entry_date)}
+          </span>
+          <ChevronRight
+            className={cn(
+              "text-muted-foreground h-3.5 w-3.5 shrink-0 transition-transform duration-200",
+              expanded && "rotate-90",
+            )}
+          />
         </button>
 
-        {/* Date badge */}
-        <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
-          {formatDate(entry.entry_date)}
-        </span>
-
-        {/* Edit button */}
+        {/* Edit button — always visible */}
         <button
           type="button"
           onClick={() => {
             setEditing(true);
           }}
-          className="text-muted-foreground hover:text-foreground shrink-0 p-0.5"
+          className="text-muted-foreground hover:text-foreground shrink-0 rounded p-1 transition-colors duration-150"
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
-
-        {/* Expand indicator */}
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground shrink-0 p-0.5 focus-visible:outline-none"
-          onClick={() => {
-            setExpanded(!expanded);
-          }}
-        >
-          <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-90")} />
-        </button>
       </div>
 
-      {/* Expandable notes */}
-      {expanded && (
-        <div className="border-border border-t px-4 py-3">
-          <p className="text-muted-foreground max-h-24 overflow-y-auto text-sm leading-relaxed">
-            {entry.notes ?? <span className="italic">No notes</span>}
-          </p>
+      {/* Expandable notes — animated */}
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows] duration-200 ease-out",
+          expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="border-border border-t px-4 py-3">
+            <p className="text-muted-foreground max-h-24 overflow-y-auto text-sm leading-relaxed">
+              {entry.notes ?? <span className="italic">No notes</span>}
+            </p>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -201,9 +206,10 @@ function AddEntryForm({ onAdd }: { onAdd: DiaryActions["onAdd"] }) {
         onClick={() => {
           setOpen(true);
         }}
-        className="text-primary hover:text-primary/80 text-xs font-medium"
+        className="text-primary hover:text-primary/80 mt-1 inline-flex items-center gap-1 text-xs font-medium transition-colors duration-150"
       >
-        + Add entry
+        <Plus className="h-3 w-3" />
+        Add entry
       </button>
     );
   }

@@ -125,7 +125,7 @@ export const MOCK_DIARY_ENTRIES: MockDiaryEntry[] = [
   {
     id: "14",
     description: "Bottling",
-    entry_date: offsetDate(90),
+    entry_date: offsetDate(400),
     completed: false,
     notes: null,
     entry_type: "auto",

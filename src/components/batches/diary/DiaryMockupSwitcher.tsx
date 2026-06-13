@@ -5,6 +5,7 @@ import type { MockDiaryEntry } from "./mockData";
 import { DiaryMockupA } from "./DiaryMockupA";
 import { DiaryMockupB } from "./DiaryMockupB";
 import { DiaryMockupC } from "./DiaryMockupC";
+import { DiaryMockupD } from "./DiaryMockupD";
 
 export interface DiaryActions {
   onToggleComplete: (id: string) => void;
@@ -17,6 +18,7 @@ const TABS = [
   { id: "a", label: "A: Cards" },
   { id: "b", label: "B: Compact List" },
   { id: "c", label: "C: Timeline" },
+  { id: "d", label: "D: Timeline Big" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -70,6 +72,7 @@ export function DiaryMockupSwitcher() {
       {activeTab === "a" && <DiaryMockupA entries={entries} actions={actions} />}
       {activeTab === "b" && <DiaryMockupB entries={entries} actions={actions} />}
       {activeTab === "c" && <DiaryMockupC entries={entries} actions={actions} />}
+      {activeTab === "d" && <DiaryMockupD entries={entries} actions={actions} />}
     </div>
   );
 }

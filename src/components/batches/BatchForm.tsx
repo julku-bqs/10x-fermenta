@@ -29,6 +29,8 @@ interface FormState {
   planned_sweetness: "dry" | "semi_dry" | "semi_sweet" | "sweet";
   yeast_name: string;
   yeast_alcohol_tolerance: string;
+  fermentation_sugar_kg: string;
+  sweetness_sugar_kg: string;
 }
 
 export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProps) {
@@ -41,32 +43,12 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
     planned_sweetness: initialData?.planned_sweetness ?? "dry",
     yeast_name: initialData?.yeast_name ?? "",
     yeast_alcohol_tolerance: initialData?.yeast_alcohol_tolerance?.toString() ?? "",
+    fermentation_sugar_kg: initialData?.fermentation_sugar_kg.toString() ?? "0",
+    sweetness_sugar_kg: initialData?.sweetness_sugar_kg.toString() ?? "0",
   });
 
-  const [ingredients, setIngredients] = useState<Ingredient[]>(() => {
-    const base = initialData?.ingredients ?? [];
-    const result = [...base];
-    const sweetness = initialData?.planned_sweetness ?? "dry";
-    if (!result.some((i) => i.type === "fermentation_sugar")) {
-      result.unshift({
-        type: "fermentation_sugar",
-        name: "Fermentation Sugar",
-        amount_liters: 0,
-        sugar_content_percent: null,
-        sort_order: -2,
-      });
-    }
-    if (sweetness !== "dry" && !result.some((i) => i.type === "sweetness_sugar")) {
-      result.push({
-        type: "sweetness_sugar",
-        name: "Sweetness Sugar",
-        amount_liters: 0,
-        sugar_content_percent: null,
-        sort_order: -1,
-      });
-    }
-    return result;
-  });
+  const [ingredients, setIngredients] = useState<Ingredient[]>(initialData?.ingredients ?? []);
+
   function computeWarnings(formState: FormState, ingredientList: Ingredient[]): ValidationWarning[] {
     const abv = formState.target_abv ? parseFloat(formState.target_abv) : null;
     const volume = formState.target_volume_liters ? parseFloat(formState.target_volume_liters) : null;
@@ -88,6 +70,8 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
           ? parseFloat(formState.yeast_alcohol_tolerance)
           : null,
         has_yeast: Boolean(formState.yeast_name.trim() || formState.yeast_alcohol_tolerance.trim()),
+        fermentation_sugar_kg: parseFloat(formState.fermentation_sugar_kg) || 0,
+        sweetness_sugar_kg: parseFloat(formState.sweetness_sugar_kg) || 0,
         ingredients: ingredientList,
       },
       calcResult,
@@ -105,6 +89,8 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       planned_sweetness: initialData.planned_sweetness,
       yeast_name: initialData.yeast_name ?? "",
       yeast_alcohol_tolerance: initialData.yeast_alcohol_tolerance?.toString() ?? "",
+      fermentation_sugar_kg: initialData.fermentation_sugar_kg.toString(),
+      sweetness_sugar_kg: initialData.sweetness_sugar_kg.toString(),
     };
     return computeWarnings(initialFormState, initialData.ingredients);
   });
@@ -123,6 +109,8 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       planned_sweetness: initialData?.planned_sweetness ?? "dry",
       yeast_name: initialData?.yeast_name ?? "",
       yeast_alcohol_tolerance: initialData?.yeast_alcohol_tolerance?.toString() ?? "",
+      fermentation_sugar_kg: initialData?.fermentation_sugar_kg.toString() ?? "0",
+      sweetness_sugar_kg: initialData?.sweetness_sugar_kg.toString() ?? "0",
     },
     ingredients: initialData?.ingredients ?? [],
   }));
@@ -154,25 +142,9 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
   function handleSweetnessChange(value: string) {
     const newSweetness = value as SweetnessLevel;
     set("planned_sweetness", newSweetness);
-    setIngredients((prev) => {
-      if (newSweetness === "dry") {
-        return prev.filter((i) => i.type !== "sweetness_sugar");
-      }
-      const hasSweet = prev.some((i) => i.type === "sweetness_sugar");
-      if (!hasSweet) {
-        return [
-          ...prev,
-          {
-            type: "sweetness_sugar" as const,
-            name: "Sweetness Sugar",
-            amount_liters: 0,
-            sugar_content_percent: null,
-            sort_order: -1,
-          },
-        ];
-      }
-      return prev;
-    });
+    if (newSweetness === "dry") {
+      setForm((prev) => ({ ...prev, sweetness_sugar_kg: "0" }));
+    }
   }
 
   function handleBlur() {
@@ -193,6 +165,8 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       planned_sweetness: form.planned_sweetness,
       yeast_name: form.yeast_name || null,
       yeast_alcohol_tolerance: form.yeast_alcohol_tolerance ? parseFloat(form.yeast_alcohol_tolerance) : null,
+      fermentation_sugar_kg: parseFloat(form.fermentation_sugar_kg) || 0,
+      sweetness_sugar_kg: parseFloat(form.sweetness_sugar_kg) || 0,
       ingredients,
     };
 
@@ -234,7 +208,6 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       }
 
       if (json.data) {
-        // Mark form as clean before navigation/callback to prevent spurious beforeunload prompt
         setInitialValues({ form: { ...form }, ingredients: [...ingredients] });
         isDirtyRef.current = false;
         if (onSuccess) {
@@ -437,6 +410,15 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               target_volume_liters: form.target_volume_liters ? parseFloat(form.target_volume_liters) : null,
               target_abv: form.target_abv ? parseFloat(form.target_abv) : null,
               planned_sweetness: form.planned_sweetness,
+            }}
+            fermentationSugarKg={parseFloat(form.fermentation_sugar_kg) || 0}
+            sweetnessSugarKg={parseFloat(form.sweetness_sugar_kg) || 0}
+            onSugarChange={(fermentation, sweetness) => {
+              setForm((prev) => ({
+                ...prev,
+                fermentation_sugar_kg: fermentation.toString(),
+                sweetness_sugar_kg: sweetness.toString(),
+              }));
             }}
           />
         </section>

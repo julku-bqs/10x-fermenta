@@ -1,9 +1,9 @@
 ---
 change_id: ingredients-calculation-validation
 title: Ingredients calculation validation
-status: impl_reviewed
+status: implemented
 created: 2026-06-02
-updated: 2026-06-10
+updated: 2026-06-07
 archived_at: null
 ---
 

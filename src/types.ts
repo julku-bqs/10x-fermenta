@@ -1,12 +1,9 @@
-export type IngredientType = "user_input" | "fermentation_sugar" | "sweetness_sugar";
 export type SweetnessLevel = "dry" | "semi_dry" | "semi_sweet" | "sweet";
 
 export interface Ingredient {
-  type: IngredientType;
   name: string;
   amount_liters: number;
   sugar_content_percent: number | null;
-  sort_order: number;
 }
 
 export interface Batch {
@@ -20,6 +17,8 @@ export interface Batch {
   planned_sweetness: SweetnessLevel;
   yeast_name: string | null;
   yeast_alcohol_tolerance: number | null;
+  fermentation_sugar_kg: number;
+  sweetness_sugar_kg: number;
   ingredients: Ingredient[];
   created_at: string;
   updated_at: string;

@@ -1,4 +1,4 @@
-import type { IngredientType, SweetnessLevel } from "@/types";
+import type { SweetnessLevel } from "@/types";
 
 export const SUGAR_PER_ABV_GRAM_PER_LITER = 17;
 
@@ -23,7 +23,6 @@ export interface CalculationInput {
   ingredients: {
     amount_liters: number;
     sugar_content_percent: number | null;
-    type: IngredientType;
   }[];
 }
 
@@ -37,10 +36,11 @@ export interface CalculationResult {
 export function calculateSugar(input: CalculationInput): CalculationResult {
   const { target_volume_liters, target_abv, planned_sweetness, ingredients } = input;
 
-  // Sum sugar from user_input ingredients only (1% of 1L = 10g)
-  const total_ingredient_sugar_grams = ingredients
-    .filter((i) => i.type === "user_input")
-    .reduce((sum, i) => sum + i.amount_liters * (i.sugar_content_percent ?? 0) * 10, 0);
+  // Sum sugar from all ingredients (1% of 1L = 10g)
+  const total_ingredient_sugar_grams = ingredients.reduce(
+    (sum, i) => sum + i.amount_liters * (i.sugar_content_percent ?? 0) * 10,
+    0,
+  );
 
   const sugar_needed_for_abv_grams = target_abv * SUGAR_PER_ABV_GRAM_PER_LITER * target_volume_liters;
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Ingredient, SweetnessLevel } from "@/types";
 import { calculateSugar } from "@/lib/services/sugar-calculation";
 import { IngredientCard } from "./IngredientCard";
+import { batchInputClass } from "./styles";
 
 interface BatchParams {
   target_volume_liters: number | null;
@@ -13,37 +14,93 @@ interface IngredientsSectionProps {
   ingredients: Ingredient[];
   onChange: (ingredients: Ingredient[]) => void;
   batchParams: BatchParams;
+  fermentationSugarKg: number;
+  sweetnessSugarKg: number;
+  onSugarChange: (fermentation: number, sweetness: number) => void;
 }
 
-export function IngredientsSection({ ingredients, onChange, batchParams }: IngredientsSectionProps) {
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+interface SugarCardProps {
+  label: string;
+  icon: string;
+  amountKg: number;
+  onChange: (kg: number) => void;
+  isEditing: boolean;
+  onToggleEdit: () => void;
+}
 
-  const sorted = [...ingredients].sort((a, b) => a.sort_order - b.sort_order);
-  const sortedWithIndices = sorted.map((ing) => ({
-    ingredient: ing,
-    originalIndex: ingredients.indexOf(ing),
-  }));
-
-  function handleChange(originalIndex: number, updates: Partial<Ingredient>) {
-    onChange(ingredients.map((ing, i) => (i === originalIndex ? { ...ing, ...updates } : ing)));
+function SugarCard({ label, icon, amountKg, onChange, isEditing, onToggleEdit }: SugarCardProps) {
+  if (isEditing) {
+    return (
+      <div className="border-border bg-card space-y-3 rounded-lg border p-4">
+        <div className="flex items-center gap-2">
+          <span className="text-base">{icon}</span>
+          <span className="text-foreground text-sm font-medium">{label}</span>
+        </div>
+        <div className="grid grid-cols-1 gap-3">
+          <div>
+            <label className="text-muted-foreground mb-1 block text-xs">Amount (kg)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={amountKg}
+              onChange={(e) => {
+                onChange(parseFloat(e.target.value) || 0);
+              }}
+              placeholder="0"
+              className={batchInputClass}
+            />
+          </div>
+        </div>
+        <button type="button" onClick={onToggleEdit} className="text-primary text-xs font-medium hover:underline">
+          Done
+        </button>
+      </div>
+    );
   }
 
-  function handleDelete(originalIndex: number) {
-    onChange(ingredients.filter((_, i) => i !== originalIndex));
+  return (
+    <button
+      type="button"
+      onClick={onToggleEdit}
+      className="border-border bg-card hover:bg-muted flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+    >
+      <span className="text-base">{icon}</span>
+      <div className="min-w-0 flex-1">
+        <span className="text-foreground text-sm font-medium">{label}</span>
+      </div>
+      <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
+        {parseFloat(amountKg.toFixed(3))} kg
+      </span>
+    </button>
+  );
+}
+
+export function IngredientsSection({
+  ingredients,
+  onChange,
+  batchParams,
+  fermentationSugarKg,
+  sweetnessSugarKg,
+  onSugarChange,
+}: IngredientsSectionProps) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingSugar, setEditingSugar] = useState<"fermentation" | "sweetness" | null>(null);
+
+  function handleChange(index: number, updates: Partial<Ingredient>) {
+    onChange(ingredients.map((ing, i) => (i === index ? { ...ing, ...updates } : ing)));
+  }
+
+  function handleDelete(index: number) {
+    onChange(ingredients.filter((_, i) => i !== index));
     setEditingIndex(null);
   }
 
   function handleAddIngredient() {
-    const maxSortOrder = ingredients
-      .filter((i) => i.type === "user_input")
-      .reduce((max, i) => Math.max(max, i.sort_order), -1);
-
     const newIngredient: Ingredient = {
-      type: "user_input",
       name: "",
       amount_liters: 0,
       sugar_content_percent: null,
-      sort_order: maxSortOrder + 1,
     };
 
     const newIngredients = [...ingredients, newIngredient];
@@ -62,45 +119,43 @@ export function IngredientsSection({ ingredients, onChange, batchParams }: Ingre
       ingredients,
     });
 
-    const updated = [...ingredients];
-
-    const fermIdx = updated.findIndex((i) => i.type === "fermentation_sugar");
-    if (fermIdx >= 0) {
-      updated[fermIdx] = { ...updated[fermIdx], amount_liters: result.fermentation_sugar_kg };
-    }
-
-    if (planned_sweetness !== "dry") {
-      const sweetIdx = updated.findIndex((i) => i.type === "sweetness_sugar");
-      if (sweetIdx >= 0) {
-        updated[sweetIdx] = { ...updated[sweetIdx], amount_liters: result.sweetness_sugar_kg };
-      }
-    }
-
-    onChange(updated);
-    setEditingIndex(null);
+    onSugarChange(result.fermentation_sugar_kg, result.sweetness_sugar_kg);
+    setEditingSugar(null);
   }
 
   const canCalculate = Boolean(batchParams.target_volume_liters && batchParams.target_abv);
 
-  const sugarEntries = sortedWithIndices.filter(({ ingredient }) => ingredient.type !== "user_input");
-  const userEntries = sortedWithIndices.filter(({ ingredient }) => ingredient.type === "user_input");
-
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        {sugarEntries.map(({ ingredient, originalIndex }) => (
-          <IngredientCard
-            key={ingredient.type}
-            ingredient={ingredient}
-            onChange={(updates) => {
-              handleChange(originalIndex, updates);
+        <SugarCard
+          label="Fermentation Sugar"
+          icon="🍬"
+          amountKg={fermentationSugarKg}
+          onChange={(kg) => {
+            onSugarChange(kg, sweetnessSugarKg);
+          }}
+          isEditing={editingSugar === "fermentation"}
+          onToggleEdit={() => {
+            setEditingSugar(editingSugar === "fermentation" ? null : "fermentation");
+            setEditingIndex(null);
+          }}
+        />
+        {batchParams.planned_sweetness !== "dry" && (
+          <SugarCard
+            label="Sweetness Sugar"
+            icon="🍯"
+            amountKg={sweetnessSugarKg}
+            onChange={(kg) => {
+              onSugarChange(fermentationSugarKg, kg);
             }}
-            isEditing={editingIndex === originalIndex}
+            isEditing={editingSugar === "sweetness"}
             onToggleEdit={() => {
-              setEditingIndex(editingIndex === originalIndex ? null : originalIndex);
+              setEditingSugar(editingSugar === "sweetness" ? null : "sweetness");
+              setEditingIndex(null);
             }}
           />
-        ))}
+        )}
         <button
           type="button"
           onClick={handleCalculate}
@@ -112,21 +167,22 @@ export function IngredientsSection({ ingredients, onChange, batchParams }: Ingre
         </button>
       </div>
 
-      {userEntries.length > 0 && (
+      {ingredients.length > 0 && (
         <div className="space-y-2">
-          {userEntries.map(({ ingredient, originalIndex }) => (
+          {ingredients.map((ingredient, index) => (
             <IngredientCard
-              key={`user-${originalIndex}`}
+              key={`user-${index}`}
               ingredient={ingredient}
               onChange={(updates) => {
-                handleChange(originalIndex, updates);
+                handleChange(index, updates);
               }}
               onDelete={() => {
-                handleDelete(originalIndex);
+                handleDelete(index);
               }}
-              isEditing={editingIndex === originalIndex}
+              isEditing={editingIndex === index}
               onToggleEdit={() => {
-                setEditingIndex(editingIndex === originalIndex ? null : originalIndex);
+                setEditingIndex(editingIndex === index ? null : index);
+                setEditingSugar(null);
               }}
             />
           ))}

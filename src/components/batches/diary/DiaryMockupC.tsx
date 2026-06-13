@@ -45,7 +45,7 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
   }
 
   return (
-    <div className="relative flex gap-3">
+    <div className="relative flex gap-4">
       {/* Timeline line + clickable dot (toggles completion) */}
       <div className="flex flex-col items-center pt-1">
         <button
@@ -54,19 +54,19 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
             actions.onToggleComplete(entry.id);
           }}
           className={cn(
-            "z-10 flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition-all duration-200",
+            "z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-all duration-200",
             entry.completed
               ? "bg-primary hover:bg-primary/80"
               : "border-border bg-card hover:border-primary/50 border-2",
           )}
         >
-          {entry.completed && <Check className="h-2.5 w-2.5 text-white" />}
+          {entry.completed && <Check className="h-3 w-3 text-white" />}
         </button>
         {!isLast && <div className="bg-border mt-1 w-px flex-1" />}
       </div>
 
       {/* Content */}
-      <div className={cn("min-w-0 flex-1 pb-5", isLast && "pb-0")}>
+      <div className={cn("min-w-0 flex-1 pb-7", isLast && "pb-0")}>
         {editing ? (
           <div key="edit" className="animate-in fade-in space-y-2 duration-200">
             <input
@@ -75,7 +75,7 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
               onChange={(e) => {
                 setEditDate(e.target.value);
               }}
-              className={cn(batchInputClass, "w-36")}
+              className={cn(batchInputClass, "w-40 text-base")}
             />
             <input
               type="text"
@@ -83,7 +83,7 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
               onChange={(e) => {
                 setEditDesc(e.target.value);
               }}
-              className={batchInputClass}
+              className={cn(batchInputClass, "text-base")}
             />
             <textarea
               value={editNotes}
@@ -92,13 +92,13 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
               }}
               placeholder="Notes (optional)"
               rows={2}
-              className={cn(batchInputClass, "resize-y")}
+              className={cn(batchInputClass, "resize-y text-base")}
             />
             <div className="flex items-center gap-3">
-              <button type="button" onClick={handleSave} className="text-primary text-xs font-medium hover:underline">
+              <button type="button" onClick={handleSave} className="text-primary text-sm font-medium hover:underline">
                 Save
               </button>
-              <button type="button" onClick={handleCancel} className="text-muted-foreground text-xs hover:underline">
+              <button type="button" onClick={handleCancel} className="text-muted-foreground text-sm hover:underline">
                 Cancel
               </button>
               <button
@@ -106,7 +106,7 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
                 onClick={() => {
                   actions.onDelete(entry.id);
                 }}
-                className="text-muted-foreground ml-auto text-xs hover:text-red-600"
+                className="text-muted-foreground ml-auto text-sm hover:text-red-600"
               >
                 ✕ Delete
               </button>
@@ -122,12 +122,12 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
               }}
               className="hover:bg-muted/40 -ml-1 block w-full rounded-md px-1 py-0.5 text-left transition-colors duration-150"
             >
-              <span className="text-muted-foreground text-xs font-medium tabular-nums">
+              <span className="text-muted-foreground text-sm font-medium tabular-nums">
                 {formatDate(entry.entry_date)}
               </span>
               <p
                 className={cn(
-                  "mt-0.5 text-sm transition-colors duration-150",
+                  "mt-0.5 text-base leading-snug transition-colors duration-150",
                   entry.completed ? "text-muted-foreground line-through" : "text-foreground font-medium",
                 )}
               >
@@ -142,9 +142,9 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
                 onClick={() => {
                   setEditing(true);
                 }}
-                className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs transition-colors duration-150"
+                className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors duration-150"
               >
-                <Pencil className="h-3 w-3" />
+                <Pencil className="h-3.5 w-3.5" />
                 Edit
               </button>
               {entry.notes && (
@@ -153,9 +153,11 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
                   onClick={() => {
                     setExpanded(!expanded);
                   }}
-                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs transition-colors duration-150"
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors duration-150"
                 >
-                  <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", expanded && "rotate-180")} />
+                  <ChevronDown
+                    className={cn("h-3.5 w-3.5 transition-transform duration-200", expanded && "rotate-180")}
+                  />
                   {expanded ? "Hide notes" : "Show notes"}
                 </button>
               )}
@@ -170,7 +172,7 @@ function TimelineEntry({ entry, isLast, actions }: { entry: MockDiaryEntry; isLa
             >
               <div className="overflow-hidden">
                 <div className="bg-muted/40 mt-2 rounded-md px-3 py-2">
-                  <p className="text-muted-foreground max-h-20 overflow-y-auto text-xs leading-relaxed">
+                  <p className="text-muted-foreground max-h-20 overflow-y-auto text-sm leading-relaxed">
                     {entry.notes ?? <span className="italic">No notes</span>}
                   </p>
                 </div>
@@ -205,15 +207,15 @@ function AddEntryTimeline({ onAdd }: { onAdd: DiaryActions["onAdd"] }) {
 
   if (!open) {
     return (
-      <div className="mt-3 pl-6">
+      <div className="mt-3 pl-7">
         <button
           type="button"
           onClick={() => {
             setOpen(true);
           }}
-          className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-xs font-medium transition-colors duration-150"
+          className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-sm font-medium transition-colors duration-150"
         >
-          <Plus className="h-3 w-3" />
+          <Plus className="h-3.5 w-3.5" />
           Add entry
         </button>
       </div>
@@ -221,14 +223,14 @@ function AddEntryTimeline({ onAdd }: { onAdd: DiaryActions["onAdd"] }) {
   }
 
   return (
-    <div className="mt-3 space-y-2 pl-6">
+    <div className="mt-3 space-y-2 pl-7">
       <input
         type="date"
         value={date}
         onChange={(e) => {
           setDate(e.target.value);
         }}
-        className={cn(batchInputClass, "w-36")}
+        className={cn(batchInputClass, "w-40 text-base")}
       />
       <input
         type="text"
@@ -237,7 +239,7 @@ function AddEntryTimeline({ onAdd }: { onAdd: DiaryActions["onAdd"] }) {
           setDesc(e.target.value);
         }}
         placeholder="Description"
-        className={batchInputClass}
+        className={cn(batchInputClass, "text-base")}
       />
       <textarea
         value={notes}
@@ -246,10 +248,10 @@ function AddEntryTimeline({ onAdd }: { onAdd: DiaryActions["onAdd"] }) {
         }}
         placeholder="Notes (optional)"
         rows={2}
-        className={cn(batchInputClass, "resize-y")}
+        className={cn(batchInputClass, "resize-y text-base")}
       />
       <div className="flex items-center gap-3">
-        <button type="button" onClick={handleSubmit} className="text-primary text-xs font-medium hover:underline">
+        <button type="button" onClick={handleSubmit} className="text-primary text-sm font-medium hover:underline">
           Add
         </button>
         <button
@@ -257,7 +259,7 @@ function AddEntryTimeline({ onAdd }: { onAdd: DiaryActions["onAdd"] }) {
           onClick={() => {
             setOpen(false);
           }}
-          className="text-muted-foreground text-xs hover:underline"
+          className="text-muted-foreground text-sm hover:underline"
         >
           Cancel
         </button>
@@ -270,8 +272,8 @@ export function DiaryMockupC({ entries, actions }: DiaryMockupCProps) {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-foreground text-sm font-semibold">Process Diary</h3>
-        <span className="text-muted-foreground text-xs">
+        <h3 className="text-foreground text-base font-semibold">Process Diary</h3>
+        <span className="text-muted-foreground text-sm">
           {entries.filter((e) => e.completed).length}/{entries.length} completed
         </span>
       </div>

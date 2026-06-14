@@ -83,13 +83,13 @@ More importantly: if a step template ever produces a `notes` value (e.g., "Use 2
 
 ## Triage Checklist
 
-| # | Severity | Finding | Recommended action |
-|---|----------|---------|-------------------|
-| F1 | HIGH | Route conflict blocks Phase 2 | **Fix now** — add rename step to Phase 2 |
-| F2 | HIGH | Zod strips diary_entries | **Fix now** — add schema extension to Phase 2 |
-| F3 | MEDIUM | Batch prop incompatible in create mode | **Fix now** — clarify DiarySection contract |
-| F4 | LOW | RPC INSERT omits notes | **Accept** — document that generated entries have NULL notes |
-| F5 | LOW | Phase 0 progress stale | **Fix now** — trivial checklist update |
+| # | Severity | Finding | Recommended action | **Triage outcome** |
+|---|----------|---------|-------------------|-------------------|
+| F1 | HIGH | Route conflict blocks Phase 2 | Fix now | ✅ **Fixed** — added Phase 2 §0 route restructuring prerequisite |
+| F2 | HIGH | Zod strips diary_entries | Fix now | ✅ **Fixed** — added Phase 2 §1b schema extension |
+| F3 | MEDIUM | Batch prop incompatible in create mode | Fix now | ✅ **Fixed** — introduced `BatchParams` DTO in Phase 1, DiarySection uses `batchParams + batchId`, Phase 3.5 added for IngredientsSection refactoring |
+| F4 | LOW | RPC INSERT omits notes | Accept | ✅ **Fixed** — added `notes` column to RPC INSERT |
+| F5 | LOW | Phase 0 progress stale | Fix now | ✅ **Already resolved** — Phase 0 items were already marked done |
 
 ---
 

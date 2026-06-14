@@ -264,8 +264,8 @@ CREATE OR REPLACE FUNCTION regenerate_diary_entries(
 ) RETURNS void AS $$
 BEGIN
   DELETE FROM diary_entries WHERE batch_id = p_batch_id AND entry_type = 'auto';
-  INSERT INTO diary_entries (batch_id, description, entry_date, entry_type, completed)
-  SELECT p_batch_id, e->>'description', (e->>'entry_date')::date, 'auto', false
+  INSERT INTO diary_entries (batch_id, description, entry_date, entry_type, completed, notes)
+  SELECT p_batch_id, e->>'description', (e->>'entry_date')::date, 'auto', false, e->>'notes'
   FROM jsonb_array_elements(p_entries) AS e;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -277,7 +277,25 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 **Intent**: Add the DiaryEntry type to the shared types module for use by API and UI components.
 
-**Contract**: Add `DiaryEntry` interface with fields: `id: string`, `batch_id: string`, `description: string`, `notes: string | null`, `entry_date: string`, `completed: boolean`, `entry_type: 'auto' | 'user'`, `created_at: string`, `updated_at: string`. Add `DiaryEntryType` type alias. Update `Batch` interface: change `batch_date` from `string | null` to `string` (never null).
+**Contract**: Add `DiaryEntry` interface with fields: `id: string`, `batch_id: string`, `description: string`, `notes: string | null`, `entry_date: string`, `completed: boolean`, `entry_type: 'auto' | 'user'`, `created_at: string`, `updated_at: string`. Add `DiaryEntryType` type alias. Update `Batch` interface: change `batch_date` from `string | null` to `string` (never null). Add `BatchParams` interface — the form-facing DTO containing all user-editable batch fields (everything from `Batch` except `id`, `user_id`, `created_at`, `updated_at`):
+
+```typescript
+export interface BatchParams {
+  name: string;
+  batch_date: string;
+  process_type: "pulp" | "juice" | "";
+  target_volume_liters: number | null;
+  target_abv: number | null;
+  planned_sweetness: SweetnessLevel;
+  yeast_name: string | null;
+  yeast_alcohol_tolerance: number | null;
+  fermentation_sugar_kg: number;
+  sweetness_sugar_kg: number;
+  ingredients: Ingredient[];
+}
+```
+
+`BatchParams` is constructable from form state (create mode) and derivable from a `Batch` response (edit mode). It serves as the prop contract for form child components (DiarySection, IngredientsSection) that need batch context without server-only fields.
 
 #### 3. Generation logic module
 
@@ -345,6 +363,14 @@ Create CRUD endpoints for diary entries, integrate auto-generation into batch cr
 
 ### Changes Required:
 
+#### 0. Route restructuring prerequisite
+
+**File**: Rename `src/pages/api/batches/[id].ts` → `src/pages/api/batches/[id]/index.ts`
+
+**Intent**: Astro's file-based routing cannot have both a file `[id].ts` and a directory `[id]/` at the same level. Moving the existing batch endpoint into a directory enables nested diary routes.
+
+**Contract**: Move the file, verify the route still works (`GET /api/batches/:id` and `PUT /api/batches/:id` behave identically). No logic changes — pure file relocation.
+
 #### 1. Zod schema for diary entries
 
 **File**: `src/lib/schemas/diary-entry.ts`
@@ -352,6 +378,22 @@ Create CRUD endpoints for diary entries, integrate auto-generation into batch cr
 **Intent**: Validation schemas for diary entry creation and update operations.
 
 **Contract**: Exports `createDiaryEntrySchema` (requires `description: string`; optional `entry_date: ISO date`, `notes: string | null`, `completed: boolean`) and `updateDiaryEntrySchema` (partial of create). All user-created entries get `entry_type: 'user'` server-side (not in schema — server sets it). Note: entry_type promotion on edit is handled by the DB trigger, not the API.
+
+#### 1b. Extend batch creation schema with diary_entries
+
+**File**: `src/lib/schemas/batch.ts`
+
+**Intent**: Allow the batch creation payload to include optional user-added diary entries (from create mode).
+
+**Contract**: Add an optional `diary_entries` field to `createBatchSchema`:
+```typescript
+diary_entries: z.array(z.object({
+  description: z.string().min(1),
+  entry_date: z.string().date(),
+  notes: z.string().nullable().optional(),
+})).optional(),
+```
+This prevents Zod from stripping the field during validation. The handler reads `result.data.diary_entries` and passes them to the diary insertion logic.
 
 #### 2. Diary entries CRUD endpoint
 
@@ -426,7 +468,7 @@ Build the diary section using the chosen mockup pattern (from Phase 0), wire it 
 
 **Intent**: Main container component for the diary section — fetches entries on mount (edit mode), manages local state, and orchestrates CRUD operations via API calls. In create mode, manages entries locally until batch is saved.
 
-**Contract**: Accepts `batch: Batch` (the full batch object) and optional `calculationResult` (sugar calculation output) props, plus a `mode: 'create' | 'edit'` prop. In edit mode: fetches entries via GET on mount, provides add/edit/delete/toggle-complete handlers that call the API immediately. In create mode: manages entries in local state, exposes them to the parent form for inclusion in the batch creation request. Includes "Regenerate Plan" button (edit mode only) that calls the regenerate endpoint. Section heading includes a sort direction toggle (button/icon) — **client-side only** (no API change). Sort state `'asc' | 'desc'` defaults to `'asc'`, persisted in `localStorage` key `fermenta:diary-sort-order` (matching the existing `BatchListPage` layout preference pattern). Entries are re-sorted in-memory via `Array.sort()` on `entry_date` before rendering.
+**Contract**: Accepts `batchParams: BatchParams` (the form-facing DTO — available in both create and edit modes) and optional `calculationResult` (sugar calculation output) props, plus a `mode: 'create' | 'edit'` prop and `batchId: string | null` (null in create mode, used for API calls in edit mode). In edit mode: fetches entries via GET on mount, provides add/edit/delete/toggle-complete handlers that call the API immediately. In create mode: manages entries in local state, exposes them to the parent form for inclusion in the batch creation request. Includes "Regenerate Plan" button (edit mode only) that calls the regenerate endpoint. Section heading includes a sort direction toggle (button/icon) — **client-side only** (no API change). Sort state `'asc' | 'desc'` defaults to `'asc'`, persisted in `localStorage` key `fermenta:diary-sort-order` (matching the existing `BatchListPage` layout preference pattern). Entries are re-sorted in-memory via `Array.sort()` on `entry_date` before rendering.
 
 #### 2. Diary entry display component
 
@@ -450,7 +492,7 @@ Build the diary section using the chosen mockup pattern (from Phase 0), wire it 
 
 **Intent**: Replace the Phase 0 mockup placeholder with the real DiarySection component. Both create and edit modes show the diary section — in create mode entries are managed locally and submitted with the batch.
 
-**Contract**: Render `<DiarySection batch={batch} calculationResult={calcResult} mode={mode} />` in the diary section slot. In create mode, DiarySection collects user-added entries locally and exposes them via a callback/ref so the form includes them in the POST request body. In edit mode, DiarySection fetches from API and operates independently.
+**Contract**: Render `<DiarySection batchParams={batchParams} batchId={batch?.id ?? null} calculationResult={calcResult} mode={mode} />` in the diary section slot. `batchParams` is constructed once in BatchForm from form state (same object passed to IngredientsSection after Phase 3.5 refactoring). In create mode, DiarySection collects user-added entries locally and exposes them via a callback/ref so the form includes them in the POST request body. In edit mode, DiarySection fetches from API and operates independently.
 
 #### 5. Remove Phase 0 mockup artifacts
 
@@ -479,6 +521,54 @@ Build the diary section using the chosen mockup pattern (from Phase 0), wire it 
 - Click delete → entry removed → persists
 - Click "Regenerate Plan" → auto entries replaced with fresh generation, user/promoted entries preserved
 - Responsive layout works on mobile viewport
+
+**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
+
+---
+
+## Phase 3.5: IngredientsSection Props Refactoring
+
+### Overview
+
+Refactor IngredientsSection to use the same `BatchParams` DTO that DiarySection uses. This is a mechanical interface change — no logic changes inside the component. Ensures both form child sections share a consistent prop contract.
+
+### Changes Required:
+
+#### 1. Update IngredientsSection props
+
+**File**: `src/components/batches/IngredientsSection.tsx`
+
+**Intent**: Replace the ad-hoc prop interface with the shared `BatchParams` DTO + a single partial-update callback.
+
+**Contract**: Remove the local `BatchParams` interface definition. Replace props:
+- Remove: `ingredients`, `onChange`, `batchParams` (local type), `fermentationSugarKg`, `sweetnessSugarKg`, `onSugarChange`
+- Add: `batchParams: BatchParams` (from `@/types`), `onBatchChange: (updates: Partial<BatchParams>) => void`
+
+IngredientsSection reads what it needs from `batchParams` (ingredients, sugar values, volume, abv, sweetness) and calls `onBatchChange({ ingredients: [...] })` or `onBatchChange({ fermentation_sugar_kg: x, sweetness_sugar_kg: y })` to propagate changes. Internal logic (calculate, add, edit, delete) is unchanged.
+
+#### 2. Update BatchForm prop passing
+
+**File**: `src/components/batches/BatchForm.tsx`
+
+**Intent**: Construct `batchParams` once and pass to both IngredientsSection and DiarySection.
+
+**Contract**: Build a `batchParams: BatchParams` object from form state (with `parseFloat` conversions for numeric fields). Pass to both child sections. Replace the current per-field prop construction with the single object. Handle `onBatchChange` by merging updates into form state (reversing the parseFloat — converting numbers back to strings for controlled inputs).
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- Type checking passes: `npx tsc --noEmit`
+- Linting passes: `npm run lint`
+- Build succeeds: `npm run build`
+- All existing tests still pass: `npm run test -- --run`
+
+#### Manual Verification:
+
+- Sugar calculation still works (Calculate button produces correct values)
+- Manual sugar editing still works (edit fermentation/sweetness sugar cards)
+- Ingredient add/edit/delete still works
+- DiarySection still receives correct params for generation
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -623,6 +713,7 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 #### Automated
 
+- [ ] 2.0 Route restructuring: `[id].ts` → `[id]/index.ts` (existing batch endpoint still works)
 - [ ] 2.1 Type checking passes
 - [ ] 2.2 Linting passes
 - [ ] 2.3 Build succeeds
@@ -649,7 +740,8 @@ Process type default, edge cases, final polish, and end-to-end verification.
 #### Manual
 
 - [ ] 3.4 New batch creation shows diary entries immediately
-- [ ] 3.5 Manual entries addable during batch creation (persist after save)
+- [ ] 3.5 Sort toggle switches between ASC/DESC, entries re-order
+- [ ] 3.6 Manual entries addable during batch creation (persist after save)
 - [ ] 3.6 Completed toggle persists on reload
 - [ ] 3.7 Edit entry description/date/notes persists
 - [ ] 3.8 Editing auto entry promotes to user type (survives regenerate)
@@ -658,6 +750,22 @@ Process type default, edge cases, final polish, and end-to-end verification.
 - [ ] 3.11 Delete entry persists
 - [ ] 3.12 Regenerate replaces auto, preserves user/promoted entries
 - [ ] 3.13 Responsive layout on mobile
+
+### Phase 3.5: IngredientsSection Props Refactoring
+
+#### Automated
+
+- [ ] 3.5.1 Type checking passes
+- [ ] 3.5.2 Linting passes
+- [ ] 3.5.3 Build succeeds
+- [ ] 3.5.4 All existing tests still pass
+
+#### Manual
+
+- [ ] 3.5.5 Sugar calculation still works (Calculate button)
+- [ ] 3.5.6 Manual sugar editing still works
+- [ ] 3.5.7 Ingredient add/edit/delete still works
+- [ ] 3.5.8 DiarySection still receives correct params
 
 ### Phase 4: Integration & Polish
 
@@ -675,4 +783,5 @@ Process type default, edge cases, final polish, and end-to-end verification.
 - [ ] 4.7 Juice + dry batch (no sugar) → ~11 entries generated
 - [ ] 4.8 Pulp + semi_sweet + sugar batch → ~16 entries generated
 - [ ] 4.9 Legacy batch shows empty state with Generate button
-- [ ] 4.10 API errors show user-friendly feedback
+- [ ] 4.10 Sort toggle persists across page reloads (localStorage)
+- [ ] 4.11 API errors show user-friendly feedback

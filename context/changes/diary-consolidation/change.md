@@ -1,7 +1,7 @@
 ---
 change_id: diary-consolidation
 title: Consolidate duplicated diary entry UI components and schemas
-status: new
+status: implementing
 created: 2026-06-14
 updated: 2026-06-14
 archived_at: null

@@ -60,6 +60,7 @@ export const POST: APIRoute = async (context) => {
       batch_id: batchId,
       entry_type: "user",
       ...result.data,
+      entry_date: result.data.entry_date ?? new Date().toISOString().slice(0, 10),
     })
     .select()
     .single();

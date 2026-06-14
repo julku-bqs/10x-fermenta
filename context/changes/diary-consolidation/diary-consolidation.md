@@ -12,7 +12,7 @@ DiarySection.tsx contains two near-identical components (`TimelineEntry` and `Lo
 
 - Accept a unified entry shape (description, entry_date, notes, completed) + callbacks
 - The `id`, `entry_type`, `created_at` fields from `DiaryEntry` are never used in rendering
-- Fix the notes rendering bug: `TimelineEntry` renders an expand container even when notes is null (should match `LocalEntryRow` which skips it)
+- Fix the notes rendering bug: `LocalEntryRow` skips the expand container when notes is null (should match `TimelineEntry` which always renders it with a "No notes" placeholder)
 
 ### 2. Extract shared diary entry schema
 

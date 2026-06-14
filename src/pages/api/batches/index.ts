@@ -62,7 +62,7 @@ export const POST: APIRoute = async (context) => {
         userDiaryEntries.map((entry) => ({
           batch_id: batch.id,
           description: entry.description,
-          entry_date: entry.entry_date,
+          entry_date: entry.entry_date ?? new Date().toISOString().slice(0, 10),
           notes: entry.notes ?? null,
           completed: entry.completed ?? false,
           entry_type: "user" as const,

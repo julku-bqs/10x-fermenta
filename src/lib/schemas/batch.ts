@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { diaryEntryBaseSchema } from "./diary-entry";
 
 export const ingredientSchema = z.object({
   name: z.string().min(1, "Ingredient name is required"),
@@ -18,16 +19,7 @@ export const createBatchSchema = z.object({
   fermentation_sugar_kg: z.number().min(0).default(0),
   sweetness_sugar_kg: z.number().min(0).default(0),
   ingredients: z.array(ingredientSchema).default([]),
-  diary_entries: z
-    .array(
-      z.object({
-        description: z.string().min(1),
-        entry_date: z.iso.date(),
-        notes: z.string().nullable().optional(),
-        completed: z.boolean().optional(),
-      }),
-    )
-    .optional(),
+  diary_entries: z.array(diaryEntryBaseSchema).optional(),
 });
 
 // Explicitly override fields with .default() to have no default in partial updates.

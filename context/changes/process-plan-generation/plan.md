@@ -606,6 +606,14 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 **Contract**: Sort is **client-side only** — the API always returns entries in `entry_date ASC, created_at ASC` order. The UI manages a `sortOrder: 'asc' | 'desc'` state (default `'asc'`), persisted in `localStorage` under key `fermenta:diary-sort-order` (same pattern as `BatchListPage`'s layout preference). After add/edit mutations, the UI re-sorts the local entry list before rendering. The sort toggle button/icon sits next to the "Process Diary" heading and visually communicates the active direction (e.g., ArrowUpDown icon or similar from lucide-react). No API or database changes needed — 10-15 entries per batch makes client-side sort trivially fast.
 
+#### 4. Completed toggle on local entries in create mode
+
+**File**: `src/components/batches/diary/DiarySection.tsx`
+
+**Intent**: Allow users to mark local diary entries (added during batch creation) as completed before the batch is saved. Ensures create-mode entries have the same toggle capability as edit-mode entries.
+
+**Contract**: Add a `completed: boolean` field to `LocalDiaryEntry`. The `LocalEntryRow` component renders the same clickable dot/circle toggle as `TimelineEntry`. Toggling flips the local state. On batch submission, entries with `completed: true` are included in the `diary_entries` payload (the API schema already accepts optional `completed`). No API or database changes needed.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -733,39 +741,39 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 #### Automated
 
-- [x] 3.1 Type checking passes
-- [x] 3.2 Linting passes
-- [x] 3.3 Build succeeds
+- [x] 3.1 Type checking passes — 539ac81
+- [x] 3.2 Linting passes — 539ac81
+- [x] 3.3 Build succeeds — 539ac81
 
 #### Manual
 
-- [x] 3.4 New batch creation shows diary entries immediately
-- [x] 3.5 Sort toggle switches between ASC/DESC, entries re-order
-- [x] 3.6 Manual entries addable during batch creation (persist after save)
-- [x] 3.6 Completed toggle persists on reload
-- [x] 3.7 Edit entry description/date/notes persists
-- [x] 3.8 Editing auto entry promotes to user type (survives regenerate)
-- [x] 3.9 Notes section expandable with scrollable area
-- [x] 3.10 Add manual entry appears in correct position
-- [x] 3.11 Delete entry persists
-- [x] 3.12 Regenerate replaces auto, preserves user/promoted entries
-- [x] 3.13 Responsive layout on mobile
+- [x] 3.4 New batch creation shows diary entries immediately — 539ac81
+- [x] 3.5 Sort toggle switches between ASC/DESC, entries re-order — 539ac81
+- [x] 3.6 Manual entries addable during batch creation (persist after save) — 539ac81
+- [x] 3.6 Completed toggle persists on reload — 539ac81
+- [x] 3.7 Edit entry description/date/notes persists — 539ac81
+- [x] 3.8 Editing auto entry promotes to user type (survives regenerate) — 539ac81
+- [x] 3.9 Notes section expandable with scrollable area — 539ac81
+- [x] 3.10 Add manual entry appears in correct position — 539ac81
+- [x] 3.11 Delete entry persists — 539ac81
+- [x] 3.12 Regenerate replaces auto, preserves user/promoted entries — 539ac81
+- [x] 3.13 Responsive layout on mobile — 539ac81
 
 ### Phase 3.5: IngredientsSection Props Refactoring
 
 #### Automated
 
-- [ ] 3.5.1 Type checking passes
-- [ ] 3.5.2 Linting passes
-- [ ] 3.5.3 Build succeeds
-- [ ] 3.5.4 All existing tests still pass
+- [x] 3.5.1 Type checking passes
+- [x] 3.5.2 Linting passes
+- [x] 3.5.3 Build succeeds
+- [x] 3.5.4 All existing tests still pass
 
 #### Manual
 
-- [ ] 3.5.5 Sugar calculation still works (Calculate button)
-- [ ] 3.5.6 Manual sugar editing still works
-- [ ] 3.5.7 Ingredient add/edit/delete still works
-- [ ] 3.5.8 DiarySection still receives correct params
+- [x] 3.5.5 Sugar calculation still works (Calculate button)
+- [x] 3.5.6 Manual sugar editing still works
+- [x] 3.5.7 Ingredient add/edit/delete still works
+- [x] 3.5.8 DiarySection still receives correct params
 
 ### Phase 4: Integration & Polish
 

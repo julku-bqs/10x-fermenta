@@ -406,21 +406,34 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
           />
 
           <IngredientsSection
-            ingredients={ingredients}
-            onChange={setIngredients}
             batchParams={{
+              name: form.name,
+              batch_date: form.batch_date,
+              process_type: form.process_type,
               target_volume_liters: form.target_volume_liters ? parseFloat(form.target_volume_liters) : null,
               target_abv: form.target_abv ? parseFloat(form.target_abv) : null,
               planned_sweetness: form.planned_sweetness,
+              yeast_name: form.yeast_name || null,
+              yeast_alcohol_tolerance: form.yeast_alcohol_tolerance ? parseFloat(form.yeast_alcohol_tolerance) : null,
+              fermentation_sugar_kg: parseFloat(form.fermentation_sugar_kg) || 0,
+              sweetness_sugar_kg: parseFloat(form.sweetness_sugar_kg) || 0,
+              ingredients,
             }}
-            fermentationSugarKg={parseFloat(form.fermentation_sugar_kg) || 0}
-            sweetnessSugarKg={parseFloat(form.sweetness_sugar_kg) || 0}
-            onSugarChange={(fermentation, sweetness) => {
-              setForm((prev) => ({
-                ...prev,
-                fermentation_sugar_kg: fermentation.toString(),
-                sweetness_sugar_kg: sweetness.toString(),
-              }));
+            onBatchChange={(updates) => {
+              if (updates.ingredients !== undefined) {
+                setIngredients(updates.ingredients);
+              }
+              if (updates.fermentation_sugar_kg !== undefined || updates.sweetness_sugar_kg !== undefined) {
+                setForm((prev) => ({
+                  ...prev,
+                  ...(updates.fermentation_sugar_kg !== undefined
+                    ? { fermentation_sugar_kg: updates.fermentation_sugar_kg.toString() }
+                    : {}),
+                  ...(updates.sweetness_sugar_kg !== undefined
+                    ? { sweetness_sugar_kg: updates.sweetness_sugar_kg.toString() }
+                    : {}),
+                }));
+              }
             }}
           />
         </section>

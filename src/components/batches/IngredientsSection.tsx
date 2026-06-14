@@ -1,22 +1,12 @@
 import { useState } from "react";
-import type { Ingredient, SweetnessLevel } from "@/types";
+import type { BatchParams, Ingredient } from "@/types";
 import { calculateSugar } from "@/lib/services/sugar-calculation";
 import { IngredientCard } from "./IngredientCard";
 import { batchInputClass } from "./styles";
 
-interface BatchParams {
-  target_volume_liters: number | null;
-  target_abv: number | null;
-  planned_sweetness: SweetnessLevel;
-}
-
 interface IngredientsSectionProps {
-  ingredients: Ingredient[];
-  onChange: (ingredients: Ingredient[]) => void;
   batchParams: BatchParams;
-  fermentationSugarKg: number;
-  sweetnessSugarKg: number;
-  onSugarChange: (fermentation: number, sweetness: number) => void;
+  onBatchChange: (updates: Partial<BatchParams>) => void;
 }
 
 interface SugarCardProps {
@@ -76,23 +66,18 @@ function SugarCard({ label, icon, amountKg, onChange, isEditing, onToggleEdit }:
   );
 }
 
-export function IngredientsSection({
-  ingredients,
-  onChange,
-  batchParams,
-  fermentationSugarKg,
-  sweetnessSugarKg,
-  onSugarChange,
-}: IngredientsSectionProps) {
+export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSectionProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingSugar, setEditingSugar] = useState<"fermentation" | "sweetness" | null>(null);
 
+  const { ingredients, fermentation_sugar_kg: fermentationSugarKg, sweetness_sugar_kg: sweetnessSugarKg } = batchParams;
+
   function handleChange(index: number, updates: Partial<Ingredient>) {
-    onChange(ingredients.map((ing, i) => (i === index ? { ...ing, ...updates } : ing)));
+    onBatchChange({ ingredients: ingredients.map((ing, i) => (i === index ? { ...ing, ...updates } : ing)) });
   }
 
   function handleDelete(index: number) {
-    onChange(ingredients.filter((_, i) => i !== index));
+    onBatchChange({ ingredients: ingredients.filter((_, i) => i !== index) });
     setEditingIndex(null);
   }
 
@@ -104,7 +89,7 @@ export function IngredientsSection({
     };
 
     const newIngredients = [...ingredients, newIngredient];
-    onChange(newIngredients);
+    onBatchChange({ ingredients: newIngredients });
     setEditingIndex(newIngredients.length - 1);
   }
 
@@ -119,7 +104,10 @@ export function IngredientsSection({
       ingredients,
     });
 
-    onSugarChange(result.fermentation_sugar_kg, result.sweetness_sugar_kg);
+    onBatchChange({
+      fermentation_sugar_kg: result.fermentation_sugar_kg,
+      sweetness_sugar_kg: result.sweetness_sugar_kg,
+    });
     setEditingSugar(null);
   }
 
@@ -133,7 +121,7 @@ export function IngredientsSection({
           icon="🍬"
           amountKg={fermentationSugarKg}
           onChange={(kg) => {
-            onSugarChange(kg, sweetnessSugarKg);
+            onBatchChange({ fermentation_sugar_kg: kg });
           }}
           isEditing={editingSugar === "fermentation"}
           onToggleEdit={() => {
@@ -147,7 +135,7 @@ export function IngredientsSection({
             icon="🍯"
             amountKg={sweetnessSugarKg}
             onChange={(kg) => {
-              onSugarChange(fermentationSugarKg, kg);
+              onBatchChange({ sweetness_sugar_kg: kg });
             }}
             isEditing={editingSugar === "sweetness"}
             onToggleEdit={() => {

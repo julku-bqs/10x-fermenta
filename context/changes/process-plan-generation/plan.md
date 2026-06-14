@@ -696,10 +696,10 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly
-- [ ] 1.2 Unit tests pass for generation logic
-- [ ] 1.3 Type checking passes
-- [ ] 1.4 Linting passes
+- [x] 1.1 Migration applies cleanly
+- [x] 1.2 Unit tests pass for generation logic
+- [x] 1.3 Type checking passes
+- [x] 1.4 Linting passes
 
 #### Manual
 

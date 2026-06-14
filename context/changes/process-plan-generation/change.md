@@ -1,10 +1,10 @@
 ---
 id: process-plan-generation
 title: Process plan generation and diary editing
-status: planned
+status: implementing
 roadmap_id: S-03
 created: 2026-06-10
-updated: 2026-06-10
+updated: 2026-06-14
 ---
 
 ## Summary

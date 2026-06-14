@@ -82,7 +82,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
     if (mode !== "edit" || !initialData) return [];
     const initialFormState: FormState = {
       name: initialData.name,
-      batch_date: initialData.batch_date ?? "",
+      batch_date: initialData.batch_date,
       process_type: initialData.process_type,
       target_volume_liters: initialData.target_volume_liters?.toString() ?? "",
       target_abv: initialData.target_abv?.toString() ?? "",

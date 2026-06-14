@@ -12,7 +12,7 @@ The `diary_entries` table exists (created in F-01) but is completely unused — 
 
 ## Desired End State
 
-After batch creation, the user immediately sees a chronological list of auto-generated winemaking process steps (10-15 entries depending on parameters). They can mark steps complete (visual toggle), edit descriptions and dates, add manual entries, delete any entry, and regenerate the plan if they change their process. The diary lives below the ingredients section on the batch detail page.
+After batch creation, the user immediately sees a chronological list of auto-generated winemaking process steps (11-16 entries depending on parameters). They can mark steps complete (visual toggle), edit descriptions and dates, add manual entries, delete any entry, and regenerate the plan if they change their process. The diary lives below the ingredients section on the batch detail page.
 
 ## Key Decisions Made
 
@@ -32,6 +32,7 @@ After batch creation, the user immediately sees a chronological list of auto-gen
 | GenerationInput | Full Batch object + optional calculation result | Flexible — any batch parameter or calculation result can be used in conditions without signature changes. | Review |
 | UI approach | Phase 0 mockup exploration before committing | Diary entries are richer than ingredients; need to see real content before picking a layout. | Plan |
 | Completed indicator | Icon/background shift (not bare checkbox) | Bare checkbox implies multi-select; visual toggle communicates "done" more clearly. | Plan |
+| Sort direction toggle | Client-side only, localStorage-persisted | MVP: 10-15 entries, instant UX on toggle, no pagination needed. Extend to server-side `?sort=` param if entry count grows or multiple consumers emerge. | Plan Review |
 | Notes field | Expandable section with scrollable area | Avoids layout exhaustion from long notes; clean collapsed view for entries without notes. | Review |
 
 ## Scope
@@ -82,8 +83,6 @@ Generation logic lives in `src/lib/services/process-plan-generation.ts` as a pur
 
 ## Open Risks & Assumptions
 
-- Step descriptions and day offsets are proposed defaults — may need adjustment during plan review based on domain expertise
-- The "staggered sugar addition" question (split step for high-ABV wines) is unresolved — flagged for review
 - Phase 0 UI exploration adds a phase but reduces rework risk — if time-pressured, could skip and go with card-based pattern directly
 - `SECURITY DEFINER` on the RPC function bypasses RLS — API layer must validate batch ownership before calling
 

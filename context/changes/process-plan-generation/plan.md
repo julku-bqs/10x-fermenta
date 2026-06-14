@@ -25,7 +25,7 @@ Implement S-03: auto-generate a process plan (winemaking diary entries) when a b
 ## Desired End State
 
 A user creating a new batch sees auto-generated process diary entries immediately after creation. On the batch detail page, diary entries appear chronologically by date. The user can:
-1. See all diary entries sorted by `entry_date` (chronologically)
+1. See all diary entries sorted by `entry_date` — default ASC (chronological), with a sort toggle button/icon next to the section heading to switch between ASC and DESC
 2. Mark entries as "completed" via a visual toggle (icon/background, not a bare checkbox)
 3. Edit any entry's description, date, and notes
 4. Expand an entry to see/edit free-text notes (expandable area with scrollable content to avoid layout exhaustion)
@@ -48,6 +48,15 @@ Verification: unit tests prove generation logic correctness (conditions, date of
 - Auto-shifting diary dates when batch_date changes (dates are absolute, set once, user edits manually)
 - Regenerate confirmation dialog (silently replaces auto entries; user/promoted entries always preserved)
 - Malolactic fermentation steps (optional advanced technique, not standard for hobbyist persona)
+- Sulfite/SO₂ steps in default generation (per-recipe decision — not universally performed; user adds manually if needed)
+- Pectic enzyme as a separate step (per-recipe decision — user adds at their preferred timing if needed)
+- Degassing as a default step (natural off-gassing during 12-month bulk aging is sufficient)
+- Measurement-driven staggered sugar additions (v2 — requires real Blg measurement data; MVP uses single step with guidance hint)
+- Fruit wine vs grape wine distinction (same template works; differences handled by existing conditions)
+
+## Prerequisites
+
+- **`sugar-fields-refactoring`** — Move `fermentation_sugar_kg` and `sweetness_sugar_kg` from the ingredients JSONB array to batch-level columns (similar to yeast). This simplifies the sugar step condition to `batch.fermentation_sugar_kg > 0` and removes the need for ingredient type lookups throughout the application. Must land before S-03 implementation begins.
 
 ## Implementation Approach
 
@@ -75,30 +84,40 @@ The "Regenerate Plan" operation must be atomic: DELETE all entries with `entry_t
 
 ## Generated Step Definitions
 
-Steps are generated based on batch parameters. Format: `<description> (day offset) [conditions]`. All steps are a flat list — conditions determine inclusion; categories are not structural.
+**Guiding principle**: The generated plan includes only steps that are **universally performed** in home winemaking regardless of specific recipe. The tool doesn't make wine for the user — it helps them work faster with what they already know. Optional/recipe-specific steps (sulfite, pectic enzyme, fining, MLF, etc.) are the user's responsibility to add manually.
+
+Steps are generated based on batch parameters. Format: `<description> (day offset) [conditions]`. All steps are a flat list — conditions determine inclusion; categories are not structural. Steps 1a/1b are mutually exclusive (only one appears per batch).
 
 | # | Description | Day Offset | Conditions |
 |---|---|---|---|
-| 1 | Prepare must — sulfite, acidity correction, nutrients | 0 | always |
-| 2 | Prepare fruit — crush and destem | 0 | process_type = 'pulp' |
-| 3 | Add fermentation sugar | 0 | fermentation_sugar_kg > 0 |
-| 4 | Pitch yeast | 1 | always |
-| 5 | Cap management — punch down 2–3× daily | 1 | process_type = 'pulp' |
-| 6 | Monitor primary fermentation — measure SG | 3 | always |
-| 7 | Press — separate wine from pomace | 7 | process_type = 'pulp' |
-| 8 | Rack to secondary fermenter | 10 | always |
-| 9 | Monitor secondary fermentation — measure SG | 14 | always |
-| 10 | Confirm fermentation complete (2× same SG reading) | 25 | always |
-| 11 | Rack off lees | 30 | always |
-| 12 | Bulk aging — check sediment | 60 | always |
-| 13 | Stabilize before sweetening (K-meta + K-sorbate) | 80 | planned_sweetness ≠ 'dry' |
-| 14 | Back-sweeten to target sweetness | 85 | planned_sweetness ≠ 'dry' |
-| 15 | Bottling | 90 | always |
+| 1a | Prepare must — pour juice into fermenter, add nutrients | 0 | process_type = 'juice' |
+| 1b | Prepare must — crush fruit, destem, add to fermenter, add nutrients | 0 | process_type = 'pulp' |
+| 2 | Add fermentation sugar (if above 25°Blg — split into portions) | 0 | batch.fermentation_sugar_kg > 0 |
+| 3 | Pitch yeast | 0 | always |
+| 4 | Begin cap management — punch down 2–3× daily until pressing | 1 | process_type = 'pulp' |
+| 5 | Monitor primary fermentation | 5 | always |
+| 6 | Press — separate wine from pomace | 10 | process_type = 'pulp' |
+| 7 | Rack to secondary fermenter | 14 | always |
+| 8 | Monitor secondary fermentation | 21 | always |
+| 9 | Confirm fermentation complete (2× same reading) | 28 | always |
+| 10 | Rack off lees — transfer to clean vessel | 35 | always |
+| 11 | Bulk aging — check clarity, rack if needed | 60 | always |
+| 12 | Aging check — taste, check clarity | 120 | always |
+| 13 | Aging check — taste, assess readiness | 240 | always |
+| 14 | Stabilize wine | 330 | planned_sweetness ≠ 'dry' |
+| 15 | Back-sweeten to target sweetness | 332 | planned_sweetness ≠ 'dry' |
+| 16 | Bottling | 365 | always |
 
-**Open questions for plan review (separate session):**
-1. Should "Add fermentation sugar" (step 3) be split into staggered additions for high-ABV wines (e.g., >14% → add in 2 phases on day 0 and day 3)? Alternative: keep single step but add a validation warning about osmotic shock risk.
-2. Step 11 originally included "+ add SO₂" — removed per user feedback (fermentation stop method is user's choice). Should the step description remain neutral ("Rack off lees") or hint at stabilization options without prescribing?
-3. Are the day offsets reasonable starting points for the target persona? (e.g., day 10 for first rack, day 90 for bottling)
+**Domain decisions (resolved):**
+1. **No sulfite in default steps** — generated plan includes only steps that are universally performed regardless of recipe. Sulfite is a per-recipe decision; users add it as a manual entry if their process requires it.
+2. **Pectic enzyme excluded** — same principle: not universally performed. Users who use pectic enzyme add it as a manual entry at their preferred timing (at crush or post-fermentation for clarity correction).
+3. **Single sugar step with guidance** — description hints at splitting for high-Blg musts (>25°Blg, the verified osmotic stress threshold per MoreWineMaking and peer-reviewed literature). A measurement-driven split into separate day 0 / day N steps is deferred to v2 when real measurement data is available.
+4. **Yeast pitched on Day 0** — safe common default; users who sulfite or use pectic enzyme adjust the date to Day 1 per their recipe.
+5. **Cap management starts Day 1** — cap forms ~1–2 days after pitching once fermentation generates CO₂; "until pressing" in description marks the end.
+6. **Monitoring steps are non-prescriptive** — do not specify what instrument or parameter to measure.
+7. **Stabilize + back-sweeten are separate steps** — 2-day gap per standard guidance (stabilizers need 24–48h to distribute before adding sugar to prevent refermentation).
+8. **Bottling at Day 365 (1 year)** — conservative safe default for home wines with proper bulk aging; simple/fruit wines may be ready sooner — user adjusts date as needed.
+9. **Degassing excluded** — natural off-gassing during 12-month bulk aging is sufficient; after a year with regular rackings, residual CO₂ is negligible.
 
 ### Generation design pattern
 
@@ -153,7 +172,7 @@ Build 2-3 static UI alternatives for the diary section using mock data. No API c
 
 **File**: `src/components/batches/diary/DiaryMockupB.tsx` (compact list/table)
 
-**Intent**: Dense table-like layout — one row per entry with date column, description column, and completed toggle. Notes visible on expansion/hover. Tests whether a denser format works better for 10-15 entries.
+**Intent**: Dense table-like layout — one row per entry with date column, description column, and completed toggle. Notes visible on expansion/hover. Tests whether a denser format works better for 11-16 entries.
 
 **Contract**: React component accepting `entries: MockDiaryEntry[]` prop, rendering a compact list with inline date, description, completed toggle, and an expandable row for notes.
 
@@ -268,6 +287,11 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 **Contract**: Exports `generateProcessPlan(input: GenerationInput): DiaryEntryDraft[]` where `GenerationInput` accepts the full `Batch` object plus an optional calculation result (sugar calculation output, if available). The function uses whichever batch fields and calculation results are relevant for step conditions — keeping the input flexible for future condition additions without signature changes. Each `DiaryEntryDraft` has `description`, `entry_date` (computed from `batch_date + offset`), and `entry_type: 'auto'`. Also exports `STEP_TEMPLATES` constant array for testability and future localization.
 
+Key implementation details:
+- Steps 1a/1b are **mutually exclusive** — condition predicates are complementary (`process_type = 'juice'` vs `process_type = 'pulp'`)
+- The sugar step condition checks `batch.fermentation_sugar_kg > 0` (a batch-level field after sugar-fields-refactoring lands). This covers both calculated and manually-entered sugar amounts directly without ingredient array lookups
+- Day 0 steps (prepare must, sugar, pitch yeast) all share the same date — multiple entries on same day is valid. Cap management starts Day 1 (cap forms after fermentation begins).
+
 #### 4. Step description constants
 
 **File**: `src/lib/services/process-plan-generation.ts` (same file, constants section)
@@ -283,13 +307,14 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 **Intent**: Comprehensive unit tests proving generation correctness — step inclusion/exclusion based on conditions, date offset computation, edge cases (null batch_date, all conditions met, no conditions met).
 
 **Contract**: Test cases covering:
-- Juice + dry → 9 base steps (no fermentation sugar step, no sweetness steps)
-- Juice + dry + fermentation_sugar > 0 → 10 steps (includes sugar step)
-- Juice + semi_sweet → 12 steps (base + sugar + sweetness steps)
-- Pulp + dry → 12 steps (base + 3 pulp steps)
-- Pulp + sweet + fermentation_sugar > 0 → 15 steps (all conditions met)
-- Date computation: batch_date 2026-01-15 + offset 10 → entry_date 2026-01-25
+- Juice + dry (no added sugar) → 11 steps (all "always" steps with juice variant of step 1)
+- Juice + dry + fermentation_sugar_kg > 0 → 12 steps (adds sugar step)
+- Juice + semi_sweet + fermentation_sugar_kg > 0 → 14 steps (adds sugar + stabilize + back-sweeten)
+- Pulp + dry (no added sugar) → 13 steps (all "always" steps with pulp variant + cap management + press)
+- Pulp + sweet + fermentation_sugar_kg > 0 → 16 steps (all conditions met)
+- Date computation: batch_date 2026-01-15 + offset 14 → entry_date 2026-01-29
 - All generated entries have entry_type 'auto'
+- Mutually exclusive steps: juice batch never gets pulp steps and vice versa for step 1a/1b
 
 ### Success Criteria:
 
@@ -401,7 +426,7 @@ Build the diary section using the chosen mockup pattern (from Phase 0), wire it 
 
 **Intent**: Main container component for the diary section — fetches entries on mount (edit mode), manages local state, and orchestrates CRUD operations via API calls. In create mode, manages entries locally until batch is saved.
 
-**Contract**: Accepts `batch: Batch` (the full batch object) and optional `calculationResult` (sugar calculation output) props, plus a `mode: 'create' | 'edit'` prop. In edit mode: fetches entries via GET on mount, provides add/edit/delete/toggle-complete handlers that call the API immediately. In create mode: manages entries in local state, exposes them to the parent form for inclusion in the batch creation request. Includes "Regenerate Plan" button (edit mode only) that calls the regenerate endpoint.
+**Contract**: Accepts `batch: Batch` (the full batch object) and optional `calculationResult` (sugar calculation output) props, plus a `mode: 'create' | 'edit'` prop. In edit mode: fetches entries via GET on mount, provides add/edit/delete/toggle-complete handlers that call the API immediately. In create mode: manages entries in local state, exposes them to the parent form for inclusion in the batch creation request. Includes "Regenerate Plan" button (edit mode only) that calls the regenerate endpoint. Section heading includes a sort direction toggle (button/icon) — **client-side only** (no API change). Sort state `'asc' | 'desc'` defaults to `'asc'`, persisted in `localStorage` key `fermenta:diary-sort-order` (matching the existing `BatchListPage` layout preference pattern). Entries are re-sorted in-memory via `Array.sort()` on `entry_date` before rendering.
 
 #### 2. Diary entry display component
 
@@ -444,7 +469,8 @@ Build the diary section using the chosen mockup pattern (from Phase 0), wire it 
 - Create a new batch → diary entries appear immediately on batch detail page
 - In create mode, user can add manual diary entries before saving
 - Manual entries from create mode persist after batch creation
-- Entries display chronologically by date
+- Entries display sorted by date (ASC default)
+- Sort toggle switches between ASC/DESC, entries re-order accordingly
 - Click completed toggle → entry visual state changes, persists on reload
 - Click entry to edit → modify description/date/notes → save → persists
 - Editing description or notes on auto entry promotes it to user type (verify via regenerate: it survives)
@@ -482,13 +508,13 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 **Contract**: Show skeleton/loading while fetching. Show "No diary entries yet" with "Generate Plan" button for legacy batches without entries. Show error toast on API failure.
 
-#### 3. Chronological ordering consistency
+#### 3. Ordering consistency and sort toggle
 
-**File**: Multiple (API + UI)
+**File**: `src/components/batches/diary/DiarySection.tsx`
 
-**Intent**: Ensure consistent ordering — entries sorted by `entry_date ASC NULLS LAST, created_at ASC` both in the API response and in the UI state after local mutations.
+**Intent**: Ensure consistent ordering after mutations and provide user-controlled sort direction.
 
-**Contract**: API enforces ordering in query (`entry_date ASC, created_at ASC`). UI re-sorts after add/edit to maintain chronological position.
+**Contract**: Sort is **client-side only** — the API always returns entries in `entry_date ASC, created_at ASC` order. The UI manages a `sortOrder: 'asc' | 'desc'` state (default `'asc'`), persisted in `localStorage` under key `fermenta:diary-sort-order` (same pattern as `BatchListPage`'s layout preference). After add/edit mutations, the UI re-sorts the local entry list before rendering. The sort toggle button/icon sits next to the "Process Diary" heading and visually communicates the active direction (e.g., ArrowUpDown icon or similar from lucide-react). No API or database changes needed — 10-15 entries per batch makes client-side sort trivially fast.
 
 ### Success Criteria:
 
@@ -503,10 +529,11 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 - New batch creation defaults to 'juice' process type
 - Batch form defaults batch_date to today (cannot be null)
-- Creating batch with 'juice' + 'dry' → ~9 diary entries generated
-- Creating batch with 'pulp' + 'semi_sweet' + sugar > 0 → ~15 entries generated
+- Creating batch with 'juice' + 'dry' (no sugar) → ~11 diary entries generated
+- Creating batch with 'pulp' + 'semi_sweet' + sugar > 0 → ~16 entries generated
 - Legacy batch (no diary entries) shows empty state with "Generate Plan" button
 - Editing a batch's process_type does NOT auto-regenerate diary (user must click Regenerate)
+- Sort toggle persists across page reloads (localStorage)
 - API errors show user-friendly feedback (not raw error)
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
@@ -524,8 +551,8 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 ### Manual Testing Steps:
 
-1. Create a new batch (juice, dry, no yeast) → verify ~9 diary entries
-2. Create a new batch (pulp, semi_sweet, with sugar) → verify ~15 entries with all conditional steps
+1. Create a new batch (juice, dry, no sugar) → verify ~11 diary entries
+2. Create a new batch (pulp, semi_sweet, with sugar) → verify ~16 entries with all conditional steps
 3. Add manual entries during batch creation → they persist after save
 4. Edit a diary entry description and date → reload → persists
 5. Edit an auto entry's description → verify entry_type promoted to 'user'
@@ -538,7 +565,7 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 ## Performance Considerations
 
-- Diary entries per batch: typically 10-15 (bounded by template + user additions). No pagination needed.
+- Diary entries per batch: typically 11-16 (bounded by template + user additions). No pagination needed.
 - Individual save operations: one API call per user action. Acceptable latency for this volume.
 - Regenerate: single RPC call (atomic DB function). No N+1 concerns.
 - No client-side computation beyond date sorting of a small list.
@@ -569,11 +596,11 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 #### Manual
 
-- [ ] 0.1 Three mockup alternatives render correctly on batch detail page
-- [ ] 0.2 Notes section expandable/collapsible with scrollable area
-- [ ] 0.3 Visual completed indicator distinguishable from multi-select checkbox
-- [ ] 0.4 Layout works on mobile viewport
-- [ ] 0.5 Winner selected and losers deleted
+- [x] 0.1 Three mockup alternatives render correctly on batch detail page
+- [x] 0.2 Notes section expandable/collapsible with scrollable area
+- [x] 0.3 Visual completed indicator distinguishable from multi-select checkbox
+- [x] 0.4 Layout works on mobile viewport
+- [x] 0.5 Winner selected and losers deleted — **Winner: Timeline (C).** Losers (A, B, D) deleted. Remaining Phase 0 artifacts: `DiaryMockupSwitcher.tsx`, `DiaryMockupC.tsx`, `mockData.ts` — kept for Phase 3 reference, removed in Phase 3 step 5.
 
 ### Phase 1: Schema Migration + Domain Logic
 
@@ -645,7 +672,7 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 - [ ] 4.5 Process type defaults to juice for new batches
 - [ ] 4.6 Batch form defaults batch_date to today
-- [ ] 4.7 Juice + dry batch → ~9 entries generated
-- [ ] 4.8 Pulp + semi_sweet + sugar batch → ~15 entries generated
+- [ ] 4.7 Juice + dry batch (no sugar) → ~11 entries generated
+- [ ] 4.8 Pulp + semi_sweet + sugar batch → ~16 entries generated
 - [ ] 4.9 Legacy batch shows empty state with Generate button
 - [ ] 4.10 API errors show user-friendly feedback

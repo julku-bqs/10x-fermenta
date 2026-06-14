@@ -696,38 +696,38 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly
-- [x] 1.2 Unit tests pass for generation logic
-- [x] 1.3 Type checking passes
-- [x] 1.4 Linting passes
+- [x] 1.1 Migration applies cleanly — 6967e3b
+- [x] 1.2 Unit tests pass for generation logic — 6967e3b
+- [x] 1.3 Type checking passes — 6967e3b
+- [x] 1.4 Linting passes — 6967e3b
 
 #### Manual
 
-- [ ] 1.5 diary_entries table has new columns (entry_date, completed, entry_type, notes) and no sort_order
-- [ ] 1.6 regenerate_diary_entries function exists in database
-- [ ] 1.7 promote_diary_entry_type trigger exists on diary_entries
-- [ ] 1.8 batches.batch_date is NOT NULL with default CURRENT_DATE
-- [ ] 1.9 Existing NULL batch_dates were backfilled
+- [x] 1.5 diary_entries table has new columns (entry_date, completed, entry_type, notes) and no sort_order — 6967e3b
+- [x] 1.6 regenerate_diary_entries function exists in database — 6967e3b
+- [x] 1.7 promote_diary_entry_type trigger exists on diary_entries — 6967e3b
+- [x] 1.8 batches.batch_date is NOT NULL with default CURRENT_DATE — 6967e3b
+- [x] 1.9 Existing NULL batch_dates were backfilled — 6967e3b
 
 ### Phase 2: API Endpoints
 
 #### Automated
 
-- [ ] 2.0 Route restructuring: `[id].ts` → `[id]/index.ts` (existing batch endpoint still works)
-- [ ] 2.1 Type checking passes
-- [ ] 2.2 Linting passes
-- [ ] 2.3 Build succeeds
+- [x] 2.0 Route restructuring: `[id].ts` → `[id]/index.ts` (existing batch endpoint still works)
+- [x] 2.1 Type checking passes
+- [x] 2.2 Linting passes
+- [x] 2.3 Build succeeds
 
 #### Manual
 
-- [ ] 2.4 POST /api/batches creates batch AND diary entries
-- [ ] 2.5 GET /api/batches/[id]/diary returns entries sorted chronologically
-- [ ] 2.6 POST /api/batches/[id]/diary creates user entry
-- [ ] 2.7 PUT /api/batches/[id]/diary/[entryId] updates entry (description, date, notes, completed)
-- [ ] 2.8 DELETE /api/batches/[id]/diary/[entryId] removes entry
-- [ ] 2.9 POST /api/batches/[id]/diary/regenerate replaces auto, preserves user/promoted
-- [ ] 2.10 RLS prevents cross-user access
-- [ ] 2.11 Editing auto entry description/notes triggers ownership promotion
+- [x] 2.4 POST /api/batches creates batch AND diary entries
+- [x] 2.5 GET /api/batches/[id]/diary returns entries sorted chronologically
+- [x] 2.6 POST /api/batches/[id]/diary creates user entry
+- [x] 2.7 PUT /api/batches/[id]/diary/[entryId] updates entry (description, date, notes, completed)
+- [x] 2.8 DELETE /api/batches/[id]/diary/[entryId] removes entry
+- [x] 2.9 POST /api/batches/[id]/diary/regenerate replaces auto, preserves user/promoted
+- [x] 2.10 RLS prevents cross-user access
+- [x] 2.11 Editing auto entry description/notes triggers ownership promotion
 
 ### Phase 3: UI Implementation
 

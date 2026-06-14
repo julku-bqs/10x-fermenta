@@ -779,18 +779,18 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 #### Automated
 
-- [x] 4.1 All existing tests still pass
-- [x] 4.2 Type checking passes
-- [x] 4.3 Linting passes
-- [x] 4.4 Build succeeds
+- [x] 4.1 All existing tests still pass — f591261
+- [x] 4.2 Type checking passes — f591261
+- [x] 4.3 Linting passes — f591261
+- [x] 4.4 Build succeeds — f591261
 
 #### Manual
 
-- [x] 4.5 Process type defaults to juice for new batches
-- [x] 4.6 Batch form defaults batch_date to today
-- [x] 4.7 Juice + dry batch (no sugar) → ~11 entries generated
-- [x] 4.8 Pulp + semi_sweet + sugar batch → ~16 entries generated
-- [x] 4.9 Legacy batch shows empty state with Generate button
-- [x] 4.10 Sort toggle persists across page reloads (localStorage)
-- [x] 4.11 API errors show user-friendly feedback
-- [x] 4.12 Completed toggle works on local entries in create mode
+- [x] 4.5 Process type defaults to juice for new batches — f591261
+- [x] 4.6 Batch form defaults batch_date to today — f591261
+- [x] 4.7 Juice + dry batch (no sugar) → ~11 entries generated — f591261
+- [x] 4.8 Pulp + semi_sweet + sugar batch → ~16 entries generated — f591261
+- [x] 4.9 Legacy batch shows empty state with Generate button — f591261
+- [x] 4.10 Sort toggle persists across page reloads (localStorage) — f591261
+- [x] 4.11 API errors show user-friendly feedback — f591261
+- [x] 4.12 Completed toggle works on local entries in create mode — f591261

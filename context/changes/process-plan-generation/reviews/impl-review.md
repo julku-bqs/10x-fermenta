@@ -32,7 +32,7 @@
   - Tradeoff: Extra query per call (negligible for single-row lookup).
   - Confidence: HIGH — standard Supabase pattern for SECURITY DEFINER RPCs.
   - Blind spot: None significant.
-- **Decision**: PENDING
+- **Decision**: FIXED
 
 ### F2 — Diary entry date/completed edits not protected from regenerate
 
@@ -51,7 +51,7 @@
   - Tradeoff: Completed toggle would also promote, making regenerate unable to reset progress.
   - Confidence: LOW — completed promotion would break the regenerate UX.
   - Blind spot: Would need to exclude completed from trigger.
-- **Decision**: PENDING
+- **Decision**: FIXED (Fix A — documented behavior in migration comment)
 
 ### F3 — batch_date schema still allows null (schema/DB mismatch)
 
@@ -65,7 +65,7 @@
   - Tradeoff: Minor — need to verify updateBatchSchema still allows optional date.
   - Confidence: HIGH — straightforward alignment.
   - Blind spot: None significant.
-- **Decision**: PENDING
+- **Decision**: FIXED (removed .nullable() from both create and update schemas)
 
 ### F4 — DELETE diary entry returns 204 even if no row matched
 
@@ -79,7 +79,7 @@
   - Tradeoff: Slightly more verbose.
   - Confidence: HIGH — same pattern used 10 lines above in PUT.
   - Blind spot: None significant.
-- **Decision**: PENDING
+- **Decision**: DISMISSED — finding based on wrong premise; no other DELETE endpoint exists; idempotent 204 is the intended convention
 
 ### F5 — calculationResult not passed to DiarySection
 
@@ -93,4 +93,4 @@
   - Tradeoff: Minor plan drift on paper.
   - Confidence: HIGH — plan itself notes this is for "future condition additions."
   - Blind spot: None significant.
-- **Decision**: PENDING
+- **Decision**: SKIPPED — YAGNI; add when v2 measurement-driven generation needs it

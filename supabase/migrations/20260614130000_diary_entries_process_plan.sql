@@ -22,6 +22,10 @@ ALTER TABLE batches
   ALTER COLUMN batch_date SET DEFAULT CURRENT_DATE;
 
 -- 5. Ownership promotion trigger
+-- Promotion trigger: only description/notes edits promote auto → user.
+-- Intentionally excludes entry_date and completed so that:
+--   - completed toggles remain progress-tracking (regenerate can reset them)
+--   - entry_date changes on auto entries are rare and non-destructive
 CREATE OR REPLACE FUNCTION promote_diary_entry_type()
 RETURNS trigger AS $$
 BEGIN
@@ -45,6 +49,10 @@ CREATE OR REPLACE FUNCTION regenerate_diary_entries(
   p_entries jsonb
 ) RETURNS void AS $$
 BEGIN
+  IF NOT EXISTS (SELECT 1 FROM batches WHERE id = p_batch_id AND user_id = auth.uid()) THEN
+    RAISE EXCEPTION 'forbidden';
+  END IF;
+
   DELETE FROM diary_entries WHERE batch_id = p_batch_id AND entry_type = 'auto';
   INSERT INTO diary_entries (batch_id, description, entry_date, entry_type, completed, notes)
   SELECT p_batch_id, e->>'description', (e->>'entry_date')::date, 'auto', false, e->>'notes'

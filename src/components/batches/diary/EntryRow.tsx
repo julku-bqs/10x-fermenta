@@ -75,8 +75,8 @@ export function EntryRow({ entry, isLast, onToggleComplete, onEdit, onDelete }: 
               onChange={(e) => {
                 setEditDate(e.target.value);
               }}
-              onBlur={() => {
-                if (!editDate) {
+              onBlur={(e) => {
+                if (!e.target.value) {
                   setEditDate(new Date().toISOString().slice(0, 10));
                 }
               }}

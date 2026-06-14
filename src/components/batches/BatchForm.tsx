@@ -12,7 +12,7 @@ import { batchInputClass, batchInputErrorClass, batchLabelClass, batchErrorMsgCl
 import { IngredientsSection } from "./IngredientsSection";
 import { ValidationWarnings } from "./ValidationWarnings";
 import { DiarySection } from "./diary/DiarySection";
-import type { LocalDiaryEntry } from "./diary/DiarySection";
+import type { CreateDiaryEntryInput } from "@/lib/schemas/diary-entry";
 
 interface BatchFormProps {
   mode: "create" | "edit";
@@ -99,7 +99,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const diaryEntriesRef = useRef<LocalDiaryEntry[]>([]);
+  const diaryEntriesRef = useRef<CreateDiaryEntryInput[]>([]);
 
   const [initialValues, setInitialValues] = useState(() => ({
     form: {

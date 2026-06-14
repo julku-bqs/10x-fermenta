@@ -64,6 +64,7 @@ export const POST: APIRoute = async (context) => {
           description: entry.description,
           entry_date: entry.entry_date,
           notes: entry.notes ?? null,
+          completed: entry.completed ?? false,
           entry_type: "user" as const,
         })),
       );

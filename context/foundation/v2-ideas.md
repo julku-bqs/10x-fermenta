@@ -5,6 +5,8 @@
 Sugar in a must has different density than water. Sugar content in a must/juice meadured in either %/Blg/Brix is basing on weight - 1L != 1kg.
 Idea is to take that into calculations utilising a formula to calculate existing sugar better (ingredient volume and measurement conversion to all existing fermentation sugar)
 
+→ Change: `sugar-calculation-improvements`
+
 ### Initial measurement
 
 In addition to providing sugar content in each ingredient, introduce initial density (Blg/Brix?) measurement.
@@ -37,6 +39,12 @@ Each diary entry could be amended with measurements - name of measurement, unit,
 ### Ingredients view
 
 Enable drag&drop for ingredients reordering
+
+### Regenerate plan dirty guard
+
+Disable "Regenerate Plan" button when batch form has unsaved changes. Tooltip informs user to save first — regeneration uses persisted state, not dirty form values.
+
+→ Change: `regenerate-dirty-guard`
 
 ## More ideas
 

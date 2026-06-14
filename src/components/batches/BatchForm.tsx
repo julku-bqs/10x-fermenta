@@ -298,6 +298,11 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 set("batch_date", e.target.value);
               }}
+              onBlur={() => {
+                if (!form.batch_date) {
+                  set("batch_date", new Date().toISOString().slice(0, 10));
+                }
+              }}
               className={cn(batchInputClass, fieldErrors.batch_date && batchInputErrorClass)}
             />
             {fieldErrors.batch_date && <p className={batchErrorMsgClass}>{fieldErrors.batch_date}</p>}

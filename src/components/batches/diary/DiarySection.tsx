@@ -19,6 +19,7 @@ export interface LocalDiaryEntry {
   description: string;
   entry_date: string;
   notes: string | null;
+  completed: boolean;
 }
 
 function getSortOrder(): SortOrder {
@@ -129,7 +130,7 @@ export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange 
 
   async function handleAdd(entry: { description: string; entry_date: string; notes: string | null }) {
     if (mode === "create") {
-      setLocalEntries((prev) => [...prev, entry]);
+      setLocalEntries((prev) => [...prev, { ...entry, completed: false }]);
       return;
     }
     const res = await fetch(`/api/batches/${batchId}/diary`, {
@@ -170,6 +171,10 @@ export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange 
     updates: Partial<Pick<LocalDiaryEntry, "description" | "entry_date" | "notes">>,
   ) {
     setLocalEntries((prev) => prev.map((e, i) => (i === index ? { ...e, ...updates } : e)));
+  }
+
+  function handleToggleCompleteLocal(index: number) {
+    setLocalEntries((prev) => prev.map((e, i) => (i === index ? { ...e, completed: !e.completed } : e)));
   }
 
   if (loading) {
@@ -252,6 +257,9 @@ export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange 
               key={`local-${i.toString()}`}
               entry={entry}
               isLast={i === localEntries.length - 1}
+              onToggleComplete={() => {
+                handleToggleCompleteLocal(i);
+              }}
               onEdit={(updates) => {
                 handleEditLocal(i, updates);
               }}
@@ -442,11 +450,13 @@ function TimelineEntry({
 function LocalEntryRow({
   entry,
   isLast,
+  onToggleComplete,
   onEdit,
   onDelete,
 }: {
   entry: LocalDiaryEntry;
   isLast: boolean;
+  onToggleComplete: () => void;
   onEdit: (updates: Partial<Pick<LocalDiaryEntry, "description" | "entry_date" | "notes">>) => void;
   onDelete: () => void;
 }) {
@@ -475,7 +485,18 @@ function LocalEntryRow({
   return (
     <div className="relative flex gap-4">
       <div className="flex flex-col items-center pt-1">
-        <div className="border-border bg-card z-10 h-5 w-5 shrink-0 rounded-full border-2" />
+        <button
+          type="button"
+          onClick={onToggleComplete}
+          className={cn(
+            "z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-all duration-200",
+            entry.completed
+              ? "bg-primary hover:bg-primary/80"
+              : "border-border bg-card hover:border-primary/50 border-2",
+          )}
+        >
+          {entry.completed && <Check className="h-3 w-3 text-white" />}
+        </button>
         {!isLast && <div className="bg-border mt-1 w-px flex-1" />}
       </div>
       <div className={cn("min-w-0 flex-1 pb-7", isLast && "pb-0")}>
@@ -534,7 +555,14 @@ function LocalEntryRow({
               <span className="text-muted-foreground text-sm font-medium tabular-nums">
                 {formatDate(entry.entry_date)}
               </span>
-              <p className="text-foreground mt-0.5 text-base leading-snug font-medium">{entry.description}</p>
+              <p
+                className={cn(
+                  "mt-0.5 text-base leading-snug transition-colors duration-150",
+                  entry.completed ? "text-muted-foreground line-through" : "text-foreground font-medium",
+                )}
+              >
+                {entry.description}
+              </p>
             </button>
 
             <div className="mt-1 flex items-center gap-3 pl-1">

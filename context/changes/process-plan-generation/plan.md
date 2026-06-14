@@ -763,34 +763,34 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 #### Automated
 
-- [x] 3.5.1 Type checking passes
-- [x] 3.5.2 Linting passes
-- [x] 3.5.3 Build succeeds
-- [x] 3.5.4 All existing tests still pass
+- [x] 3.5.1 Type checking passes — 4095958
+- [x] 3.5.2 Linting passes — 4095958
+- [x] 3.5.3 Build succeeds — 4095958
+- [x] 3.5.4 All existing tests still pass — 4095958
 
 #### Manual
 
-- [x] 3.5.5 Sugar calculation still works (Calculate button)
-- [x] 3.5.6 Manual sugar editing still works
-- [x] 3.5.7 Ingredient add/edit/delete still works
-- [x] 3.5.8 DiarySection still receives correct params
+- [x] 3.5.5 Sugar calculation still works (Calculate button) — 4095958
+- [x] 3.5.6 Manual sugar editing still works — 4095958
+- [x] 3.5.7 Ingredient add/edit/delete still works — 4095958
+- [x] 3.5.8 DiarySection still receives correct params — 4095958
 
 ### Phase 4: Integration & Polish
 
 #### Automated
 
-- [ ] 4.1 All existing tests still pass
-- [ ] 4.2 Type checking passes
-- [ ] 4.3 Linting passes
-- [ ] 4.4 Build succeeds
+- [x] 4.1 All existing tests still pass
+- [x] 4.2 Type checking passes
+- [x] 4.3 Linting passes
+- [x] 4.4 Build succeeds
 
 #### Manual
 
-- [ ] 4.5 Process type defaults to juice for new batches
-- [ ] 4.6 Batch form defaults batch_date to today
-- [ ] 4.7 Juice + dry batch (no sugar) → ~11 entries generated
-- [ ] 4.8 Pulp + semi_sweet + sugar batch → ~16 entries generated
-- [ ] 4.9 Legacy batch shows empty state with Generate button
-- [ ] 4.10 Sort toggle persists across page reloads (localStorage)
-- [ ] 4.11 API errors show user-friendly feedback
-- [ ] 4.12 Completed toggle works on local entries in create mode
+- [x] 4.5 Process type defaults to juice for new batches
+- [x] 4.6 Batch form defaults batch_date to today
+- [x] 4.7 Juice + dry batch (no sugar) → ~11 entries generated
+- [x] 4.8 Pulp + semi_sweet + sugar batch → ~16 entries generated
+- [x] 4.9 Legacy batch shows empty state with Generate button
+- [x] 4.10 Sort toggle persists across page reloads (localStorage)
+- [x] 4.11 API errors show user-friendly feedback
+- [x] 4.12 Completed toggle works on local entries in create mode

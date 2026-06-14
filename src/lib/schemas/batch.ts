@@ -24,6 +24,7 @@ export const createBatchSchema = z.object({
         description: z.string().min(1),
         entry_date: z.iso.date(),
         notes: z.string().nullable().optional(),
+        completed: z.boolean().optional(),
       }),
     )
     .optional(),

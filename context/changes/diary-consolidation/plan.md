@@ -248,8 +248,8 @@ No performance impact — this is a code consolidation. The unified component re
 
 #### Manual
 
-- [x] 1.3 Standalone diary entry creation without date defaults to today
-- [x] 1.4 Batch diary entries preserve specified dates
+- [x] 1.3 Standalone diary entry creation without date defaults to today — 73a32fd
+- [x] 1.4 Batch diary entries preserve specified dates — 73a32fd
 
 ### Phase 2: Extract Unified EntryRow Component
 
@@ -260,20 +260,20 @@ No performance impact — this is a code consolidation. The unified component re
 
 #### Manual
 
-- [x] 2.3 Component renders correctly when wired up
+- [x] 2.3 Component renders correctly when wired up — 73a32fd
 
 ### Phase 3: Wire Up and Eliminate Duplicates
 
 #### Automated
 
-- [x] 3.1 Lint passes after consolidation
-- [x] 3.2 Build passes after consolidation
-- [x] 3.3 No remaining references to LocalDiaryEntry, TimelineEntry, or LocalEntryRow
+- [x] 3.1 Lint passes after consolidation — 73a32fd
+- [x] 3.2 Build passes after consolidation — 73a32fd
+- [x] 3.3 No remaining references to LocalDiaryEntry, TimelineEntry, or LocalEntryRow — 73a32fd
 
 #### Manual
 
-- [x] 3.4 Edit mode diary entries render correctly
-- [x] 3.5 Notes expand shows "No notes" placeholder for null notes
-- [x] 3.6 Date onblur restores today when cleared
-- [x] 3.7 Create mode entries render and function correctly
-- [x] 3.8 No visual regressions in diary section
+- [x] 3.4 Edit mode diary entries render correctly — 73a32fd
+- [x] 3.5 Notes expand shows "No notes" placeholder for null notes — 73a32fd
+- [x] 3.6 Date onblur restores today when cleared — 73a32fd
+- [x] 3.7 Create mode entries render and function correctly — 73a32fd
+- [x] 3.8 No visual regressions in diary section — 73a32fd

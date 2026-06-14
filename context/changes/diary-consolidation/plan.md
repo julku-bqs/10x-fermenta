@@ -243,8 +243,8 @@ No performance impact — this is a code consolidation. The unified component re
 
 #### Automated
 
-- [x] 1.1 Lint passes after schema changes
-- [x] 1.2 Build passes after schema changes
+- [x] 1.1 Lint passes after schema changes — 6a9a315
+- [x] 1.2 Build passes after schema changes — 6a9a315
 
 #### Manual
 

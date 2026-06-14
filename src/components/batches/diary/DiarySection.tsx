@@ -467,9 +467,11 @@ function LocalEntryRow({
   const [editNotes, setEditNotes] = useState(entry.notes ?? "");
 
   function handleSave() {
+    const resolvedDate = editDate.length > 0 ? editDate : new Date().toISOString().slice(0, 10);
+    setEditDate(resolvedDate);
     onEdit({
       description: editDesc,
-      entry_date: editDate,
+      entry_date: resolvedDate,
       notes: editNotes.trim() || null,
     });
     setEditing(false);
@@ -633,7 +635,7 @@ function AddEntryForm({
     if (!desc.trim()) return;
     onAdd({
       description: desc.trim(),
-      entry_date: date,
+      entry_date: date.length > 0 ? date : new Date().toISOString().slice(0, 10),
       notes: notes.trim() || null,
     });
     setDesc("");

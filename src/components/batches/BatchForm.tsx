@@ -11,7 +11,8 @@ import { IngredientsList } from "./IngredientsList";
 import { batchInputClass, batchInputErrorClass, batchLabelClass, batchErrorMsgClass } from "./styles";
 import { IngredientsSection } from "./IngredientsSection";
 import { ValidationWarnings } from "./ValidationWarnings";
-import { DiaryMockupSwitcher } from "./diary/DiaryMockupSwitcher";
+import { DiarySection } from "./diary/DiarySection";
+import type { LocalDiaryEntry } from "./diary/DiarySection";
 
 interface BatchFormProps {
   mode: "create" | "edit";
@@ -23,7 +24,7 @@ interface BatchFormProps {
 interface FormState {
   name: string;
   batch_date: string;
-  process_type: "pulp" | "juice" | "";
+  process_type: "pulp" | "juice";
   target_volume_liters: string;
   target_abv: string;
   planned_sweetness: "dry" | "semi_dry" | "semi_sweet" | "sweet";
@@ -36,8 +37,8 @@ interface FormState {
 export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProps) {
   const [form, setForm] = useState<FormState>({
     name: initialData?.name ?? "",
-    batch_date: initialData?.batch_date ?? "",
-    process_type: initialData?.process_type ?? "",
+    batch_date: initialData?.batch_date ?? new Date().toISOString().slice(0, 10),
+    process_type: initialData?.process_type ?? "juice",
     target_volume_liters: initialData?.target_volume_liters?.toString() ?? "",
     target_abv: initialData?.target_abv?.toString() ?? "",
     planned_sweetness: initialData?.planned_sweetness ?? "dry",
@@ -98,12 +99,13 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const diaryEntriesRef = useRef<LocalDiaryEntry[]>([]);
 
   const [initialValues, setInitialValues] = useState(() => ({
     form: {
       name: initialData?.name ?? "",
-      batch_date: initialData?.batch_date ?? "",
-      process_type: initialData?.process_type ?? "",
+      batch_date: initialData?.batch_date ?? new Date().toISOString().slice(0, 10),
+      process_type: initialData?.process_type ?? "juice",
       target_volume_liters: initialData?.target_volume_liters?.toString() ?? "",
       target_abv: initialData?.target_abv?.toString() ?? "",
       planned_sweetness: initialData?.planned_sweetness ?? "dry",
@@ -158,8 +160,8 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
 
     const payload = {
       name: form.name,
-      batch_date: form.batch_date || null,
-      process_type: form.process_type === "" ? undefined : form.process_type,
+      batch_date: form.batch_date || new Date().toISOString().slice(0, 10),
+      process_type: form.process_type,
       target_volume_liters: form.target_volume_liters ? parseFloat(form.target_volume_liters) : null,
       target_abv: form.target_abv ? parseFloat(form.target_abv) : null,
       planned_sweetness: form.planned_sweetness,
@@ -168,6 +170,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       fermentation_sugar_kg: parseFloat(form.fermentation_sugar_kg) || 0,
       sweetness_sugar_kg: parseFloat(form.sweetness_sugar_kg) || 0,
       ingredients,
+      ...(mode === "create" && diaryEntriesRef.current.length > 0 ? { diary_entries: diaryEntriesRef.current } : {}),
     };
 
     const schema = mode === "create" ? createBatchSchema : updateBatchSchema;
@@ -302,7 +305,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
 
           <div>
             <label htmlFor="process_type" className={batchLabelClass}>
-              Process Type <span className="text-red-500">*</span>
+              Process Type
             </label>
             <select
               id="process_type"
@@ -312,7 +315,6 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               }}
               className={cn(batchInputClass, fieldErrors.process_type && batchInputErrorClass)}
             >
-              {mode === "create" && <option value="">Select process type…</option>}
               <option value="juice">Juice</option>
               <option value="pulp">Pulp</option>
             </select>
@@ -423,9 +425,28 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
           />
         </section>
 
-        {/* Section 4: Diary mockup exploration (Phase 0 — temporary) */}
+        {/* Section 4: Process Diary */}
         <section className="space-y-4">
-          <DiaryMockupSwitcher />
+          <DiarySection
+            batchParams={{
+              name: form.name,
+              batch_date: form.batch_date,
+              process_type: form.process_type,
+              target_volume_liters: form.target_volume_liters ? parseFloat(form.target_volume_liters) : null,
+              target_abv: form.target_abv ? parseFloat(form.target_abv) : null,
+              planned_sweetness: form.planned_sweetness,
+              yeast_name: form.yeast_name || null,
+              yeast_alcohol_tolerance: form.yeast_alcohol_tolerance ? parseFloat(form.yeast_alcohol_tolerance) : null,
+              fermentation_sugar_kg: parseFloat(form.fermentation_sugar_kg) || 0,
+              sweetness_sugar_kg: parseFloat(form.sweetness_sugar_kg) || 0,
+              ingredients,
+            }}
+            batchId={initialData?.id ?? null}
+            mode={mode}
+            onLocalEntriesChange={(entries) => {
+              diaryEntriesRef.current = entries;
+            }}
+          />
         </section>
       </div>
 

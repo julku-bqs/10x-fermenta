@@ -713,43 +713,43 @@ Process type default, edge cases, final polish, and end-to-end verification.
 
 #### Automated
 
-- [x] 2.0 Route restructuring: `[id].ts` → `[id]/index.ts` (existing batch endpoint still works)
-- [x] 2.1 Type checking passes
-- [x] 2.2 Linting passes
-- [x] 2.3 Build succeeds
+- [x] 2.0 Route restructuring: `[id].ts` → `[id]/index.ts` (existing batch endpoint still works) — 88cba2a
+- [x] 2.1 Type checking passes — 88cba2a
+- [x] 2.2 Linting passes — 88cba2a
+- [x] 2.3 Build succeeds — 88cba2a
 
 #### Manual
 
-- [x] 2.4 POST /api/batches creates batch AND diary entries
-- [x] 2.5 GET /api/batches/[id]/diary returns entries sorted chronologically
-- [x] 2.6 POST /api/batches/[id]/diary creates user entry
-- [x] 2.7 PUT /api/batches/[id]/diary/[entryId] updates entry (description, date, notes, completed)
-- [x] 2.8 DELETE /api/batches/[id]/diary/[entryId] removes entry
-- [x] 2.9 POST /api/batches/[id]/diary/regenerate replaces auto, preserves user/promoted
-- [x] 2.10 RLS prevents cross-user access
-- [x] 2.11 Editing auto entry description/notes triggers ownership promotion
+- [x] 2.4 POST /api/batches creates batch AND diary entries — 88cba2a
+- [x] 2.5 GET /api/batches/[id]/diary returns entries sorted chronologically — 88cba2a
+- [x] 2.6 POST /api/batches/[id]/diary creates user entry — 88cba2a
+- [x] 2.7 PUT /api/batches/[id]/diary/[entryId] updates entry (description, date, notes, completed) — 88cba2a
+- [x] 2.8 DELETE /api/batches/[id]/diary/[entryId] removes entry — 88cba2a
+- [x] 2.9 POST /api/batches/[id]/diary/regenerate replaces auto, preserves user/promoted — 88cba2a
+- [x] 2.10 RLS prevents cross-user access — 88cba2a
+- [x] 2.11 Editing auto entry description/notes triggers ownership promotion — 88cba2a
 
 ### Phase 3: UI Implementation
 
 #### Automated
 
-- [ ] 3.1 Type checking passes
-- [ ] 3.2 Linting passes
-- [ ] 3.3 Build succeeds
+- [x] 3.1 Type checking passes
+- [x] 3.2 Linting passes
+- [x] 3.3 Build succeeds
 
 #### Manual
 
-- [ ] 3.4 New batch creation shows diary entries immediately
-- [ ] 3.5 Sort toggle switches between ASC/DESC, entries re-order
-- [ ] 3.6 Manual entries addable during batch creation (persist after save)
-- [ ] 3.6 Completed toggle persists on reload
-- [ ] 3.7 Edit entry description/date/notes persists
-- [ ] 3.8 Editing auto entry promotes to user type (survives regenerate)
-- [ ] 3.9 Notes section expandable with scrollable area
-- [ ] 3.10 Add manual entry appears in correct position
-- [ ] 3.11 Delete entry persists
-- [ ] 3.12 Regenerate replaces auto, preserves user/promoted entries
-- [ ] 3.13 Responsive layout on mobile
+- [x] 3.4 New batch creation shows diary entries immediately
+- [x] 3.5 Sort toggle switches between ASC/DESC, entries re-order
+- [x] 3.6 Manual entries addable during batch creation (persist after save)
+- [x] 3.6 Completed toggle persists on reload
+- [x] 3.7 Edit entry description/date/notes persists
+- [x] 3.8 Editing auto entry promotes to user type (survives regenerate)
+- [x] 3.9 Notes section expandable with scrollable area
+- [x] 3.10 Add manual entry appears in correct position
+- [x] 3.11 Delete entry persists
+- [x] 3.12 Regenerate replaces auto, preserves user/promoted entries
+- [x] 3.13 Responsive layout on mobile
 
 ### Phase 3.5: IngredientsSection Props Refactoring
 
@@ -785,3 +785,4 @@ Process type default, edge cases, final polish, and end-to-end verification.
 - [ ] 4.9 Legacy batch shows empty state with Generate button
 - [ ] 4.10 Sort toggle persists across page reloads (localStorage)
 - [ ] 4.11 API errors show user-friendly feedback
+- [ ] 4.12 Completed toggle works on local entries in create mode

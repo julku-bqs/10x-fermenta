@@ -56,6 +56,8 @@ Create a `diaryEntryBaseSchema` that both `createDiaryEntrySchema` and the batch
 
 **Contract**: `diaryEntryBaseSchema` is a `z.object` with `description: z.string().min(1)`, `entry_date: z.iso.date().optional()`, `notes: z.string().nullable().optional()`, `completed: z.boolean().optional()`. `createDiaryEntrySchema` equals `diaryEntryBaseSchema`. Types re-exported unchanged.
 
+> **Addendum (2026-06-16)**: `entry_date` uses `z.union([z.iso.date(), z.literal("")]).optional().transform(val => val === "" ? undefined : val)` to handle empty strings from HTML date inputs. Functionally equivalent for valid dates; silently normalizes empty inputs.
+
 #### 2. Batch schema uses shared base
 
 **File**: `src/lib/schemas/batch.ts`

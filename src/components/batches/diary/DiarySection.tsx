@@ -30,9 +30,11 @@ function sortEntries(entries: DiaryEntry[], order: SortOrder): DiaryEntry[] {
   });
 }
 
+type LocalEntry = Required<CreateDiaryEntryInput> & { _localId: string };
+
 export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange }: DiarySectionProps) {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
-  const [localEntries, setLocalEntries] = useState<Required<CreateDiaryEntryInput>[]>([]);
+  const [localEntries, setLocalEntries] = useState<LocalEntry[]>([]);
   const [loading, setLoading] = useState(mode === "edit");
   const [error, setError] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(getSortOrder);
@@ -59,9 +61,9 @@ export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange 
     void fetchEntries();
   }, [mode, batchId]);
 
-  // Propagate local entries to parent (create mode)
+  // Propagate local entries to parent (create mode), stripping internal IDs
   useEffect(() => {
-    onLocalEntriesChange?.(localEntries);
+    onLocalEntriesChange?.(localEntries.map(({ _localId, ...rest }) => rest));
   }, [localEntries, onLocalEntriesChange]);
 
   const toggleSort = useCallback(() => {
@@ -114,7 +116,7 @@ export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange 
 
   async function handleAdd(entry: { description: string; entry_date: string; notes: string | null }) {
     if (mode === "create") {
-      setLocalEntries((prev) => [...prev, { ...entry, completed: false }]);
+      setLocalEntries((prev) => [...prev, { ...entry, completed: false, _localId: crypto.randomUUID() }]);
       return;
     }
     const res = await fetch(`/api/batches/${batchId}/diary`, {
@@ -146,19 +148,19 @@ export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange 
     }
   }
 
-  function handleDeleteLocal(index: number) {
-    setLocalEntries((prev) => prev.filter((_, i) => i !== index));
+  function handleDeleteLocal(localId: string) {
+    setLocalEntries((prev) => prev.filter((e) => e._localId !== localId));
   }
 
   function handleEditLocal(
-    index: number,
+    localId: string,
     updates: Partial<Pick<CreateDiaryEntryInput, "description" | "entry_date" | "notes">>,
   ) {
-    setLocalEntries((prev) => prev.map((e, i) => (i === index ? { ...e, ...updates } : e)));
+    setLocalEntries((prev) => prev.map((e) => (e._localId === localId ? { ...e, ...updates } : e)));
   }
 
-  function handleToggleCompleteLocal(index: number) {
-    setLocalEntries((prev) => prev.map((e, i) => (i === index ? { ...e, completed: !e.completed } : e)));
+  function handleToggleCompleteLocal(localId: string) {
+    setLocalEntries((prev) => prev.map((e) => (e._localId === localId ? { ...e, completed: !e.completed } : e)));
   }
 
   if (loading) {
@@ -243,17 +245,17 @@ export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange 
         <div className="pl-1">
           {localEntries.map((entry, i) => (
             <EntryRow
-              key={`local-${i.toString()}`}
+              key={entry._localId}
               entry={entry}
               isLast={i === localEntries.length - 1}
               onToggleComplete={() => {
-                handleToggleCompleteLocal(i);
+                handleToggleCompleteLocal(entry._localId);
               }}
               onEdit={(updates) => {
-                handleEditLocal(i, updates);
+                handleEditLocal(entry._localId, updates);
               }}
               onDelete={() => {
-                handleDeleteLocal(i);
+                handleDeleteLocal(entry._localId);
               }}
             />
           ))}

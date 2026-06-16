@@ -13,16 +13,13 @@ export interface ValidationInput {
   planned_sweetness: SweetnessLevel;
   yeast_alcohol_tolerance: number | null;
   has_yeast: boolean;
+  fermentation_sugar_kg: number;
+  sweetness_sugar_kg: number;
   ingredients: Ingredient[];
 }
 
 /** A validation rule is a pure function: return a warning when the condition fires, null otherwise. */
 type ValidationRule = (input: ValidationInput, calcResult: CalculationResult | null) => ValidationWarning | null;
-
-function fermentationSugarGrams(ingredients: Ingredient[]): number {
-  const entry = ingredients.find((i) => i.type === "fermentation_sugar");
-  return entry ? entry.amount_liters * 1000 : 0;
-}
 
 // Rule 1: No yeast
 const noYeast: ValidationRule = (input) =>
@@ -37,7 +34,6 @@ const noTargetAbv: ValidationRule = (input) =>
     : null;
 
 // Rule 3: ABV > yeast tolerance
-// Guard: both values must exist. Domain: target ABV exceeds tolerance.
 const abvExceedsTolerance: ValidationRule = (input) => {
   if (input.target_abv === null || input.yeast_alcohol_tolerance === null) return null;
   return input.target_abv > input.yeast_alcohol_tolerance
@@ -46,7 +42,6 @@ const abvExceedsTolerance: ValidationRule = (input) => {
 };
 
 // Rule 4: Non-dry sweetness + tolerance won't stop fermentation
-// Guard: non-dry wine with both tolerance and target ABV. Domain: tolerance > target ABV.
 const sweetnessWontStop: ValidationRule = (input) => {
   if (input.planned_sweetness === "dry" || input.yeast_alcohol_tolerance === null || input.target_abv === null)
     return null;
@@ -60,7 +55,6 @@ const sweetnessWontStop: ValidationRule = (input) => {
 };
 
 // Rule 5: Ingredient sugar alone already covers ABV needs
-// Guard: calcResult must exist. Domain: ingredient sugar >= needed for ABV.
 const ingredientSugarExceedsNeeded: ValidationRule = (_input, calcResult) => {
   if (calcResult === null) return null;
   return calcResult.total_ingredient_sugar_grams >= calcResult.sugar_needed_for_abv_grams
@@ -72,23 +66,20 @@ const ingredientSugarExceedsNeeded: ValidationRule = (_input, calcResult) => {
     : null;
 };
 
-// Rule 6: Total sugar (ingredients + fermentation entry) is insufficient
-// Guard: calcResult must exist. Domain: total sugar < needed for ABV.
+// Rule 6: Total sugar (ingredients + fermentation sugar) is insufficient
 const totalSugarInsufficient: ValidationRule = (input, calcResult) => {
   if (calcResult === null) return null;
-  const totalGrams = calcResult.total_ingredient_sugar_grams + fermentationSugarGrams(input.ingredients);
+  const totalGrams = calcResult.total_ingredient_sugar_grams + input.fermentation_sugar_kg * 1000;
   return totalGrams < calcResult.sugar_needed_for_abv_grams
     ? { id: "total-sugar-insufficient", message: "Total sugar (ingredients + added) is insufficient for target ABV." }
     : null;
 };
 
-// Rule 7: Total sugar (ingredients + fermentation entry) exceeds ABV target
-// Guard: calcResult exists AND ingredient sugar alone does not already exceed needed (Rule 5 handles that).
-// Domain: total > needed, unless yeast tolerance ceiling prevents the ABV overshoot.
+// Rule 7: Total sugar (ingredients + fermentation sugar) exceeds ABV target
 const totalSugarExceedsTarget: ValidationRule = (input, calcResult) => {
   if (calcResult === null) return null;
   if (calcResult.total_ingredient_sugar_grams >= calcResult.sugar_needed_for_abv_grams) return null;
-  const totalGrams = calcResult.total_ingredient_sugar_grams + fermentationSugarGrams(input.ingredients);
+  const totalGrams = calcResult.total_ingredient_sugar_grams + input.fermentation_sugar_kg * 1000;
   if (totalGrams <= calcResult.sugar_needed_for_abv_grams) return null;
   if (
     input.yeast_alcohol_tolerance !== null &&
@@ -104,13 +95,9 @@ const totalSugarExceedsTarget: ValidationRule = (input, calcResult) => {
 };
 
 // Rule 8: Sweetness sugar amount outside expected range
-// Guard: calcResult exists, non-dry wine, volume known, sweetness entry present.
-// Domain: sugar g/L ratio falls outside the sweetness band.
 const sweetnessOutOfRange: ValidationRule = (input, calcResult) => {
   if (calcResult === null || input.planned_sweetness === "dry" || !input.target_volume_liters) return null;
-  const sweetnessEntry = input.ingredients.find((i) => i.type === "sweetness_sugar");
-  if (!sweetnessEntry) return null;
-  const sweetnessSugarGPerL = (sweetnessEntry.amount_liters * 1000) / input.target_volume_liters;
+  const sweetnessSugarGPerL = (input.sweetness_sugar_kg * 1000) / input.target_volume_liters;
   const [min, max] = SWEETNESS_RANGES[input.planned_sweetness];
   return sweetnessSugarGPerL < min || sweetnessSugarGPerL > max
     ? {

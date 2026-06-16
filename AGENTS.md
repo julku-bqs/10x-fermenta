@@ -75,6 +75,10 @@ Environment setup and deployment: see @README.md.
 
 After implementation is committed, use `/submit-pr` skill to automate: push → issue → PR → link output. Merge is always manual after review.
 
+## Domain Knowledge
+
+This is a **home winemaking** application. Domain-specific rules (fermentation timelines, sugar thresholds, process steps, stabilization protocols) are documented in `context/foundation/domain_knowledge.md`. Load that file when making changes to domain logic (e.g., process plan generation, validation rules, calculation services). Skip it for UI-only or infrastructure work.
+
 ## CI
 
 GitHub Actions workflow (`.github/workflows/ci.yml`) runs lint + build on every push and PR to master. Requires `SUPABASE_URL` and `SUPABASE_KEY` repository secrets for the build step.

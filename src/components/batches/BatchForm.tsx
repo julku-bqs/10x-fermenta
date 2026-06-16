@@ -11,6 +11,8 @@ import { IngredientsList } from "./IngredientsList";
 import { batchInputClass, batchInputErrorClass, batchLabelClass, batchErrorMsgClass } from "./styles";
 import { IngredientsSection } from "./IngredientsSection";
 import { ValidationWarnings } from "./ValidationWarnings";
+import { DiarySection } from "./diary/DiarySection";
+import type { CreateDiaryEntryInput } from "@/lib/schemas/diary-entry";
 
 interface BatchFormProps {
   mode: "create" | "edit";
@@ -22,50 +24,32 @@ interface BatchFormProps {
 interface FormState {
   name: string;
   batch_date: string;
-  process_type: "pulp" | "juice" | "";
+  process_type: "pulp" | "juice";
   target_volume_liters: string;
   target_abv: string;
   planned_sweetness: "dry" | "semi_dry" | "semi_sweet" | "sweet";
   yeast_name: string;
   yeast_alcohol_tolerance: string;
+  fermentation_sugar_kg: string;
+  sweetness_sugar_kg: string;
 }
 
 export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProps) {
   const [form, setForm] = useState<FormState>({
     name: initialData?.name ?? "",
-    batch_date: initialData?.batch_date ?? "",
-    process_type: initialData?.process_type ?? "",
+    batch_date: initialData?.batch_date ?? new Date().toISOString().slice(0, 10),
+    process_type: initialData?.process_type ?? "juice",
     target_volume_liters: initialData?.target_volume_liters?.toString() ?? "",
     target_abv: initialData?.target_abv?.toString() ?? "",
     planned_sweetness: initialData?.planned_sweetness ?? "dry",
     yeast_name: initialData?.yeast_name ?? "",
     yeast_alcohol_tolerance: initialData?.yeast_alcohol_tolerance?.toString() ?? "",
+    fermentation_sugar_kg: initialData?.fermentation_sugar_kg.toString() ?? "0",
+    sweetness_sugar_kg: initialData?.sweetness_sugar_kg.toString() ?? "0",
   });
 
-  const [ingredients, setIngredients] = useState<Ingredient[]>(() => {
-    const base = initialData?.ingredients ?? [];
-    const result = [...base];
-    const sweetness = initialData?.planned_sweetness ?? "dry";
-    if (!result.some((i) => i.type === "fermentation_sugar")) {
-      result.unshift({
-        type: "fermentation_sugar",
-        name: "Fermentation Sugar",
-        amount_liters: 0,
-        sugar_content_percent: null,
-        sort_order: -2,
-      });
-    }
-    if (sweetness !== "dry" && !result.some((i) => i.type === "sweetness_sugar")) {
-      result.push({
-        type: "sweetness_sugar",
-        name: "Sweetness Sugar",
-        amount_liters: 0,
-        sugar_content_percent: null,
-        sort_order: -1,
-      });
-    }
-    return result;
-  });
+  const [ingredients, setIngredients] = useState<Ingredient[]>(initialData?.ingredients ?? []);
+
   function computeWarnings(formState: FormState, ingredientList: Ingredient[]): ValidationWarning[] {
     const abv = formState.target_abv ? parseFloat(formState.target_abv) : null;
     const volume = formState.target_volume_liters ? parseFloat(formState.target_volume_liters) : null;
@@ -87,6 +71,8 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
           ? parseFloat(formState.yeast_alcohol_tolerance)
           : null,
         has_yeast: Boolean(formState.yeast_name.trim() || formState.yeast_alcohol_tolerance.trim()),
+        fermentation_sugar_kg: parseFloat(formState.fermentation_sugar_kg) || 0,
+        sweetness_sugar_kg: parseFloat(formState.sweetness_sugar_kg) || 0,
         ingredients: ingredientList,
       },
       calcResult,
@@ -97,13 +83,15 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
     if (mode !== "edit" || !initialData) return [];
     const initialFormState: FormState = {
       name: initialData.name,
-      batch_date: initialData.batch_date ?? "",
+      batch_date: initialData.batch_date,
       process_type: initialData.process_type,
       target_volume_liters: initialData.target_volume_liters?.toString() ?? "",
       target_abv: initialData.target_abv?.toString() ?? "",
       planned_sweetness: initialData.planned_sweetness,
       yeast_name: initialData.yeast_name ?? "",
       yeast_alcohol_tolerance: initialData.yeast_alcohol_tolerance?.toString() ?? "",
+      fermentation_sugar_kg: initialData.fermentation_sugar_kg.toString(),
+      sweetness_sugar_kg: initialData.sweetness_sugar_kg.toString(),
     };
     return computeWarnings(initialFormState, initialData.ingredients);
   });
@@ -111,17 +99,20 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const diaryEntriesRef = useRef<CreateDiaryEntryInput[]>([]);
 
   const [initialValues, setInitialValues] = useState(() => ({
     form: {
       name: initialData?.name ?? "",
-      batch_date: initialData?.batch_date ?? "",
-      process_type: initialData?.process_type ?? "",
+      batch_date: initialData?.batch_date ?? new Date().toISOString().slice(0, 10),
+      process_type: initialData?.process_type ?? "juice",
       target_volume_liters: initialData?.target_volume_liters?.toString() ?? "",
       target_abv: initialData?.target_abv?.toString() ?? "",
       planned_sweetness: initialData?.planned_sweetness ?? "dry",
       yeast_name: initialData?.yeast_name ?? "",
       yeast_alcohol_tolerance: initialData?.yeast_alcohol_tolerance?.toString() ?? "",
+      fermentation_sugar_kg: initialData?.fermentation_sugar_kg.toString() ?? "0",
+      sweetness_sugar_kg: initialData?.sweetness_sugar_kg.toString() ?? "0",
     },
     ingredients: initialData?.ingredients ?? [],
   }));
@@ -153,25 +144,9 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
   function handleSweetnessChange(value: string) {
     const newSweetness = value as SweetnessLevel;
     set("planned_sweetness", newSweetness);
-    setIngredients((prev) => {
-      if (newSweetness === "dry") {
-        return prev.filter((i) => i.type !== "sweetness_sugar");
-      }
-      const hasSweet = prev.some((i) => i.type === "sweetness_sugar");
-      if (!hasSweet) {
-        return [
-          ...prev,
-          {
-            type: "sweetness_sugar" as const,
-            name: "Sweetness Sugar",
-            amount_liters: 0,
-            sugar_content_percent: null,
-            sort_order: -1,
-          },
-        ];
-      }
-      return prev;
-    });
+    if (newSweetness === "dry") {
+      setForm((prev) => ({ ...prev, sweetness_sugar_kg: "0" }));
+    }
   }
 
   function handleBlur() {
@@ -185,14 +160,17 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
 
     const payload = {
       name: form.name,
-      batch_date: form.batch_date || null,
-      process_type: form.process_type === "" ? undefined : form.process_type,
+      batch_date: form.batch_date || new Date().toISOString().slice(0, 10),
+      process_type: form.process_type,
       target_volume_liters: form.target_volume_liters ? parseFloat(form.target_volume_liters) : null,
       target_abv: form.target_abv ? parseFloat(form.target_abv) : null,
       planned_sweetness: form.planned_sweetness,
       yeast_name: form.yeast_name || null,
       yeast_alcohol_tolerance: form.yeast_alcohol_tolerance ? parseFloat(form.yeast_alcohol_tolerance) : null,
+      fermentation_sugar_kg: parseFloat(form.fermentation_sugar_kg) || 0,
+      sweetness_sugar_kg: parseFloat(form.sweetness_sugar_kg) || 0,
       ingredients,
+      ...(mode === "create" && diaryEntriesRef.current.length > 0 ? { diary_entries: diaryEntriesRef.current } : {}),
     };
 
     const schema = mode === "create" ? createBatchSchema : updateBatchSchema;
@@ -233,7 +211,6 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       }
 
       if (json.data) {
-        // Mark form as clean before navigation/callback to prevent spurious beforeunload prompt
         setInitialValues({ form: { ...form }, ingredients: [...ingredients] });
         isDirtyRef.current = false;
         if (onSuccess) {
@@ -321,6 +298,11 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 set("batch_date", e.target.value);
               }}
+              onBlur={() => {
+                if (!form.batch_date) {
+                  set("batch_date", new Date().toISOString().slice(0, 10));
+                }
+              }}
               className={cn(batchInputClass, fieldErrors.batch_date && batchInputErrorClass)}
             />
             {fieldErrors.batch_date && <p className={batchErrorMsgClass}>{fieldErrors.batch_date}</p>}
@@ -328,7 +310,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
 
           <div>
             <label htmlFor="process_type" className={batchLabelClass}>
-              Process Type <span className="text-red-500">*</span>
+              Process Type
             </label>
             <select
               id="process_type"
@@ -338,7 +320,6 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               }}
               className={cn(batchInputClass, fieldErrors.process_type && batchInputErrorClass)}
             >
-              {mode === "create" && <option value="">Select process type…</option>}
               <option value="juice">Juice</option>
               <option value="pulp">Pulp</option>
             </select>
@@ -430,19 +411,60 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
           />
 
           <IngredientsSection
-            ingredients={ingredients}
-            onChange={setIngredients}
             batchParams={{
+              name: form.name,
+              batch_date: form.batch_date,
+              process_type: form.process_type,
               target_volume_liters: form.target_volume_liters ? parseFloat(form.target_volume_liters) : null,
               target_abv: form.target_abv ? parseFloat(form.target_abv) : null,
               planned_sweetness: form.planned_sweetness,
+              yeast_name: form.yeast_name || null,
+              yeast_alcohol_tolerance: form.yeast_alcohol_tolerance ? parseFloat(form.yeast_alcohol_tolerance) : null,
+              fermentation_sugar_kg: parseFloat(form.fermentation_sugar_kg) || 0,
+              sweetness_sugar_kg: parseFloat(form.sweetness_sugar_kg) || 0,
+              ingredients,
+            }}
+            onBatchChange={(updates) => {
+              if (updates.ingredients !== undefined) {
+                setIngredients(updates.ingredients);
+              }
+              if (updates.fermentation_sugar_kg !== undefined || updates.sweetness_sugar_kg !== undefined) {
+                setForm((prev) => ({
+                  ...prev,
+                  ...(updates.fermentation_sugar_kg !== undefined
+                    ? { fermentation_sugar_kg: updates.fermentation_sugar_kg.toString() }
+                    : {}),
+                  ...(updates.sweetness_sugar_kg !== undefined
+                    ? { sweetness_sugar_kg: updates.sweetness_sugar_kg.toString() }
+                    : {}),
+                }));
+              }
             }}
           />
         </section>
 
-        {/* Section 4: Diary placeholder */}
-        <section className="bg-muted flex items-center justify-center rounded-lg p-5">
-          <p className="text-muted-foreground text-sm italic">Process diary — coming soon</p>
+        {/* Section 4: Process Diary */}
+        <section className="space-y-4">
+          <DiarySection
+            batchParams={{
+              name: form.name,
+              batch_date: form.batch_date,
+              process_type: form.process_type,
+              target_volume_liters: form.target_volume_liters ? parseFloat(form.target_volume_liters) : null,
+              target_abv: form.target_abv ? parseFloat(form.target_abv) : null,
+              planned_sweetness: form.planned_sweetness,
+              yeast_name: form.yeast_name || null,
+              yeast_alcohol_tolerance: form.yeast_alcohol_tolerance ? parseFloat(form.yeast_alcohol_tolerance) : null,
+              fermentation_sugar_kg: parseFloat(form.fermentation_sugar_kg) || 0,
+              sweetness_sugar_kg: parseFloat(form.sweetness_sugar_kg) || 0,
+              ingredients,
+            }}
+            batchId={initialData?.id ?? null}
+            mode={mode}
+            onLocalEntriesChange={(entries) => {
+              diaryEntriesRef.current = entries;
+            }}
+          />
         </section>
       </div>
 

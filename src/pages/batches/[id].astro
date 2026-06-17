@@ -1,6 +1,7 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { BatchForm } from "@/components/batches/BatchForm";
+import { DeleteBatchDialog } from "@/components/batches/DeleteBatchDialog";
 import { createClient } from "@/lib/supabase";
 import type { Batch } from "@/types";
 
@@ -27,14 +28,13 @@ const batch = data as Batch;
 
   <BatchForm client:load mode="edit" title={batch.name} initialData={batch} />
 
-  <div class="mt-8 flex justify-end border-t pt-6">
-    <button
-      type="button"
-      disabled
-      title="Coming soon"
-      class="cursor-not-allowed rounded-md border border-destructive/30 px-4 py-2 text-sm font-medium text-destructive/50 opacity-50"
+  <div class="mt-8 flex justify-end gap-3 border-t pt-6">
+    <a
+      href={`/batches/new?from=${batch.id}`}
+      class="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
     >
-      Delete Batch
-    </button>
+      Duplicate as New
+    </a>
+    <DeleteBatchDialog client:load batchId={batch.id} batchName={batch.name} />
   </div>
 </AppLayout>

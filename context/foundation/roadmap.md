@@ -3,7 +3,7 @@ project: "Fermenta"
 version: 1
 status: draft
 created: 2026-05-29
-updated: 2026-06-08
+updated: 2026-06-17
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -30,8 +30,12 @@ A home winemaker today juggles paper forms, mental math, and scattered notes —
 | F-01 | batch-schema-with-rls | (foundation) batch/ingredient/process tables + RLS for per-user isolation | — | Access Control, NFR | done |
 | S-01 | batch-crud-and-params | create a batch with parameters and yeast, list their batches | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-007 | done |
 | S-02 | ingredients-calculation-validation | add ingredients, see calculated sugar needs, see validation warnings | S-01 | US-01, FR-006, FR-008, FR-009 | done |
-| S-03 | process-plan-generation | receive a generated process plan and edit/add/remove entries | S-01 | US-01, FR-010, FR-011 | ready |
+| S-03 | process-plan-generation | receive a generated process plan and edit/add/remove entries | S-01 | US-01, FR-010, FR-011 | done |
 | S-04 | visual-identity | experience a consistent, modern UI tailored to the home winery context | S-01 | NFR | done |
+| S-05 | batch-delete-duplicate | delete a batch or duplicate it as a new batch with clean diary | S-02 | FR-001 | proposed |
+| S-06 | batch-list-actions | access delete and duplicate actions directly from the batch list | S-05 | FR-001 | proposed |
+| S-07 | ingredients-drag-reorder | reorder ingredients via drag & drop | S-02 | FR-006 | proposed |
+| S-08 | regenerate-dirty-guard | see Regenerate Plan disabled when form has unsaved changes | S-03 | FR-010 | proposed |
 
 ## Streams
 
@@ -42,6 +46,8 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | A | Calculation core | `F-01` → `S-01` → `S-02` | Critical path to north star; carries the highest-risk guardrail (calculation correctness). |
 | B | Process diary | `S-03` | Parallel with S-02 after S-01 lands; completes the full planning flow. |
 | C | Visual identity | `S-04` | Independent of A/B; establishes the design language. Once landed, existing S-01 pages are restyled to match. |
+| D | Batch management | `S-05` → `S-06` | Delete/duplicate logic first, then surface in list. Can start after S-02. |
+| E | UX polish | `S-07`, `S-08` | Independent of each other. S-07 starts after S-02; S-08 after S-03. |
 
 ## Baseline
 
@@ -105,7 +111,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Template logic for two process types with parameter-driven conditional steps requires clear specification. Lower risk than calculation but unclear templates could produce unhelpful defaults that users delete entirely (violates secondary Success Criterion).
-- **Status:** ready
+- **Status:** done
 
 ### S-04: Visual identity and design system
 
@@ -119,15 +125,65 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Risk:** Medium — purely UI work with no data-layer risk, but scope can creep if not bounded. Plan should define a finite set of pages/components to restyle and a "done" checklist. If S-02 or S-03 land before S-04, their pages will need a restyle pass (acceptable since S-04 is independent).
 - **Status:** done
 
-## Backlog Handoff
+### S-05: Delete and duplicate a batch
+
+- **Outcome:** user can delete a batch (with confirmation) from the batch detail page, and duplicate a batch — creating a copy with a new name/date, same parameters and ingredients, but a freshly generated diary (like a new batch).
+- **Change ID:** batch-delete-duplicate
+- **PRD refs:** FR-001 (batch lifecycle management)
+- **Prerequisites:** S-02 (ingredients must exist to copy correctly)
+- **Parallel with:** S-07
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Low — straightforward API work (DELETE endpoint + POST clone). Confirmation UX prevents accidental loss. Cascading delete of diary entries handled by DB foreign keys.
+- **Status:** proposed
+
+### S-06: Batch list action buttons
+
+- **Outcome:** batch cards in the list view expose contextual action buttons (delete, duplicate) so users don't need to navigate into the detail page for quick operations.
+- **Change ID:** batch-list-actions
+- **PRD refs:** FR-001 (batch lifecycle management)
+- **Prerequisites:** S-05 (delete/duplicate logic and API must exist)
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Low — purely UI work consuming existing APIs. Needs careful touch-target sizing and confirmation pattern on mobile.
+- **Status:** proposed
+
+### S-07: Ingredients drag & drop reordering
+
+- **Outcome:** user can reorder ingredients via drag & drop in the ingredients section. Order is persisted in the JSONB array position on save.
+- **Change ID:** ingredients-drag-reorder
+- **PRD refs:** FR-006 (ingredient management UX)
+- **Prerequisites:** S-02 (ingredients section must exist)
+- **Parallel with:** S-05
+- **Blockers:** —
+- **Unknowns:** Choice of drag & drop library (e.g., @dnd-kit or pragmatic-drag-and-drop). Decide during `/10x-plan`.
+- **Risk:** Low-medium — drag & drop in React requires accessibility considerations (keyboard reorder fallback). Ingredients are JSONB array, so reorder is just array splice + save.
+- **Status:** proposed
+
+### S-08: Regenerate plan dirty guard
+
+- **Outcome:** the "Regenerate Plan" button is disabled when the batch form has unsaved changes, with a tooltip explaining the user must save first. Prevents regeneration against stale persisted state.
+- **Change ID:** regenerate-dirty-guard
+- **PRD refs:** FR-010 (process plan generation correctness)
+- **Prerequisites:** S-03 (diary/regenerate feature must exist)
+- **Parallel with:** S-05, S-07
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Low — small UX guard. Requires threading `isDirty` from BatchForm down to DiarySection.
+- **Status:** proposed
 
 | Roadmap ID | Change ID | Suggested issue title | Ready for `/10x-plan` | Notes |
 |---|---|---|---|---|
 | F-01 | batch-schema-with-rls | Set up batch/ingredient/process schema with RLS | done | — |
 | S-01 | batch-crud-and-params | Batch creation form, parameters, and list page | done | — |
 | S-02 | ingredients-calculation-validation | Ingredient management with sugar calculation and validation | done | — |
-| S-03 | process-plan-generation | Process plan generation and editing | yes | Run `/10x-plan process-plan-generation` |
+| S-03 | process-plan-generation | Process plan generation and editing | done | — |
 | S-04 | visual-identity | Visual identity and design system for home winery context | done | — |
+| S-05 | batch-delete-duplicate | Batch delete and duplicate functionality | no | Run `/10x-new batch-delete-duplicate` first |
+| S-06 | batch-list-actions | Batch list action buttons (delete, duplicate) | no | Blocked on S-05 |
+| S-07 | ingredients-drag-reorder | Drag & drop ingredient reordering | no | Run `/10x-new ingredients-drag-reorder` first |
+| S-08 | regenerate-dirty-guard | Disable Regenerate when form is dirty | yes | Change initialized; run `/10x-plan regenerate-dirty-guard` |
 
 ## Open Roadmap Questions
 
@@ -147,3 +203,4 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **S-01** (`batch-crud-and-params`) — Implemented 2026-06-01. Batch list, creation form with params/yeast, detail page operational.
 - **S-04** (`visual-identity`) — Implemented 2026-06-02. Warm winery design system, AppLayout with floating topbar, ingredient card inline-edit pattern. Merged as #8.
 - **S-02** (`ingredients-calculation-validation`) — Implemented 2026-06-08. Ingredient management, sugar calculation (fermentation + sweetness), 9-rule validation engine, atomic save. PR #15. 57 tests.
+- **S-03** (`process-plan-generation`) — Implemented. Process plan generation from templates (pulp/juice) with parameter-driven steps, inline editing, add/remove entries.

@@ -1,4 +1,20 @@
 import { useState } from "react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import type { DragEndEvent } from "@dnd-kit/core";
 import type { BatchParams, Ingredient } from "@/types";
 import { calculateSugar } from "@/lib/services/sugar-calculation";
 import { IngredientCard } from "./IngredientCard";
@@ -72,6 +88,23 @@ export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSe
 
   const { ingredients, fermentation_sugar_kg: fermentationSugarKg, sweetness_sugar_kg: sweetnessSugarKg } = batchParams;
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
   function handleChange(index: number, updates: Partial<Ingredient>) {
     onBatchChange({ ingredients: ingredients.map((ing, i) => (i === index ? { ...ing, ...updates } : ing)) });
   }
@@ -91,6 +124,22 @@ export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSe
     const newIngredients = [...ingredients, newIngredient];
     onBatchChange({ ingredients: newIngredients });
     setEditingIndex(newIngredients.length - 1);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (over === null || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = ingredients.findIndex((_, i) => String(i) === active.id);
+    const newIndex = ingredients.findIndex((_, i) => String(i) === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const reordered = arrayMove(ingredients, oldIndex, newIndex);
+      onBatchChange({ ingredients: reordered });
+    }
   }
 
   function handleCalculate() {
@@ -155,11 +204,43 @@ export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSe
         </button>
       </div>
 
-      {ingredients.length > 0 && (
+      {ingredients.length > 0 && editingIndex === null && (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="space-y-2">
+            <SortableContext items={ingredients.map((_, i) => String(i))} strategy={verticalListSortingStrategy}>
+              {ingredients.map((ingredient, index) => (
+                <IngredientCard
+                  key={`user-${index}`}
+                  id={String(index)}
+                  ingredient={ingredient}
+                  onChange={(updates) => {
+                    handleChange(index, updates);
+                  }}
+                  onDelete={() => {
+                    handleDelete(index);
+                  }}
+                  isEditing={editingIndex === index}
+                  onToggleEdit={() => {
+                    setEditingIndex(editingIndex === index ? null : index);
+                    setEditingSugar(null);
+                  }}
+                />
+              ))}
+            </SortableContext>
+          </div>
+        </DndContext>
+      )}
+
+      {ingredients.length > 0 && editingIndex !== null && (
         <div className="space-y-2">
           {ingredients.map((ingredient, index) => (
             <IngredientCard
               key={`user-${index}`}
+              id={String(index)}
               ingredient={ingredient}
               onChange={(updates) => {
                 handleChange(index, updates);

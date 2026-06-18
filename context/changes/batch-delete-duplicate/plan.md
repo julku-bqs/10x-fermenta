@@ -192,29 +192,29 @@ No performance concerns. DELETE is a single row operation with automatic cascade
 
 #### Automated
 
-- [x] 1.1 Lint passes
-- [x] 1.2 Build passes
+- [x] 1.1 Lint passes — aef79cb
+- [x] 1.2 Build passes — aef79cb
 
 #### Manual
 
-- [x] 1.3 Delete button enabled and styled destructively on detail page
-- [x] 1.4 Confirmation dialog shows batch name and warns about irreversibility
-- [x] 1.5 Confirming deletion removes batch and diary entries, redirects to /batches
-- [x] 1.6 Cancel closes dialog without side effects
-- [x] 1.7 Non-existent or other-user batch returns 404
-- [x] 1.8 Unauthenticated DELETE returns error
+- [x] 1.3 Delete button enabled and styled destructively on detail page — aef79cb
+- [x] 1.4 Confirmation dialog shows batch name and warns about irreversibility — aef79cb
+- [x] 1.5 Confirming deletion removes batch and diary entries, redirects to /batches — aef79cb
+- [x] 1.6 Cancel closes dialog without side effects — aef79cb
+- [x] 1.7 Non-existent or other-user batch returns 404 — aef79cb
+- [x] 1.8 Unauthenticated DELETE returns error — aef79cb
 
 ### Phase 2: Duplicate via Pre-fill
 
 #### Automated
 
-- [x] 2.1 Lint passes
-- [x] 2.2 Build passes
+- [x] 2.1 Lint passes — aef79cb
+- [x] 2.2 Build passes — aef79cb
 
 #### Manual
 
-- [x] 2.3 Duplicate button visible on detail page and navigates correctly
-- [x] 2.4 Create form pre-filled with parameters and ingredients from source batch
-- [x] 2.5 Name and date fields are blank on pre-filled form
-- [x] 2.6 Submitting pre-filled form creates new batch with fresh diary
-- [x] 2.7 Graceful fallback to empty form when source batch not found
+- [x] 2.3 Duplicate button visible on detail page and navigates correctly — aef79cb
+- [x] 2.4 Create form pre-filled with parameters and ingredients from source batch — aef79cb
+- [x] 2.5 Name and date fields are blank on pre-filled form — aef79cb
+- [x] 2.6 Submitting pre-filled form creates new batch with fresh diary — aef79cb
+- [x] 2.7 Graceful fallback to empty form when source batch not found — aef79cb

@@ -137,17 +137,17 @@ Install @dnd-kit, integrate sortable context into IngredientsSection, add drag h
 
 #### Automated
 
-- [x] 1.1 Dependencies install cleanly
-- [x] 1.2 Type checking passes
-- [x] 1.3 Linting passes
-- [x] 1.4 Build succeeds
-- [x] 1.5 Existing tests pass
+- [x] 1.1 Dependencies install cleanly — a1a038f
+- [x] 1.2 Type checking passes — a1a038f
+- [x] 1.3 Linting passes — a1a038f
+- [x] 1.4 Build succeeds — a1a038f
+- [x] 1.5 Existing tests pass — a1a038f
 
 #### Manual
 
-- [x] 1.6 Desktop drag via grip handle reorders with animation
-- [x] 1.7 Mobile long-press drag works
-- [x] 1.8 Keyboard reorder works with screen reader announcements
-- [x] 1.9 Edit mode disables all drag
-- [x] 1.10 Reorder persists after save and reload
-- [x] 1.11 Edge cases (single item, empty list, add after reorder)
+- [x] 1.6 Desktop drag via grip handle reorders with animation — a1a038f
+- [x] 1.7 Mobile long-press drag works — a1a038f
+- [x] 1.8 Keyboard reorder works with screen reader announcements — a1a038f
+- [x] 1.9 Edit mode disables all drag — a1a038f
+- [x] 1.10 Reorder persists after save and reload — a1a038f
+- [x] 1.11 Edge cases (single item, empty list, add after reorder) — a1a038f

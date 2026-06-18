@@ -1,20 +1,42 @@
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Ingredient } from "@/types";
 import { batchInputClass } from "./styles";
 
 interface IngredientCardProps {
+  id: string;
   ingredient: Ingredient;
   onChange: (updates: Partial<Ingredient>) => void;
   onDelete?: () => void;
   isEditing: boolean;
+  isDragDisabled: boolean;
   onToggleEdit: () => void;
 }
 
-export function IngredientCard({ ingredient, onChange, onDelete, isEditing, onToggleEdit }: IngredientCardProps) {
+export function IngredientCard({
+  id,
+  ingredient,
+  onChange,
+  onDelete,
+  isEditing,
+  isDragDisabled,
+  onToggleEdit,
+}: IngredientCardProps) {
   const displayName = ingredient.name || "New ingredient";
+  const { attributes, listeners, setActivatorNodeRef, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: isDragDisabled,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: transform ? transition : undefined,
+  };
 
   if (isEditing) {
     return (
-      <div className="border-border bg-card space-y-3 rounded-lg border p-4">
+      <div ref={setNodeRef} style={style} className="border-border bg-card space-y-3 rounded-lg border p-4">
         <div className="flex items-center gap-2">
           <span className="text-base">🌿</span>
           <span className="text-foreground text-sm font-medium">{displayName}</span>
@@ -86,19 +108,42 @@ export function IngredientCard({ ingredient, onChange, onDelete, isEditing, onTo
   }
 
   return (
-    <button
-      type="button"
-      onClick={onToggleEdit}
-      className="border-border bg-card hover:bg-muted flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "border-border bg-card flex items-stretch overflow-hidden rounded-lg border",
+        isDragging && "opacity-30",
+      )}
+      aria-label={isDragging ? `${displayName} being dragged` : undefined}
     >
-      <span className="text-base">🌿</span>
-      <div className="min-w-0 flex-1">
-        <span className="text-foreground text-sm font-medium">{displayName}</span>
-      </div>
-      <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
-        {ingredient.amount_liters} L
-        {ingredient.sugar_content_percent !== null ? ` · ${ingredient.sugar_content_percent}%` : ""}
-      </span>
-    </button>
+      {!isDragDisabled && (
+        <button
+          type="button"
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
+          className="hover:bg-muted text-muted-foreground flex shrink-0 items-center px-3 transition-colors"
+          aria-label={`Reorder ${displayName}`}
+        >
+          <GripVertical className="h-4 w-4" aria-hidden="true" />
+        </button>
+      )}
+      {!isDragDisabled && <div className="bg-border h-5 w-px self-center" />}
+      <button
+        type="button"
+        onClick={onToggleEdit}
+        className="hover:bg-muted flex flex-1 items-center gap-3 p-4 text-left transition-colors"
+      >
+        <span className="text-base">🌿</span>
+        <div className="min-w-0 flex-1">
+          <span className="text-foreground text-sm font-medium">{displayName}</span>
+        </div>
+        <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
+          {ingredient.amount_liters} L
+          {ingredient.sugar_content_percent !== null ? ` · ${ingredient.sugar_content_percent}%` : ""}
+        </span>
+      </button>
+    </div>
   );
 }

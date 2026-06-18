@@ -3,7 +3,7 @@ change_id: ingredients-drag-reorder
 title: Ingredients drag reorder
 status: implementing
 created: 2026-06-17
-updated: 2026-06-17
+updated: 2026-06-18
 archived_at: null
 ---
 

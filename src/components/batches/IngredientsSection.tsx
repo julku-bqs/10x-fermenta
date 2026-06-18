@@ -1,4 +1,21 @@
 import { useState } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { GripVertical } from "lucide-react";
 import type { BatchParams, Ingredient } from "@/types";
 import { calculateSugar } from "@/lib/services/sugar-calculation";
 import { IngredientCard } from "./IngredientCard";
@@ -69,8 +86,10 @@ function SugarCard({ label, icon, amountKg, onChange, isEditing, onToggleEdit }:
 export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSectionProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingSugar, setEditingSugar] = useState<"fermentation" | "sweetness" | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const { ingredients, fermentation_sugar_kg: fermentationSugarKg, sweetness_sugar_kg: sweetnessSugarKg } = batchParams;
+  const activeIngredient = activeId !== null ? (ingredients[Number(activeId)] ?? null) : null;
 
   function handleChange(index: number, updates: Partial<Ingredient>) {
     onBatchChange({ ingredients: ingredients.map((ing, i) => (i === index ? { ...ing, ...updates } : ing)) });
@@ -111,7 +130,28 @@ export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSe
     setEditingSugar(null);
   }
 
+  function handleDragEnd(activeId: string, overId: string | null) {
+    if (editingIndex !== null || overId === null || activeId === overId) {
+      return;
+    }
+
+    const oldIndex = Number(activeId);
+    const newIndex = Number(overId);
+    if (Number.isNaN(oldIndex) || Number.isNaN(newIndex) || oldIndex < 0 || newIndex < 0) {
+      return;
+    }
+
+    onBatchChange({ ingredients: arrayMove(ingredients, oldIndex, newIndex) });
+  }
+
   const canCalculate = Boolean(batchParams.target_volume_liters && batchParams.target_abv);
+  const sortableIds = ingredients.map((_, index) => String(index));
+  const isDragDisabled = editingIndex !== null;
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   return (
     <div className="space-y-3">
@@ -156,25 +196,68 @@ export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSe
       </div>
 
       {ingredients.length > 0 && (
-        <div className="space-y-2">
-          {ingredients.map((ingredient, index) => (
-            <IngredientCard
-              key={`user-${index}`}
-              ingredient={ingredient}
-              onChange={(updates) => {
-                handleChange(index, updates);
-              }}
-              onDelete={() => {
-                handleDelete(index);
-              }}
-              isEditing={editingIndex === index}
-              onToggleEdit={() => {
-                setEditingIndex(editingIndex === index ? null : index);
-                setEditingSugar(null);
-              }}
-            />
-          ))}
-        </div>
+        <DndContext
+          collisionDetection={closestCenter}
+          sensors={sensors}
+          onDragStart={({ active }) => {
+            setActiveId(String(active.id));
+          }}
+          onDragEnd={({ active, over }) => {
+            setActiveId(null);
+            handleDragEnd(String(active.id), over ? String(over.id) : null);
+          }}
+          onDragCancel={() => {
+            setActiveId(null);
+          }}
+        >
+          <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {ingredients.map((ingredient, index) => (
+                <IngredientCard
+                  id={String(index)}
+                  key={String(index)}
+                  ingredient={ingredient}
+                  onChange={(updates) => {
+                    handleChange(index, updates);
+                  }}
+                  onDelete={() => {
+                    handleDelete(index);
+                  }}
+                  isEditing={editingIndex === index}
+                  isDragDisabled={isDragDisabled}
+                  onToggleEdit={() => {
+                    setEditingIndex(editingIndex === index ? null : index);
+                    setEditingSugar(null);
+                  }}
+                />
+              ))}
+            </div>
+          </SortableContext>
+          <DragOverlay dropAnimation={null}>
+            {activeIngredient ? (
+              <div className="border-border bg-card flex cursor-grabbing items-stretch overflow-hidden rounded-lg border shadow-lg">
+                <div className="text-muted-foreground flex shrink-0 items-center px-3">
+                  <GripVertical className="h-4 w-4" aria-hidden="true" />
+                </div>
+                <div className="bg-border h-5 w-px self-center" />
+                <div className="flex flex-1 items-center gap-3 p-4">
+                  <span className="text-base">🌿</span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-foreground text-sm font-medium">
+                      {activeIngredient.name || "New ingredient"}
+                    </span>
+                  </div>
+                  <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
+                    {activeIngredient.amount_liters} L
+                    {activeIngredient.sugar_content_percent !== null
+                      ? ` · ${activeIngredient.sugar_content_percent}%`
+                      : ""}
+                  </span>
+                </div>
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       )}
 
       <button type="button" onClick={handleAddIngredient} className="text-primary text-xs font-medium hover:underline">

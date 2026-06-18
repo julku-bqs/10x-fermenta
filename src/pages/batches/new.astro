@@ -1,33 +1,9 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { BatchForm } from "@/components/batches/BatchForm";
-import { createClient } from "@/lib/supabase";
-import type { Batch } from "@/types";
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const fromParam = Astro.url.searchParams.get("from");
-
-let initialData: Batch | undefined;
-let pageTitle = "New Batch";
-
-if (fromParam && UUID_REGEX.test(fromParam)) {
-  const supabase = createClient(Astro.request.headers, Astro.cookies);
-  if (supabase) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { data } = await supabase.from("batches").select("*").eq("id", fromParam).single();
-    if (data) {
-      initialData = {
-        ...(data as Batch),
-        name: "",
-        batch_date: "",
-      };
-      pageTitle = `New Batch (from ${(data as Batch).name})`;
-    }
-  }
-}
 ---
 
-<AppLayout title={pageTitle}>
+<AppLayout title="New Batch">
   <a href="/batches" class="text-muted-foreground hover:text-foreground mb-6 inline-block text-sm">← My Batches</a>
-  <BatchForm client:load mode="create" title={pageTitle} initialData={initialData} />
+  <BatchForm client:load mode="create" title="New Batch" />
 </AppLayout>

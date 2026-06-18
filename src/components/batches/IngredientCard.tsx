@@ -124,6 +124,7 @@ export function IngredientCard({
           {...attributes}
           {...listeners}
           className="hover:bg-muted text-muted-foreground flex shrink-0 items-center px-3 transition-colors"
+          style={{ touchAction: "none" }}
           aria-label={`Reorder ${displayName}`}
         >
           <GripVertical className="h-4 w-4" aria-hidden="true" />

@@ -78,10 +78,13 @@ export function DeleteBatchDialog({ batchId, batchName }: DeleteBatchDialogProps
               {isDeleting ? "Deleting..." : "Delete Batch"}
             </AlertDialogAction>
           </AlertDialogFooter>
+          {errorMessage && (
+            <p className="text-destructive text-sm" role="alert">
+              {errorMessage}
+            </p>
+          )}
         </AlertDialogContent>
       </AlertDialog>
-
-      {errorMessage && <p className="text-destructive text-sm">{errorMessage}</p>}
     </div>
   );
 }

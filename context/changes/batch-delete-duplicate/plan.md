@@ -28,7 +28,7 @@ Add two batch management actions to the detail page: **delete** (with confirmati
 After this plan is complete:
 
 1. A logged-in user can click "Delete Batch" on the batch detail page, see a confirmation dialog naming the batch, confirm, and be redirected to `/batches` with the batch (and its diary entries) permanently removed.
-2. A logged-in user can click "Duplicate as New" on the batch detail page, be redirected to `/batches/new?from={batchId}`, and see the create form pre-filled with all parameters and ingredients from the original batch — but with name and date blank so the user must provide fresh values.
+2. A logged-in user can click "Copy" on the batch detail page, be redirected to `/batches/new?from={batchId}`, and see the create form pre-filled with all parameters and ingredients from the original batch — but with name and date blank so the user must provide fresh values.
 3. Unauthenticated requests to `DELETE /api/batches/[id]` return 500 (consistent with existing guard pattern).
 4. Requests for a non-existent or other user's batch return 404 (RLS handles ownership).
 
@@ -46,7 +46,7 @@ After this plan is complete:
 
 **Delete**: Add a `DELETE` export to the existing `/api/batches/[id]/index.ts` file, following the diary entry DELETE pattern. Replace the disabled button on the detail page with a React island containing an AlertDialog confirmation component (shadcn/ui).
 
-**Duplicate**: Extend `new.astro` to read a `?from={batchId}` query parameter. When present, fetch the source batch server-side, blank out `name` and `batch_date`, and pass the full object as `initialData` to `BatchForm`. Add a "Duplicate as New" button on the detail page that navigates to this URL.
+**Duplicate**: Extend `new.astro` to read a `?from={batchId}` query parameter. When present, fetch the source batch server-side, blank out `name` and `batch_date`, and pass the full object as `initialData` to `BatchForm`. Add a "Copy" button on the detail page that navigates to this URL.
 
 ## Phase 1: Delete API + Confirmation UI
 
@@ -110,7 +110,7 @@ Add the DELETE endpoint and replace the disabled button with a working confirmat
 
 ### Overview
 
-Add the "Duplicate as New" button on the detail page and extend the create page to accept a `?from={batchId}` query parameter for pre-filling the form. After this phase, users can duplicate any batch as a starting point for a new one.
+Add the "Copy" button on the detail page and extend the create page to accept a `?from={batchId}` query parameter for pre-filling the form. After this phase, users can duplicate any batch as a starting point for a new one.
 
 ### Changes Required:
 
@@ -126,7 +126,7 @@ Add the "Duplicate as New" button on the detail page and extend the create page 
 
 **File**: `src/pages/batches/[id].astro`
 
-**Intent**: Add a "Duplicate as New" button next to the delete dialog that navigates to `/batches/new?from={batchId}`.
+**Intent**: Add a "Copy" button next to the delete dialog that navigates to `/batches/new?from={batchId}`.
 
 **Contract**: An `<a>` element styled as a secondary/outline button with href `/batches/new?from={batch.id}`. Placed in the same footer area as the delete button. No React island needed — it's a simple link.
 
@@ -139,7 +139,7 @@ Add the "Duplicate as New" button on the detail page and extend the create page 
 
 #### Manual Verification:
 
-- "Duplicate as New" button is visible on batch detail page
+- "Copy" button is visible on batch detail page
 - Clicking it navigates to `/batches/new?from={batchId}`
 - Create form is pre-filled with all parameters, ingredients, and sugar values from the source batch
 - Name field is blank, date field is blank — user must provide new values
@@ -166,7 +166,7 @@ Add the "Duplicate as New" button on the detail page and extend the create page 
 1. Create a batch with full parameters, ingredients, and diary entries
 2. Open batch detail → click "Delete Batch" → cancel → verify nothing changed
 3. Click "Delete Batch" → confirm → verify redirect to `/batches`, batch removed from list
-4. Open another batch → click "Duplicate as New" → verify pre-filled form
+4. Open another batch → click "Copy" → verify pre-filled form
 5. Clear and fill name + date → submit → verify new batch created with same parameters/ingredients
 6. Verify the new batch has auto-generated diary entries (fresh, not copied)
 7. Visit `/batches/new` directly → verify normal empty form

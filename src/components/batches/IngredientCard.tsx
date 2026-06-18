@@ -1,11 +1,7 @@
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
 import type { Ingredient } from "@/types";
 import { batchInputClass } from "./styles";
 
 interface IngredientCardProps {
-  id: string;
   ingredient: Ingredient;
   onChange: (updates: Partial<Ingredient>) => void;
   onDelete?: () => void;
@@ -13,18 +9,8 @@ interface IngredientCardProps {
   onToggleEdit: () => void;
 }
 
-export function IngredientCard({ id, ingredient, onChange, onDelete, isEditing, onToggleEdit }: IngredientCardProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id,
-  });
-
+export function IngredientCard({ ingredient, onChange, onDelete, isEditing, onToggleEdit }: IngredientCardProps) {
   const displayName = ingredient.name || "New ingredient";
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
 
   if (isEditing) {
     return (
@@ -100,30 +86,19 @@ export function IngredientCard({ id, ingredient, onChange, onDelete, isEditing, 
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="flex w-full gap-2 rounded-lg transition-all">
-      <button
-        type="button"
-        {...attributes}
-        {...listeners}
-        className="border-border bg-card hover:bg-muted text-muted-foreground flex shrink-0 items-center justify-center rounded-lg border p-4 transition-colors"
-        aria-label="Drag handle for reordering ingredient"
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <button
-        type="button"
-        onClick={onToggleEdit}
-        className="border-border bg-card hover:bg-muted flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-colors"
-      >
-        <span className="text-base">🌿</span>
-        <div className="min-w-0 flex-1">
-          <span className="text-foreground text-sm font-medium">{displayName}</span>
-        </div>
-        <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
-          {ingredient.amount_liters} L
-          {ingredient.sugar_content_percent !== null ? ` · ${ingredient.sugar_content_percent}%` : ""}
-        </span>
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={onToggleEdit}
+      className="border-border bg-card hover:bg-muted flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+    >
+      <span className="text-base">🌿</span>
+      <div className="min-w-0 flex-1">
+        <span className="text-foreground text-sm font-medium">{displayName}</span>
+      </div>
+      <span className="bg-secondary/50 text-secondary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
+        {ingredient.amount_liters} L
+        {ingredient.sugar_content_percent !== null ? ` · ${ingredient.sugar_content_percent}%` : ""}
+      </span>
+    </button>
   );
 }

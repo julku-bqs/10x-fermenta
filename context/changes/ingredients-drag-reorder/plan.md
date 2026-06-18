@@ -137,11 +137,11 @@ Install @dnd-kit, integrate sortable context into IngredientsSection, add drag h
 
 #### Automated
 
-- [x] 1.1 Dependencies install cleanly — 365c718
-- [x] 1.2 Type checking passes — 365c718
-- [x] 1.3 Linting passes — 365c718
-- [x] 1.4 Build succeeds — 365c718
-- [x] 1.5 Existing tests pass — 365c718
+- [x] 1.1 Dependencies install cleanly
+- [x] 1.2 Type checking passes
+- [x] 1.3 Linting passes
+- [x] 1.4 Build succeeds
+- [x] 1.5 Existing tests pass
 
 #### Manual
 

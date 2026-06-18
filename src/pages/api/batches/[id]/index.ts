@@ -57,3 +57,27 @@ export const PUT: APIRoute = async (context) => {
 
   return jsonOk(data);
 };
+
+export const DELETE: APIRoute = async (context) => {
+  const supabase = createClient(context.request.headers, context.cookies);
+  if (!supabase || !context.locals.user) {
+    return jsonError("Server configuration error", 500);
+  }
+
+  const id = context.params.id;
+  if (!id || !UUID_REGEX.test(id)) {
+    return jsonError("Invalid batch ID", 400);
+  }
+
+  const { data, error } = await supabase.from("batches").delete().eq("id", id).select("id").maybeSingle();
+
+  if (error) {
+    return jsonError("Failed to delete batch", 500);
+  }
+
+  if (!data) {
+    return jsonError("Batch not found", 404);
+  }
+
+  return new Response(null, { status: 204 });
+};

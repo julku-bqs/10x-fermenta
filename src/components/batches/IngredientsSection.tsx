@@ -87,20 +87,27 @@ export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSe
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingSugar, setEditingSugar] = useState<"fermentation" | "sweetness" | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // Stable client-side IDs — never persisted, generated on mount/add, used for React keys and dnd-kit IDs.
+  const [stableIds, setStableIds] = useState<string[]>(() =>
+    Array.from({ length: batchParams.ingredients.length }, () => crypto.randomUUID()),
+  );
 
   const { ingredients, fermentation_sugar_kg: fermentationSugarKg, sweetness_sugar_kg: sweetnessSugarKg } = batchParams;
-  const activeIngredient = activeId !== null ? (ingredients[Number(activeId)] ?? null) : null;
+
+  const activeIngredient = activeId !== null ? (ingredients[stableIds.indexOf(activeId)] ?? null) : null;
 
   function handleChange(index: number, updates: Partial<Ingredient>) {
     onBatchChange({ ingredients: ingredients.map((ing, i) => (i === index ? { ...ing, ...updates } : ing)) });
   }
 
   function handleDelete(index: number) {
+    setStableIds((prev) => prev.filter((_, i) => i !== index));
     onBatchChange({ ingredients: ingredients.filter((_, i) => i !== index) });
     setEditingIndex(null);
   }
 
   function handleAddIngredient() {
+    setStableIds((prev) => [...prev, crypto.randomUUID()]);
     const newIngredient: Ingredient = {
       name: "",
       amount_liters: 0,
@@ -135,17 +142,18 @@ export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSe
       return;
     }
 
-    const oldIndex = Number(activeId);
-    const newIndex = Number(overId);
-    if (Number.isNaN(oldIndex) || Number.isNaN(newIndex) || oldIndex < 0 || newIndex < 0) {
+    const oldIndex = stableIds.indexOf(activeId);
+    const newIndex = stableIds.indexOf(overId);
+    if (oldIndex === -1 || newIndex === -1) {
       return;
     }
 
+    setStableIds((prev) => arrayMove(prev, oldIndex, newIndex));
     onBatchChange({ ingredients: arrayMove(ingredients, oldIndex, newIndex) });
   }
 
   const canCalculate = Boolean(batchParams.target_volume_liters && batchParams.target_abv);
-  const sortableIds = ingredients.map((_, index) => String(index));
+  const sortableIds = stableIds;
   const isDragDisabled = editingIndex !== null;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -214,8 +222,8 @@ export function IngredientsSection({ batchParams, onBatchChange }: IngredientsSe
             <div className="space-y-2">
               {ingredients.map((ingredient, index) => (
                 <IngredientCard
-                  id={String(index)}
-                  key={String(index)}
+                  id={stableIds[index]}
+                  key={stableIds[index]}
                   ingredient={ingredient}
                   onChange={(updates) => {
                     handleChange(index, updates);

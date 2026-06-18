@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
@@ -25,6 +26,10 @@ export function IngredientCard({
   onToggleEdit,
 }: IngredientCardProps) {
   const displayName = ingredient.name || "New ingredient";
+  const fieldId = useId();
+  const nameId = `${fieldId}-name`;
+  const amountId = `${fieldId}-amount`;
+  const sugarId = `${fieldId}-sugar`;
   const { attributes, listeners, setActivatorNodeRef, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     disabled: isDragDisabled,
@@ -54,8 +59,11 @@ export function IngredientCard({
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <label className="text-muted-foreground mb-1 block text-xs">Name</label>
+            <label htmlFor={nameId} className="text-muted-foreground mb-1 block text-xs">
+              Name
+            </label>
             <input
+              id={nameId}
               type="text"
               value={ingredient.name}
               onChange={(e) => {
@@ -67,8 +75,11 @@ export function IngredientCard({
           </div>
 
           <div>
-            <label className="text-muted-foreground mb-1 block text-xs">Amount (L)</label>
+            <label htmlFor={amountId} className="text-muted-foreground mb-1 block text-xs">
+              Amount (L)
+            </label>
             <input
+              id={amountId}
               type="number"
               min="0"
               step="0.01"
@@ -82,8 +93,11 @@ export function IngredientCard({
           </div>
 
           <div>
-            <label className="text-muted-foreground mb-1 block text-xs">Sugar content (%)</label>
+            <label htmlFor={sugarId} className="text-muted-foreground mb-1 block text-xs">
+              Sugar content (%)
+            </label>
             <input
+              id={sugarId}
               type="number"
               min="0"
               max="100"

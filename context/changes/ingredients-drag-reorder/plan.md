@@ -94,6 +94,12 @@ Install @dnd-kit, integrate sortable context into IngredientsSection, add drag h
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
+### Addenda (post-implementation)
+
+- **DragOverlay**: Added `DragOverlay` (not in original plan) for a better drag UX — renders the dragged item as a raised ghost card during the drag, with `activeId` state and `onDragStart`/`onDragCancel` handlers wired in `IngredientsSection.tsx`.
+- **TouchSensor delay**: The 250ms `activationConstraint` was intentionally removed after implementation; testing showed it caused more friction than benefit for the use case.
+- **Edit-mode DnD guard**: Implemented by passing `disabled: isDragDisabled` to each `useSortable` rather than conditionally mounting the `DndContext`. Functionally equivalent — with all sortable items disabled no listeners attach. Grip handles are hidden when disabled.
+
 ---
 
 ## Testing Strategy

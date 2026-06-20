@@ -3,7 +3,7 @@ project: "Fermenta"
 version: 1
 status: draft
 created: 2026-05-29
-updated: 2026-06-17
+updated: 2026-06-18
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -32,9 +32,9 @@ A home winemaker today juggles paper forms, mental math, and scattered notes —
 | S-02 | ingredients-calculation-validation | add ingredients, see calculated sugar needs, see validation warnings | S-01 | US-01, FR-006, FR-008, FR-009 | done |
 | S-03 | process-plan-generation | receive a generated process plan and edit/add/remove entries | S-01 | US-01, FR-010, FR-011 | done |
 | S-04 | visual-identity | experience a consistent, modern UI tailored to the home winery context | S-01 | NFR | done |
-| S-05 | batch-delete-duplicate | delete a batch or duplicate it as a new batch with clean diary | S-02 | FR-001 | proposed |
+| S-05 | batch-delete-duplicate | delete a batch or duplicate it as a new batch with clean diary | S-02 | FR-001 | done |
 | S-06 | batch-list-actions | access delete and duplicate actions directly from the batch list | S-05 | FR-001 | proposed |
-| S-07 | ingredients-drag-reorder | reorder ingredients via drag & drop | S-02 | FR-006 | proposed |
+| S-07 | ingredients-drag-reorder | reorder ingredients via drag & drop | S-02 | FR-006 | done |
 | S-08 | regenerate-dirty-guard | see Regenerate Plan disabled when form has unsaved changes | S-03 | FR-010 | proposed |
 
 ## Streams
@@ -135,7 +135,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Low — straightforward API work (DELETE endpoint + POST clone). Confirmation UX prevents accidental loss. Cascading delete of diary entries handled by DB foreign keys.
-- **Status:** proposed
+- **Status:** done
 
 ### S-06: Batch list action buttons
 
@@ -159,7 +159,7 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** Choice of drag & drop library (e.g., @dnd-kit or pragmatic-drag-and-drop). Decide during `/10x-plan`.
 - **Risk:** Low-medium — drag & drop in React requires accessibility considerations (keyboard reorder fallback). Ingredients are JSONB array, so reorder is just array splice + save.
-- **Status:** proposed
+- **Status:** done
 
 ### S-08: Regenerate plan dirty guard
 
@@ -180,9 +180,9 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 | S-02 | ingredients-calculation-validation | Ingredient management with sugar calculation and validation | done | — |
 | S-03 | process-plan-generation | Process plan generation and editing | done | — |
 | S-04 | visual-identity | Visual identity and design system for home winery context | done | — |
-| S-05 | batch-delete-duplicate | Batch delete and duplicate functionality | no | Run `/10x-new batch-delete-duplicate` first |
+| S-05 | batch-delete-duplicate | Batch delete and duplicate functionality | done | — |
 | S-06 | batch-list-actions | Batch list action buttons (delete, duplicate) | no | Blocked on S-05 |
-| S-07 | ingredients-drag-reorder | Drag & drop ingredient reordering | no | Run `/10x-new ingredients-drag-reorder` first |
+| S-07 | ingredients-drag-reorder | Drag & drop ingredient reordering | done | — |
 | S-08 | regenerate-dirty-guard | Disable Regenerate when form is dirty | yes | Change initialized; run `/10x-plan regenerate-dirty-guard` |
 
 ## Open Roadmap Questions
@@ -204,3 +204,5 @@ What's already in place in the codebase as of 2026-05-29 (auto-researched + user
 - **S-04** (`visual-identity`) — Implemented 2026-06-02. Warm winery design system, AppLayout with floating topbar, ingredient card inline-edit pattern. Merged as #8.
 - **S-02** (`ingredients-calculation-validation`) — Implemented 2026-06-08. Ingredient management, sugar calculation (fermentation + sweetness), 9-rule validation engine, atomic save. PR #15. 57 tests.
 - **S-03** (`process-plan-generation`) — Implemented. Process plan generation from templates (pulp/juice) with parameter-driven steps, inline editing, add/remove entries.
+- **S-05** (`batch-delete-duplicate`) — Implemented 2026-06-18. DELETE + POST clone endpoints, confirmation dialog, fresh diary on duplicate. Merged as #24.
+- **S-07** (`ingredients-drag-reorder`) — Implemented 2026-06-18. @dnd-kit/sortable integration with grip handle, touch and keyboard sensors, stable UUID keys, edit-mode guard. PR #25.

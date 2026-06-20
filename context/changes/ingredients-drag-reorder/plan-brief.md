@@ -32,8 +32,7 @@ Users drag ingredients via a grip handle (desktop) or long-press (mobile) to reo
 
 ## Architecture / Approach
 
-`DndContext` + `SortableContext` wraps the ingredients list in `IngredientsSection`. Three sensors handle input: `PointerSensor` (handle-only), `TouchSensor` (250ms delay), `KeyboardSensor`. Each `IngredientCard` calls `useSortable` and renders a `GripVertical` handle. On drag end, `arrayMove` reorders the array and propagates through existing `onBatchChange` → batch save flow.
-
+`DndContext` + `SortableContext` wraps the ingredients list in `IngredientsSection`. Three sensors handle input: `PointerSensor` (handle-only), `TouchSensor`, `KeyboardSensor`. Each `IngredientCard` calls `useSortable` and renders a `GripVertical` handle. On drag end, `arrayMove` reorders the array and propagates through existing `onBatchChange` → batch save flow.
 ## Phases at a Glance
 
 | Phase | What it delivers | Key risk |

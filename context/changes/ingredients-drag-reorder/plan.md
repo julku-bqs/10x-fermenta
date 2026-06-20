@@ -117,7 +117,7 @@ Install @dnd-kit, integrate sortable context into IngredientsSection, add drag h
 
 1. Open a batch with 3+ ingredients
 2. Drag second ingredient above first using grip handle — verify order updates
-3. Long-press an ingredient on mobile/touch simulation — verify drag initiates after ~250ms
+3. Long-press an ingredient on mobile/touch simulation — verify drag initiates
 4. Click an ingredient to expand (edit mode) — verify no drag handles are visible
 5. Use keyboard: Tab to grip handle → Space/Enter to pick up → Arrow Down → Space to drop
 6. Save batch, reload page — verify reordered ingredients persist

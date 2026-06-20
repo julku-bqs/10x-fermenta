@@ -27,18 +27,9 @@ Pay attention to reference tables ingredients names - they should also be locali
 
 Batch list elements could have set of action buttons - i.e. delete and duplicate
 
-#### Batch duplication
-
-Duplication could create a copy of a batch, but with a different name and date and the diary cleaned up (populating only initial diary draft - like for new batch).
-Parameters are copied, ingredients and calculations too.
-
 ### Additional measurements
 
 Each diary entry could be amended with measurements - name of measurement, unit, value, optioanlly a quick note. Displayed and added under some expandable UI element
-
-### Ingredients view
-
-Enable drag&drop for ingredients reordering
 
 ### Regenerate plan dirty guard
 

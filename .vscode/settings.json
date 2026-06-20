@@ -132,7 +132,8 @@
     "xargs": false,
     "eval": false,
     "Invoke-Expression": false,
-    "iex": false
+    "iex": false,
+    "10x": true
   },
   "git.detectWorktrees": true,
   "git.worktreeIncludeFiles": [

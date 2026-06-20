@@ -133,5 +133,10 @@
     "eval": false,
     "Invoke-Expression": false,
     "iex": false
-  }
+  },
+  "git.detectWorktrees": true,
+  "git.worktreeIncludeFiles": [
+    ".dev.vars",
+    "node_modules/**"
+  ]
 }

@@ -86,7 +86,7 @@ Install @dnd-kit, integrate sortable context into IngredientsSection, add drag h
 #### Manual Verification:
 
 - Desktop: grip handle visible on each collapsed ingredient card; dragging it reorders the list with smooth animation
-- Mobile: long-press (~250ms) on a collapsed card initiates drag; reorder works via touch
+- Mobile: long-press on a collapsed card initiates drag; reorder works via touch
 - Keyboard: focus grip handle, use arrow keys to reorder, screen reader announces position
 - Edit mode: expanding any ingredient card disables all drag handles (no drag affordance visible)
 - Persistence: reorder ingredients → save batch → reload → order is preserved

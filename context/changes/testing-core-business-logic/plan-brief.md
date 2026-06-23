@@ -23,7 +23,7 @@ Delete all 4 untrusted AI-generated test files and rebuild from scratch as table
 | Expected value derivation | Local domain constants, inline arithmetic | Prevents oracle problem — tests break when domain changes, not when implementation changes | Research |
 | File location | `__tests__/` subfolder | Clean separation of test/production code, user preference | Research |
 | Existing test disposition | Delete + rewrite (via git mv) | Rewriting to new pattern anyway; git mv preserves file history | Plan |
-| Phase structure | 3 parallel-safe phases | Files are independent pure-function tests; enables 3 simultaneous agents | Plan |
+| Phase structure | Phase 0 sequential + 3 parallel content phases | Relocations share git index (must be sequential); test rewrites are independent pure-function files | Plan |
 | Success criteria | Automated only | Pure functions with no UI or manual verification surface | Plan |
 | Scenario scope | Complete (all S/V/P rows) | Phase 1 establishes canonical test patterns — incomplete coverage undermines trust | Plan |
 
@@ -33,10 +33,9 @@ Delete all 4 untrusted AI-generated test files and rebuild from scratch as table
 - Sugar calculation: all sweetness levels, ingredient edge cases, precision (S1–S8 + rebuilt existing)
 - Batch validation: all 9 rules bidirectionally, boundary tests at exact thresholds (V1–V12 + rebuilt)
 - Process plan: full 2×2×2 matrix, negative assertions, day offsets (P1–P17)
-- File relocation to `__tests__/` with git history preservation
+- File relocation to `__tests__/` with git history preservation (including schema test — relocation only, no rewrite)
 
 **Out of scope:**
-- Schema tests (`batch.test.ts`) — already uses good patterns
 - Integration tests — Phase 2 of test plan
 - Known formula gaps (residual sugar, volume correction) — tests validate current behavior
 - CI gate wiring — Phase 4 of test plan
@@ -50,12 +49,13 @@ Each test file is self-contained: imports only its target service function, defi
 
 | Phase | What it delivers | Key risk |
 |-------|-----------------|----------|
-| 1. Sugar Calculation Tests | Complete `test.each` suite with S1–S8 + existing scenarios rebuilt | Floating-point precision in `toBeCloseTo` tolerance |
+| 0. File Relocations | All tests in `__tests__/`, vitest discovery verified | None — mechanical; must run before parallel phases |
+| 1. Sugar Calculation Tests | Complete `test.each` suite with S1–S8 + existing scenarios rebuilt + §6.1 cookbook | Floating-point precision in `toBeCloseTo` tolerance |
 | 2. Batch Validation Tests | Per-rule `describe` blocks with bidirectional boundary tests V1–V12 | Rule 7 has 4 guard paths — easy to miss a path |
 | 3. Process Plan Generation Tests | 8-quadrant matrix + negative assertions + day offsets P1–P17 | Substring matching is fragile if descriptions change |
 
 **Prerequisites:** Research complete; vitest configured; services stable (no in-flight refactoring)
-**Estimated effort:** ~1 session per phase; all 3 can run in parallel
+**Estimated effort:** Phase 0: ~5 min; Phases 1–3: ~1 session each, can run in parallel after Phase 0
 
 ## Open Risks & Assumptions
 

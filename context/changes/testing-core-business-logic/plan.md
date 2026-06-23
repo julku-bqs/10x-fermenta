@@ -37,7 +37,7 @@ Three test files in `src/lib/services/__tests__/`, using table-driven `test.each
 
 ## Implementation Approach
 
-Three parallel-safe phases, one per service. Each phase relocates the existing test file into `__tests__/` (preserving git history), then rewrites its content completely using table-driven `test.each`. Phases can be executed simultaneously by separate agents since they touch independent files with no shared state.
+Four phases: Phase 0 handles all file relocations and infrastructure verification in a single sequential pass. Phases 1–3 then rewrite test content — one per service — and can be executed simultaneously by separate agents since they touch independent files with no shared state.
 
 ## Critical Implementation Details
 
@@ -51,13 +51,45 @@ Three parallel-safe phases, one per service. Each phase relocates the existing t
 
 Do NOT derive expected values by running the production code and capturing output. Derive them from the formulas documented in research, using local domain constants defined in the test file.
 
-**Infrastructure precondition (each phase, before writing tests)**: Verify the test infrastructure is functional:
+## Phase 0: File Relocations & Infrastructure Verification
 
-1. Target `__tests__/` directory exists — create it if not (`mkdir` for `src/lib/schemas/__tests__/` in Phase 1; `src/lib/services/__tests__/` already exists)
-2. Vitest discovers all test files at the repository level — after `git mv` (or creating the file), run `npx vitest run` and confirm it finds and executes ALL test files in the project (relocated and existing). This proves the new locations are discovered correctly.
-3. Path alias `@/` resolves correctly in the test file — a trivial import of the target service should not throw a module-not-found error
+### Overview
 
-If any of these fail, fix before proceeding to write test content.
+Move all test files to standardized `__tests__/` subfolder locations and verify vitest discovers them correctly. This phase MUST complete before Phases 1–3 begin (they depend on files being in their final locations).
+
+### Changes Required:
+
+#### 1. Create missing directories
+
+**Intent**: Ensure `src/lib/schemas/__tests__/` exists for the schema test relocation.
+
+**Contract**: `mkdir src/lib/schemas/__tests__/` (create directory; `src/lib/services/__tests__/` already exists)
+
+#### 2. Relocate all test files
+
+**File**: `src/lib/services/sugar-calculation.test.ts` → `src/lib/services/__tests__/sugar-calculation.test.ts`
+**File**: `src/lib/services/batch-validation.test.ts` → `src/lib/services/__tests__/batch-validation.test.ts`
+**File**: `src/lib/schemas/batch.test.ts` → `src/lib/schemas/__tests__/batch.test.ts`
+
+**Intent**: Move all co-located test files into `__tests__/` subfolders using `git mv` to preserve history. Process plan test already in correct location — no move needed.
+
+**Contract**: Three `git mv` commands, then a single commit for all relocations.
+
+#### 3. Verify infrastructure
+
+**Intent**: Confirm vitest discovers ALL test files (including `process-plan-generation.test.ts` which wasn't moved) at their new locations and the `@/` path alias resolves.
+
+**Contract**: Run `npx vitest run` — all relocated tests must be found and executed (they may pass or fail; discovery is the gate, not correctness).
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- All test files exist in `__tests__/` subfolders (no test files remain co-located)
+- `npx vitest run` discovers and executes all test files (exit code may be non-zero if tests fail, but no "file not found" or "module not found" errors)
+- `git status` shows clean state (relocations committed)
+
+---
 
 ## Phase 1: Sugar Calculation Tests
 
@@ -76,21 +108,7 @@ Given a set of ingredients (with amount and sugar content), a target volume, a t
 
 ### Changes Required:
 
-#### 1. Relocate existing test files
-
-**File**: `src/lib/services/sugar-calculation.test.ts` → `src/lib/services/__tests__/sugar-calculation.test.ts`
-
-**Intent**: Move co-located test into the standardized `__tests__/` subfolder to preserve git history, then completely rewrite its content.
-
-**Contract**: `git mv src/lib/services/sugar-calculation.test.ts src/lib/services/__tests__/sugar-calculation.test.ts`
-
-**File**: `src/lib/schemas/batch.test.ts` → `src/lib/schemas/__tests__/batch.test.ts`
-
-**Intent**: Relocate the schema test file into a `__tests__/` subfolder to follow the agreed project-wide convention. Content is NOT rewritten — it already uses good patterns.
-
-**Contract**: `mkdir -p src/lib/schemas/__tests__ && git mv src/lib/schemas/batch.test.ts src/lib/schemas/__tests__/batch.test.ts`
-
-#### 2. Rewrite sugar calculation test suite
+#### 1. Rewrite sugar calculation test suite
 
 **File**: `src/lib/services/__tests__/sugar-calculation.test.ts`
 
@@ -104,6 +122,19 @@ Given a set of ingredients (with amount and sugar content), a target volume, a t
 - Assertions: `toBeCloseTo(expected, 4)` for kg values; exact match for grams
 - Scenarios (minimum): dry baseline (20L, 12% ABV, no ingredients), all 4 sweetness levels (S7), zero volume, zero ABV, multi-ingredient, S1 (non-dry + ingredients exceed ABV), S2 (non-dry + multi-ingredient), S3 (0% sugar ingredient), S4 (20% ABV high), S5 (0.5L small volume), S6 (10+ ingredients), S8 (0 liters ingredient)
 
+#### 2. Update test-plan.md §6.1 cookbook entry
+
+**File**: `context/foundation/test-plan.md`
+
+**Intent**: Replace the §6.1 placeholder ("TBD — see §3 Phase 1") with the canonical pattern for adding unit tests to business logic services — documenting the conventions established by this phase so future contributors know how to add tests.
+
+**Contract**: Update the `### 6.1 Adding a unit test for business logic` section with:
+- Location: `src/lib/services/__tests__/<service-name>.test.ts`
+- Pattern: table-driven `test.each` with named scenarios
+- Expected values: local domain constants with inline arithmetic (never import from production)
+- Run command: `npx vitest run src/lib/services/__tests__/<file>`
+- Reference test: point to sugar-calculation test as the canonical example
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -112,6 +143,7 @@ Given a set of ingredients (with amount and sugar content), a target volume, a t
 - All scenarios from S1–S8 plus existing valid scenarios present as named test rows
 - Lint passes: `npm run lint`
 - No imports from production constants (no `SWEETNESS_MIDPOINTS` or `SUGAR_PER_ABV_GRAM_PER_LITER` in import statements)
+- test-plan.md §6.1 updated with cookbook pattern (no longer reads "TBD")
 
 ---
 
@@ -133,15 +165,7 @@ Given a batch's parameters (yeast presence, target ABV, yeast tolerance, planned
 
 ### Changes Required:
 
-#### 1. Relocate existing test file
-
-**File**: `src/lib/services/batch-validation.test.ts` → `src/lib/services/__tests__/batch-validation.test.ts`
-
-**Intent**: Move co-located test into the standardized `__tests__/` subfolder to preserve git history, then completely rewrite its content.
-
-**Contract**: `git mv src/lib/services/batch-validation.test.ts src/lib/services/__tests__/batch-validation.test.ts`
-
-#### 2. Rewrite batch validation test suite
+#### 1. Rewrite batch validation test suite
 
 **File**: `src/lib/services/__tests__/batch-validation.test.ts`
 
@@ -236,8 +260,8 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 ## Migration Notes
 
 - `git mv` for the 2 co-located test files preserves history
+- Schema test (`batch.test.ts`) relocated to `src/lib/schemas/__tests__/` (content preserved)
 - Process plan test file already in correct location — content rewrite only
-- Schema test file (`batch.test.ts`) is NOT touched by this change
 - After all 3 phases complete, run full `npx vitest run` to confirm no regressions
 
 ## References
@@ -254,6 +278,14 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
+### Phase 0: File Relocations & Infrastructure Verification
+
+#### Automated
+
+- [x] 0.1 All test files relocated to __tests__/ subfolders
+- [x] 0.2 npx vitest run discovers and executes all relocated test files
+- [x] 0.3 Relocations committed (git status clean)
+
 ### Phase 1: Sugar Calculation Tests
 
 #### Automated
@@ -262,7 +294,7 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 - [ ] 1.2 All S1–S8 scenarios present as named test rows
 - [ ] 1.3 Lint passes: npm run lint
 - [ ] 1.4 No imports from production constants
-- [ ] 1.5 Schema test relocated to src/lib/schemas/__tests__/batch.test.ts and passes
+- [ ] 1.5 test-plan.md §6.1 updated with cookbook pattern
 
 ### Phase 2: Batch Validation Tests
 
@@ -280,4 +312,5 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 - [ ] 3.1 Tests pass: npx vitest run src/lib/services/__tests__/process-plan-generation.test.ts
 - [ ] 3.2 All P1–P17 scenarios present as named test rows
 - [ ] 3.3 Full 2×2×2 matrix covered
-- [ ] 3.4 Lint passes: npm run lint
+- [ ] 3.4 Negative assertions prove conditional steps absent
+- [ ] 3.5 Lint passes: npm run lint

@@ -1,9 +1,9 @@
 ---
 change_id: testing-core-business-logic
 title: Core business logic tests — audit and rebuild (Phase 1)
-status: preparing
+status: planned
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-06-23
 archived_at: null
 ---
 

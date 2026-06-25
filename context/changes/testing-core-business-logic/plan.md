@@ -309,8 +309,8 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 
 #### Automated
 
-- [x] 3.1 Tests pass: npx vitest run src/lib/services/__tests__/process-plan-generation.test.ts
-- [x] 3.2 All P1–P17 scenarios present as named test rows
-- [x] 3.3 Full 2×2×2 matrix covered
-- [x] 3.4 Negative assertions prove conditional steps absent
-- [x] 3.5 Lint passes: npm run lint
+- [x] 3.1 Tests pass: npx vitest run src/lib/services/__tests__/process-plan-generation.test.ts — 67219bf
+- [x] 3.2 All P1–P17 scenarios present as named test rows — 67219bf
+- [x] 3.3 Full 2×2×2 matrix covered — 67219bf
+- [x] 3.4 Negative assertions prove conditional steps absent — 67219bf
+- [x] 3.5 Lint passes: npm run lint — 67219bf

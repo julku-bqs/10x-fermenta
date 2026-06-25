@@ -24,25 +24,6 @@ const DESCRIPTION_FRAGMENTS = {
 } as const;
 
 // Day offsets from the step matrix (research ground truth)
-const OFFSETS = {
-  prepareMust: 0,
-  addSugar: 0,
-  pitchYeast: 0,
-  capManagement: 1,
-  monitorPrimary: 5,
-  press: 10,
-  rackSecondary: 14,
-  monitorSecondary: 21,
-  confirmComplete: 28,
-  rackOffLees: 35,
-  bulkAging: 60,
-  agingCheck1: 120,
-  agingCheck2: 240,
-  stabilize: 330,
-  backSweeten: 332,
-  bottling: 365,
-} as const;
-
 const BATCH_DATE = "2026-01-15";
 
 // --- Helpers ---
@@ -59,14 +40,17 @@ function makeInput(overrides: Partial<GenerationInput["batch"]> = {}): Generatio
   };
 }
 
-function addDaysToDate(dateStr: string, days: number): string {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day + days));
-  const y = date.getUTCFullYear();
-  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const d = String(date.getUTCDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
+// Pre-computed expected dates from BATCH_DATE + offset (oracle-independent)
+const EXPECTED_DATES: Record<string, string> = {
+  day0: "2026-01-15",
+  day1: "2026-01-16",
+  day10: "2026-01-25",
+  day14: "2026-01-29",
+  day28: "2026-02-12",
+  day330: "2026-12-11",
+  day332: "2026-12-13",
+  day365: "2027-01-15",
+};
 
 // --- Tests ---
 
@@ -202,34 +186,33 @@ describe("generateProcessPlan", () => {
   });
 
   describe("day offsets and ordering", () => {
-    it.each<[string, GenerationInput, string, number]>([
+    it.each<[string, GenerationInput, string, string]>([
       [
         "P13: cap_management at day 1",
         makeInput({ process_type: "pulp" }),
         DESCRIPTION_FRAGMENTS.capManagement,
-        OFFSETS.capManagement,
+        EXPECTED_DATES.day1,
       ],
-      ["P13: press at day 10", makeInput({ process_type: "pulp" }), DESCRIPTION_FRAGMENTS.press, OFFSETS.press],
+      ["P13: press at day 10", makeInput({ process_type: "pulp" }), DESCRIPTION_FRAGMENTS.press, EXPECTED_DATES.day10],
       [
         "P13: stabilize at day 330",
         makeInput({ planned_sweetness: "semi_dry" }),
         DESCRIPTION_FRAGMENTS.stabilize,
-        OFFSETS.stabilize,
+        EXPECTED_DATES.day330,
       ],
       [
         "P13: back_sweeten at day 332",
         makeInput({ planned_sweetness: "semi_dry" }),
         DESCRIPTION_FRAGMENTS.backSweeten,
-        OFFSETS.backSweeten,
+        EXPECTED_DATES.day332,
       ],
-      ["P14: pitch_yeast at day 0", makeInput(), DESCRIPTION_FRAGMENTS.pitchYeast, OFFSETS.pitchYeast],
-      ["P14: rack_secondary at day 14", makeInput(), DESCRIPTION_FRAGMENTS.rackSecondary, OFFSETS.rackSecondary],
-      ["P14: confirm_complete at day 28", makeInput(), DESCRIPTION_FRAGMENTS.confirmComplete, OFFSETS.confirmComplete],
-      ["P14: bottling at day 365", makeInput(), DESCRIPTION_FRAGMENTS.bottling, OFFSETS.bottling],
-    ])("%s", (_name, input, descriptionFragment, offsetDays) => {
+      ["P14: pitch_yeast at day 0", makeInput(), DESCRIPTION_FRAGMENTS.pitchYeast, EXPECTED_DATES.day0],
+      ["P14: rack_secondary at day 14", makeInput(), DESCRIPTION_FRAGMENTS.rackSecondary, EXPECTED_DATES.day14],
+      ["P14: confirm_complete at day 28", makeInput(), DESCRIPTION_FRAGMENTS.confirmComplete, EXPECTED_DATES.day28],
+      ["P14: bottling at day 365", makeInput(), DESCRIPTION_FRAGMENTS.bottling, EXPECTED_DATES.day365],
+    ])("%s", (_name, input, descriptionFragment, expectedDate) => {
       const result = generateProcessPlan(input);
       const step = result.find((s) => s.description.includes(descriptionFragment));
-      const expectedDate = addDaysToDate(BATCH_DATE, offsetDays);
 
       expect(step).toBeDefined();
       expect(step?.entry_date).toBe(expectedDate);

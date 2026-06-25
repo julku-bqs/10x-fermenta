@@ -364,7 +364,7 @@ describe("multiple simultaneous warnings", () => {
     expect(hasWarning(warnings, "abv-exceeds-tolerance")).toBe(true);
     expect(hasWarning(warnings, "total-sugar-insufficient")).toBe(true);
     expect(hasWarning(warnings, "general-advisory")).toBe(true);
-    expect(warnings.length).toBeGreaterThanOrEqual(4);
+    expect(warnings.length).toBe(4);
   });
 
   it("null volume skips calc-dependent rules but keeps input-only rules", () => {

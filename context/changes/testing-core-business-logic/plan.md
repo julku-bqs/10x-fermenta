@@ -300,10 +300,10 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 
 #### Automated
 
-- [ ] 2.1 Tests pass: npx vitest run src/lib/services/__tests__/batch-validation.test.ts
-- [ ] 2.2 All V1–V12 scenarios present as named test rows
-- [ ] 2.3 Every rule tested bidirectionally
-- [ ] 2.4 Lint passes: npm run lint
+- [x] 2.1 Tests pass: npx vitest run src/lib/services/__tests__/batch-validation.test.ts
+- [x] 2.2 All V1–V12 scenarios present as named test rows
+- [x] 2.3 Every rule tested bidirectionally
+- [x] 2.4 Lint passes: npm run lint
 
 ### Phase 3: Process Plan Generation Tests
 

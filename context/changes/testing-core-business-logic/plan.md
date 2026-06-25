@@ -282,28 +282,28 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 
 #### Automated
 
-- [x] 0.1 All test files relocated to __tests__/ subfolders
-- [x] 0.2 npx vitest run discovers and executes all relocated test files
-- [x] 0.3 Relocations committed (git status clean)
+- [x] 0.1 All test files relocated to __tests__/ subfolders — ef637c3
+- [x] 0.2 npx vitest run discovers and executes all relocated test files — ef637c3
+- [x] 0.3 Relocations committed (git status clean) — ef637c3
 
 ### Phase 1: Sugar Calculation Tests
 
 #### Automated
 
-- [x] 1.1 Tests pass: npx vitest run src/lib/services/__tests__/sugar-calculation.test.ts
-- [x] 1.2 All S1–S8 scenarios present as named test rows
-- [x] 1.3 Lint passes: npm run lint
-- [x] 1.4 No imports from production constants
-- [x] 1.5 test-plan.md §6.1 updated with cookbook pattern
+- [x] 1.1 Tests pass: npx vitest run src/lib/services/__tests__/sugar-calculation.test.ts — 5e7425c
+- [x] 1.2 All S1–S8 scenarios present as named test rows — 5e7425c
+- [x] 1.3 Lint passes: npm run lint — 5e7425c
+- [x] 1.4 No imports from production constants — 5e7425c
+- [x] 1.5 test-plan.md §6.1 updated with cookbook pattern — 5e7425c
 
 ### Phase 2: Batch Validation Tests
 
 #### Automated
 
-- [x] 2.1 Tests pass: npx vitest run src/lib/services/__tests__/batch-validation.test.ts
-- [x] 2.2 All V1–V12 scenarios present as named test rows
-- [x] 2.3 Every rule tested bidirectionally
-- [x] 2.4 Lint passes: npm run lint
+- [x] 2.1 Tests pass: npx vitest run src/lib/services/__tests__/batch-validation.test.ts — 79d9726
+- [x] 2.2 All V1–V12 scenarios present as named test rows — 79d9726
+- [x] 2.3 Every rule tested bidirectionally — 79d9726
+- [x] 2.4 Lint passes: npm run lint — 79d9726
 
 ### Phase 3: Process Plan Generation Tests
 

@@ -115,7 +115,44 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.1 Adding a unit test for business logic
 
-TBD — see §3 Phase 1 for calculation/validation/process-plan test patterns.
+**Location**: `src/lib/services/__tests__/<service-name>.test.ts`
+
+**Naming**: `<service-name>.test.ts` — mirrors the production file name.
+
+**Pattern**: Table-driven parameterized tests using Vitest `it.each`:
+
+```typescript
+import { describe, expect, it } from "vitest";
+import { myFunction } from "@/lib/services/my-service";
+
+// Local domain constants — never imported from production code.
+const MY_DOMAIN_CONSTANT = 17;
+
+type Scenario = [string, Input, Expected];
+
+const scenarios: Scenario[] = [
+  ["scenario name", { ...input }, { ...expected }],
+  // Derive expected values from local constants + inline arithmetic
+];
+
+describe("myFunction", () => {
+  it.each(scenarios)("%s", (_name, input, expected) => {
+    const result = myFunction(input);
+    expect(result.field).toBeCloseTo(expected.field, 4);
+  });
+});
+```
+
+**Rules**:
+- Never import production constants (e.g., `SWEETNESS_MIDPOINTS`). Define local equivalents.
+- Expected values use inline arithmetic from domain knowledge, not captured output.
+- Use `toBeCloseTo(value, 4)` for floating-point kg values; exact `toBe` for integer grams.
+- Each scenario row has a descriptive name visible in runner output.
+- Boundary tests use explicit threshold values where comparison operators matter.
+
+**Run command**: `npx vitest run src/lib/services/__tests__/<file>.test.ts`
+
+**Reference test**: `src/lib/services/__tests__/sugar-calculation.test.ts` (18 scenarios, S1–S8 coverage).
 
 ### 6.2 Adding an integration test for API routes
 

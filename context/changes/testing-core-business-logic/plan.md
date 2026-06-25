@@ -290,11 +290,11 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 
 #### Automated
 
-- [ ] 1.1 Tests pass: npx vitest run src/lib/services/__tests__/sugar-calculation.test.ts
-- [ ] 1.2 All S1–S8 scenarios present as named test rows
-- [ ] 1.3 Lint passes: npm run lint
-- [ ] 1.4 No imports from production constants
-- [ ] 1.5 test-plan.md §6.1 updated with cookbook pattern
+- [x] 1.1 Tests pass: npx vitest run src/lib/services/__tests__/sugar-calculation.test.ts
+- [x] 1.2 All S1–S8 scenarios present as named test rows
+- [x] 1.3 Lint passes: npm run lint
+- [x] 1.4 No imports from production constants
+- [x] 1.5 test-plan.md §6.1 updated with cookbook pattern
 
 ### Phase 2: Batch Validation Tests
 

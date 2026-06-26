@@ -70,8 +70,8 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|-----------|-----------------|---------------|------------|--------|---------------|
-| 1 | Core business logic (audit + rebuild) | Audit existing untrusted tests and rebuild trusted unit tests proving calculation, validation, and process plan correctness from business rules | #1, #2, #3 | unit | change opened | context/changes/testing-core-business-logic/ |
-| 2 | Data integrity and interaction | Prove ingredient→calculation data flow, API input validation, and sugar field save/cancel/reload lifecycle preserve correct data | #4, #5, #7 | unit + integration | not started | — |
+| 1 | Core business logic (audit + rebuild) | Audit existing untrusted tests and rebuild trusted unit tests proving calculation, validation, and process plan correctness from business rules | #1, #2, #3 | unit | complete | context/changes/testing-core-business-logic/ |
+| 2 | Data integrity and interaction | Prove ingredient→calculation data flow, API input validation, and sugar field save/cancel/reload lifecycle preserve correct data | #4, #5, #7 | unit + integration | change opened | context/changes/testing-data-integrity/ |
 | 3 | Access control verification | Prove one user cannot reach another's data through any API surface | #6 | integration | not started | — |
 | 4 | Quality gates wiring | Lock the floor: CI runs lint + typecheck + full test suite on every PR | cross-cutting | gates | not started | — |
 
@@ -115,7 +115,44 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.1 Adding a unit test for business logic
 
-TBD — see §3 Phase 1 for calculation/validation/process-plan test patterns.
+**Location**: `src/lib/services/__tests__/<service-name>.test.ts`
+
+**Naming**: `<service-name>.test.ts` — mirrors the production file name.
+
+**Pattern**: Table-driven parameterized tests using Vitest `it.each`:
+
+```typescript
+import { describe, expect, it } from "vitest";
+import { myFunction } from "@/lib/services/my-service";
+
+// Local domain constants — never imported from production code.
+const MY_DOMAIN_CONSTANT = 17;
+
+type Scenario = [string, Input, Expected];
+
+const scenarios: Scenario[] = [
+  ["scenario name", { ...input }, { ...expected }],
+  // Derive expected values from local constants + inline arithmetic
+];
+
+describe("myFunction", () => {
+  it.each(scenarios)("%s", (_name, input, expected) => {
+    const result = myFunction(input);
+    expect(result.field).toBeCloseTo(expected.field, 4);
+  });
+});
+```
+
+**Rules**:
+- Never import production constants (e.g., `SWEETNESS_MIDPOINTS`). Define local equivalents.
+- Expected values use inline arithmetic from domain knowledge, not captured output.
+- Use `toBeCloseTo(value, 4)` for floating-point kg values; exact `toBe` for integer grams.
+- Each scenario row has a descriptive name visible in runner output.
+- Boundary tests use explicit threshold values where comparison operators matter.
+
+**Run command**: `npx vitest run src/lib/services/__tests__/<file>.test.ts`
+
+**Reference test**: `src/lib/services/__tests__/sugar-calculation.test.ts` (18 scenarios, S1–S8 coverage).
 
 ### 6.2 Adding an integration test for API routes
 

@@ -70,7 +70,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|-----------|-----------------|---------------|------------|--------|---------------|
-| 1 | Core business logic (audit + rebuild) | Audit existing untrusted tests and rebuild trusted unit tests proving calculation, validation, and process plan correctness from business rules | #1, #2, #3 | unit | change opened | context/changes/testing-core-business-logic/ |
+| 1 | Core business logic (audit + rebuild) | Audit existing untrusted tests and rebuild trusted unit tests proving calculation, validation, and process plan correctness from business rules | #1, #2, #3 | unit | complete | context/changes/testing-core-business-logic/ |
 | 2 | Data integrity and interaction | Prove ingredient→calculation data flow, API input validation, and sugar field save/cancel/reload lifecycle preserve correct data | #4, #5, #7 | unit + integration | not started | — |
 | 3 | Access control verification | Prove one user cannot reach another's data through any API surface | #6 | integration | not started | — |
 | 4 | Quality gates wiring | Lock the floor: CI runs lint + typecheck + full test suite on every PR | cross-cutting | gates | not started | — |

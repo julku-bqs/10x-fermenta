@@ -409,14 +409,14 @@ Integration tests hit a real local DB — each test creates/deletes data. Keep s
 
 #### Automated
 
-- [ ] 1.1 vitest integration test folder runs without errors
-- [ ] 1.2 globalSetup starts dev server and provisions test user
-- [ ] 1.3 Authenticated request returns 200 (full stack works)
-- [ ] 1.4 Unauthenticated request is rejected (middleware guard works)
+- [x] 1.1 vitest integration test folder runs without errors
+- [x] 1.2 globalSetup starts dev server and provisions test user
+- [x] 1.3 Authenticated request returns 200 (full stack works)
+- [x] 1.4 Unauthenticated request is rejected (middleware guard works)
 
 #### Manual
 
-- [ ] 1.5 Confirm local Supabase accessible from Windows at 127.0.0.1:54321
+- [x] 1.5 Confirm local Supabase accessible from Windows at 127.0.0.1:54321
 
 ### Phase 2: Risk #4 — Sugar Pipeline Persistence
 

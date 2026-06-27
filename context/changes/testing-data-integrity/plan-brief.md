@@ -21,7 +21,7 @@ Integration tests prove — against a real local Supabase — that (1) sugar val
 |----------|--------|-------------------|--------|
 | DB strategy | Real local Supabase | Mocking proves mock behavior, not persistence correctness | Plan |
 | Route scope for Risk #5 | 4 batch routes (POST/PUT batch + diary) | Auth routes have no domain data mutation risk | Plan |
-| Test infrastructure approach | Import route handlers + mock `@/lib/supabase` module | Avoids HTTP server dependency while testing real route logic with real DB | Plan |
+| Test infrastructure approach | HTTP requests to running Astro dev server | Full stack integration with zero mocks — tests middleware, routing, handlers, and DB together | Plan |
 | Expected value derivation | Local constants + inline arithmetic | Prevents oracle problem — never import production constants | Research |
 
 ## Scope
@@ -40,12 +40,16 @@ Integration tests prove — against a real local Supabase — that (1) sugar val
 
 ## Architecture / Approach
 
-Route handlers are imported and called directly with a constructed `APIContext`. The `@/lib/supabase` module is mocked to provide a real Supabase client pointing at local instance (`127.0.0.1:54321`). A globalSetup provisions a test user. Each test creates its own data via admin client and cleans up after — no shared state between tests.
+Route handlers are tested via real HTTP requests to a running Astro dev server on a dedicated test port (4322). No mocking — the full stack runs naturally. A globalSetup starts the server, provisions a test user, signs in to get session cookies. Each test creates its own data via admin client and cleans up after — no shared state between tests.
 
 ```
-Test file → import POST/PUT handler → construct APIContext (real Supabase client)
+globalSetup: start astro dev :4322 → create user → sign in → store cookies
                                         ↓
-                                 Route validates (Zod)
+Test file → fetch("http://localhost:4322/api/batches", { Cookie: ... })
+                                        ↓
+                    Astro middleware resolves user from cookie
+                                        ↓
+                              Route validates (Zod)
                                         ↓
                               Supabase writes to real local DB
                                         ↓

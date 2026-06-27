@@ -13,8 +13,7 @@ Phase 1 (core business logic) is complete — 18 scenarios for `calculateSugar()
 
 ### Key Discoveries:
 
-- `src/lib/supabase.ts:3` — imports from `astro:env/server`, unavailable in vitest; module mock required
-- Route handlers are exported named functions (`POST`, `PUT`) importable directly — no HTTP layer needed
+- `src/lib/supabase.ts:3` — imports from `astro:env/server`; integration tests bypass this by hitting the full HTTP stack rather than importing handlers directly
 - `parseFloat(form.sugar) || 0` at `BatchForm.tsx:170-171` — the string→number seam that could corrupt edge inputs
 - `updateBatchSchema` explicitly uses `.optional()` without `.default()` to prevent Zod v4 from zeroing omitted fields on PUT (batch.ts:28-38)
 - Cancel is navigation to `/batches`, not form reset — "last-saved values" means "what DB returns on next page load"
@@ -32,21 +31,21 @@ After this plan completes:
 
 - **Auth route validation testing** — signin/signup schemas are simple string/email validators with no domain data mutation risk
 - **E2e browser tests** — lifecycle semantics are verifiable at the API/data layer without a browser
-- **Mocking Supabase** — defeats the purpose; we verify actual persistence
-- **Testing the dev server HTTP layer** — route handlers are called directly; Astro routing is not our concern
+- **Mocking any layer** — tests hit the full stack via HTTP; no mocks for Supabase, Astro internals, or middleware
+- **Testing Astro's static rendering or build** — only API routes under `/api/` are exercised; SSR page rendering is not our concern
 - **Concurrent edit protection** — explicitly out of scope (test-plan §7)
 
 ## Implementation Approach
 
-Integration tests call Astro route handler functions directly with a constructed `APIContext` containing a real Supabase client pointing to local Supabase (`127.0.0.1:54321`). A `globalSetup` creates a test user; per-suite `beforeEach`/`afterEach` handles data cleanup. The `@/lib/supabase` module is mocked at the vitest level to bypass the `astro:env/server` dependency.
+Integration tests make real HTTP requests to a running Astro dev server pointing at local Supabase (`127.0.0.1:54321`). Zero mocking — the full stack runs: Astro routing → middleware (auth + session) → route handler → Supabase → DB. A `globalSetup` starts the dev server on a dedicated test port, creates a test user, and obtains session cookies. Per-suite `beforeEach`/`afterEach` handles data cleanup via admin Supabase client.
 
-Test files live alongside production code at `src/__tests__/integration/` to signal the different testing layer.
+Test files live at `src/__tests__/integration/` to signal the different testing layer.
 
 ## Critical Implementation Details
 
-**Timing & lifecycle** — `globalSetup` must run before any test suite to ensure the test user exists in Supabase Auth. The user's JWT is obtained once and reused across suites (short-lived tokens are fine for local dev — default 1h expiry). If local Supabase is not running, tests should fail with a clear error message, not hang.
+**Timing & lifecycle** — `globalSetup` starts `astro dev --port 4322` and waits for the server to respond to a health check before returning. It also provisions the test user and signs in via `POST /api/auth/signin` to obtain session cookies. Credentials are persisted to `process.env` for the test context. `teardown()` stops the dev server. If local Supabase is not running, the server will fail to start — globalSetup should detect this and fail with a clear error message.
 
-**State sequencing** — each integration test must create its own batch/diary via the service role client (not through route handlers) for isolation, then clean up in `afterEach`. Tests that verify "no write occurred" must query the DB *after* the rejected request and assert row count unchanged — timing is synchronous since Supabase client calls are awaited.
+**State sequencing** — each integration test must create its own batch/diary via the admin Supabase client (not through API endpoints) for isolation, then clean up in `afterEach`. Tests that verify "no write occurred" must query the DB *after* the rejected request and assert row count unchanged — timing is synchronous since fetch calls are awaited.
 
 ---
 
@@ -54,53 +53,56 @@ Test files live alongside production code at `src/__tests__/integration/` to sig
 
 ### Overview
 
-Establish reusable helpers for calling route handlers against local Supabase. This phase produces zero business-logic tests but unlocks all subsequent phases.
+Establish reusable infrastructure for HTTP-based integration tests against a running Astro dev server with local Supabase. This phase produces zero business-logic tests but unlocks all subsequent phases.
 
 ### Changes Required:
 
-#### 1. Vitest global setup for test user provisioning
+#### 1. Vitest global setup — server lifecycle + test user
 
 **File**: `src/__tests__/integration/globalSetup.ts`
 
-**Intent**: Create a persistent test user in local Supabase Auth at the start of the test run and export credentials. Allows all integration tests to authenticate as a real user without per-test signup overhead.
+**Intent**: Start the Astro dev server on a dedicated test port, provision a test user in local Supabase Auth, sign in to obtain session cookies, and persist credentials for the test context.
 
-**Contract**: Exports a `setup()` function that uses `@supabase/supabase-js` with the service role key to call `auth.admin.createUser()` (or verifies the user already exists). Writes credentials to an env var or a shared module that other helpers can import.
+**Contract**: Exports `setup()` and `teardown()` functions:
+- `setup()`: Spawns `astro dev --port 4322` as a child process, waits for HTTP readiness (poll `GET http://localhost:4322/` until 200 or timeout after 30s). Creates test user via admin Supabase client (`auth.admin.createUser`). Signs in via `fetch("http://localhost:4322/api/auth/signin", { method: "POST", body: { email, password } })` and captures `Set-Cookie` header. Writes `TEST_COOKIES`, `TEST_USER_ID`, and `TEST_BASE_URL` to `process.env`.
+- `teardown()`: Kills the dev server child process.
 
-#### 2. Test helper module — Supabase clients + API context factory
+#### 2. Test helper module — HTTP client + admin Supabase client
 
 **File**: `src/__tests__/integration/helpers.ts`
 
-**Intent**: Provide factory functions that construct the objects needed to call route handlers: an authenticated Supabase client (user-scoped), an admin client (service role, for setup/teardown), and a fake `APIContext` builder that satisfies Astro's interface.
+**Intent**: Provide factory functions for making authenticated API requests and for direct DB operations (setup/teardown/verification).
 
 **Contract**:
-- `getAdminClient()` → `SupabaseClient` with service role key (for data setup/teardown)
-- `getUserClient()` → `SupabaseClient` authenticated as the test user
-- `createAPIContext(options: { method, body?, params?, user? })` → object satisfying `APIContext` shape (request, cookies mock, locals.user, params)
-- All clients point to `http://127.0.0.1:54321`
+- `getAdminClient()` → `SupabaseClient` with service role key (for data setup/teardown/verification)
+- `apiRequest(path: string, options?: { method?, body?, cookies? })` → `fetch()` wrapper that prepends `TEST_BASE_URL`, injects `TEST_COOKIES` header, sets `Content-Type: application/json`, and returns the Response
+- `apiRequestUnauthenticated(path, options)` → same but without cookies (for testing auth guard)
+- Constants: `TEST_PORT = 4322`, local Supabase URL/keys read from env
 
 #### 3. Vitest config extension for integration tests
 
 **File**: `vitest.config.ts` (update)
 
-**Intent**: Add a `globalSetup` entry pointing to the integration setup file. Ensure `@/lib/supabase` is mocked globally for integration tests via `setupFiles`.
+**Intent**: Add a `globalSetup` entry pointing to the integration setup file.
 
-**Contract**: `test.globalSetup` array includes the integration globalSetup. Module alias for `astro:env/server` added so imports don't break during test compilation.
+**Contract**: `test.globalSetup` array includes `src/__tests__/integration/globalSetup.ts`. No module mocks, no setupFiles, no alias overrides needed — the HTTP approach requires no Astro internals.
 
-#### 4. Module mock for `@/lib/supabase`
+#### 4. Environment file for test Supabase credentials
 
-**File**: `src/__tests__/integration/mocks/supabase.ts`
+**File**: `.env.test` (or reuse existing `.env` for local dev)
 
-**Intent**: Replace the `createClient` export from `@/lib/supabase` with a version that returns the real user-scoped Supabase client from the helpers module, bypassing the `astro:env/server` dependency.
+**Intent**: Ensure the Astro dev server started by globalSetup connects to local Supabase.
 
-**Contract**: `vi.mock("@/lib/supabase", ...)` — the mock's `createClient()` returns the user client from `helpers.ts`. Applied via vitest `setupFiles` for integration test files.
+**Contract**: Contains `SUPABASE_URL=http://127.0.0.1:54321` and `SUPABASE_KEY=<local anon key>`. The globalSetup spawns the dev server with `--mode test` or passes env vars to the child process. If the project already uses `.env` for local dev pointing at local Supabase, this file may be unnecessary — verify during implementation.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
 - `npx vitest run src/__tests__/integration/` executes without errors (even with 0 test cases)
-- TypeScript compilation of test helpers passes: `npx tsc --noEmit src/__tests__/integration/helpers.ts`
-- Local Supabase connectivity verified: globalSetup logs "Test user ready" or fails with clear "Supabase not running" error
+- globalSetup starts dev server, provisions test user, obtains cookies, and tears down cleanly
+- `apiRequest("/api/batches")` returns 200 with authenticated cookies (proves full stack works)
+- `apiRequestUnauthenticated("/api/batches")` returns redirect/401 (proves middleware guard works)
 
 #### Manual Verification:
 
@@ -152,7 +154,7 @@ Scenarios must include:
 - S6: Very small values (0.5L × 0.1%) — verifies precision through pipeline
 - S7: Large values (100L × 100% sugar) — verifies no overflow/truncation
 
-Each scenario: POST batch → query DB → assert stored kg matches expected.
+Each scenario: POST batch via `apiRequest("/api/batches", { method: "POST", body: payload })` → query DB via admin client → assert stored kg matches expected.
 
 #### 2. ParseFloat seam unit test
 
@@ -242,9 +244,9 @@ For PUT routes: test setup creates a batch (and diary entry) via admin client fi
 
 **File**: `src/__tests__/integration/helpers.ts` (addition)
 
-**Intent**: Add a helper that counts rows in a table before/after a route call and asserts no change.
+**Intent**: Add a helper that counts rows in one or more tables before/after a route call and asserts no change. Accepts an array of tables to support routes with side effects (e.g., POST batch also writes diary_entries).
 
-**Contract**: `assertNoDbWrite(table: string, filterColumn: string, filterValue: string, action: () => Promise<Response>)` — queries count before, runs action, queries count after, asserts equal.
+**Contract**: `assertNoDbWrite(tables: Array<{ table: string, filterColumn: string, filterValue: string }>, action: () => Promise<Response>)` — queries count for each table before, runs action, queries count for each table after, asserts all equal. Convenience overload for single table: `assertNoDbWrite(table, filterColumn, filterValue, action)`.
 
 ### Success Criteria:
 
@@ -304,7 +306,7 @@ type LifecycleScenario = [name: string, sugarValues: { fermentation_sugar_kg: nu
 - L7: PUT sugar (1.0, 0.5) → PUT sugar (2.0, 1.0) → GET → assert (2.0, 1.0) — last save wins
 - L8: PUT sugar (1.0, 0.5) → no second PUT → GET → assert (1.0, 0.5) — "cancel" = no PUT means DB unchanged
 
-Each test creates a fresh batch via admin client, performs PUT via route handler, verifies via direct DB query (admin client GET).
+Each test creates a fresh batch via admin client, performs PUT via `apiRequest("/api/batches/${id}", { method: "PUT", body })`, verifies via direct DB query (admin client).
 
 ### Success Criteria:
 
@@ -342,7 +344,7 @@ Update `context/foundation/test-plan.md` §6.2 with the integration test pattern
 
 **Intent**: Replace the "TBD — see §3 Phase 2" placeholder in §6.2 with the canonical pattern for integration tests: file location, naming convention, helper usage, scenario structure, run command, and reference test file.
 
-**Contract**: Section content mirrors the structure of §6.1 (location, naming, pattern, rules, run command, reference test). Covers: route handler invocation via `createAPIContext`, `assertNoDbWrite` usage, table-driven scenarios, cleanup rules, and the module mock setup.
+**Contract**: Section content mirrors the structure of §6.1 (location, naming, pattern, rules, run command, reference test). Covers: HTTP request via `apiRequest` helper, `assertNoDbWrite` usage, table-driven scenarios, cleanup rules, and globalSetup server lifecycle.
 
 #### 2. Update test-plan.md §3 status
 
@@ -350,7 +352,7 @@ Update `context/foundation/test-plan.md` §6.2 with the integration test pattern
 
 **Intent**: Mark Phase 2 row in the §3 table as `complete` once all tests pass.
 
-**Contract**: Change `researched` → `complete` in the Status column for row 2. Add change folder path.
+**Contract**: Change `implementing` → `complete` in the Status column for row 2. Add change folder path.
 
 ### Success Criteria:
 
@@ -408,12 +410,13 @@ Integration tests hit a real local DB — each test creates/deletes data. Keep s
 #### Automated
 
 - [ ] 1.1 vitest integration test folder runs without errors
-- [ ] 1.2 TypeScript compilation of test helpers passes
-- [ ] 1.3 Local Supabase connectivity verified in globalSetup
+- [ ] 1.2 globalSetup starts dev server and provisions test user
+- [ ] 1.3 Authenticated request returns 200 (full stack works)
+- [ ] 1.4 Unauthenticated request is rejected (middleware guard works)
 
 #### Manual
 
-- [ ] 1.4 Confirm local Supabase accessible from Windows at 127.0.0.1:54321
+- [ ] 1.5 Confirm local Supabase accessible from Windows at 127.0.0.1:54321
 
 ### Phase 2: Risk #4 — Sugar Pipeline Persistence
 

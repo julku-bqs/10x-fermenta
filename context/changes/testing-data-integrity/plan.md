@@ -422,21 +422,21 @@ Integration tests hit a real local DB — each test creates/deletes data. Keep s
 
 #### Automated
 
-- [x] 2.1 All pipeline scenarios pass
-- [x] 2.2 No test imports production constants
-- [x] 2.3 Expected values independently derived
+- [x] 2.1 All pipeline scenarios pass — 8b67e58
+- [x] 2.2 No test imports production constants — 8b67e58
+- [x] 2.3 Expected values independently derived — 8b67e58
 
 #### Manual
 
-- [x] 2.4 Review scenario expected values against manual calculation
+- [x] 2.4 Review scenario expected values against manual calculation — 8b67e58
 
 ### Phase 3: Risk #5 — API Validation Rejection
 
 #### Automated
 
-- [ ] 3.1 All rejection scenarios pass
-- [ ] 3.2 Every test asserts 400 + structured error + no DB write
-- [ ] 3.3 No test sends valid input
+- [x] 3.1 All rejection scenarios pass
+- [x] 3.2 Every test asserts 400 + structured error + no DB write
+- [x] 3.3 No test sends valid input
 
 #### Manual
 

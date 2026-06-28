@@ -101,3 +101,60 @@ export async function apiRequestUnauthenticated(
 export function getTestUserId(): string {
   return getTestState().userId;
 }
+
+/**
+ * Makes an authenticated HTTP request with a raw (non-JSON-serialized) body string.
+ * Used to test invalid JSON parsing paths.
+ */
+export async function apiRequestRaw(path: string, method: string, rawBody: string): Promise<Response> {
+  const state = getTestState();
+  return fetch(`${state.baseUrl}${path}`, {
+    method,
+    headers: {
+      Cookie: state.cookies,
+      "Content-Type": "application/json",
+      Origin: state.baseUrl,
+    },
+    body: rawBody,
+    redirect: "manual",
+  });
+}
+
+/**
+ * Asserts that an action does not create new rows in the specified tables.
+ * Snapshots existing IDs before the action, then checks for new IDs after.
+ * Immune to parallel test activity (other tests creating/deleting rows concurrently).
+ */
+export async function assertNoDbWrite(
+  tables: { table: string; filterColumn: string; filterValue: string }[],
+  action: () => Promise<Response>,
+): Promise<Response> {
+  const admin = getAdminClient();
+
+  // Snapshot existing IDs before
+  const beforeIds: Set<string>[] = [];
+  for (const { table, filterColumn, filterValue } of tables) {
+    const { data } = await admin.from(table).select("id").eq(filterColumn, filterValue);
+    const rows = (data ?? []) as { id: string }[];
+    beforeIds.push(new Set(rows.map((r) => r.id)));
+  }
+
+  // Run action
+  const response = await action();
+
+  // Check for NEW IDs that didn't exist before
+  for (let i = 0; i < tables.length; i++) {
+    const { table, filterColumn, filterValue } = tables[i];
+    const { data } = await admin.from(table).select("id").eq(filterColumn, filterValue);
+    const rows = (data ?? []) as { id: string }[];
+    const newIds = rows.map((r) => r.id).filter((id) => !beforeIds[i].has(id));
+    if (newIds.length > 0) {
+      throw new Error(
+        `Expected no DB write to "${table}" (filter: ${filterColumn}=${filterValue}), ` +
+          `but found ${newIds.length} new row(s): ${newIds.join(", ")}`,
+      );
+    }
+  }
+
+  return response;
+}

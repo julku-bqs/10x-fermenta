@@ -434,25 +434,25 @@ Integration tests hit a real local DB — each test creates/deletes data. Keep s
 
 #### Automated
 
-- [x] 3.1 All rejection scenarios pass
-- [x] 3.2 Every test asserts 400 + structured error + no DB write
-- [x] 3.3 No test sends valid input
+- [x] 3.1 All rejection scenarios pass — 6049113
+- [x] 3.2 Every test asserts 400 + structured error + no DB write — 6049113
+- [x] 3.3 No test sends valid input — 6049113
 
 #### Manual
 
-- [ ] 3.4 Review schema constraint coverage against research.md
+- [x] 3.4 Review schema constraint coverage against research.md — 6049113
 
 ### Phase 4: Risk #7 — Sugar Field Save/Reload Lifecycle
 
 #### Automated
 
-- [ ] 4.1 All lifecycle scenarios pass
-- [ ] 4.2 Partial update test confirms Zod v4 protection
-- [ ] 4.3 Precision tests use toBeCloseTo
+- [x] 4.1 All lifecycle scenarios pass
+- [x] 4.2 Partial update test confirms Zod v4 protection
+- [x] 4.3 Precision tests use toBeCloseTo
 
 #### Manual
 
-- [ ] 4.4 Verify expectations independently derived
+- [x] 4.4 Verify expectations independently derived
 
 ### Phase 5: §6 Cookbook Update
 

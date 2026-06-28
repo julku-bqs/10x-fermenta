@@ -458,9 +458,9 @@ Integration tests hit a real local DB — each test creates/deletes data. Keep s
 
 #### Automated
 
-- [x] 5.1 Full test suite passes (npx vitest run)
-- [x] 5.2 Lint passes on updated markdown
+- [x] 5.1 Full test suite passes (npx vitest run) — 2a9c09c
+- [x] 5.2 Lint passes on updated markdown — 2a9c09c
 
 #### Manual
 
-- [x] 5.3 §6.2 self-contained for new contributor
+- [x] 5.3 §6.2 self-contained for new contributor — 2a9c09c

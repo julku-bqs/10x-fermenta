@@ -1,9 +1,9 @@
 ---
 change_id: testing-data-integrity
 title: Data integrity and interaction tests (test-plan Phase 2)
-status: implementing
+status: implemented
 created: 2026-06-26
-updated: 2026-06-27
+updated: 2026-06-28
 archived_at: null
 ---
 

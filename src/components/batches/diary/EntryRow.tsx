@@ -27,7 +27,7 @@ export function EntryRow({ entry, isLast, onToggleComplete, onEdit, onDelete }: 
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editDesc, setEditDesc] = useState(entry.description);
-  const [editDate, setEditDate] = useState(entry.entry_date);
+  const [editDate, setEditDate] = useState(entry.entry_date ?? "");
   const [editNotes, setEditNotes] = useState(entry.notes ?? "");
 
   function handleSave() {
@@ -43,7 +43,7 @@ export function EntryRow({ entry, isLast, onToggleComplete, onEdit, onDelete }: 
 
   function handleCancel() {
     setEditDesc(entry.description);
-    setEditDate(entry.entry_date);
+    setEditDate(entry.entry_date ?? "");
     setEditNotes(entry.notes ?? "");
     setEditing(false);
   }
@@ -125,7 +125,7 @@ export function EntryRow({ entry, isLast, onToggleComplete, onEdit, onDelete }: 
               className="hover:bg-muted/40 -ml-1 block w-full rounded-md px-1 py-0.5 text-left transition-colors duration-150"
             >
               <span className="text-muted-foreground text-sm font-medium tabular-nums">
-                {formatDate(entry.entry_date)}
+                {formatDate(entry.entry_date ?? "")}
               </span>
               <p
                 className={cn(

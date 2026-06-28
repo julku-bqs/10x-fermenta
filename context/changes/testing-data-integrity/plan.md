@@ -446,21 +446,21 @@ Integration tests hit a real local DB — each test creates/deletes data. Keep s
 
 #### Automated
 
-- [x] 4.1 All lifecycle scenarios pass
-- [x] 4.2 Partial update test confirms Zod v4 protection
-- [x] 4.3 Precision tests use toBeCloseTo
+- [x] 4.1 All lifecycle scenarios pass — 4acbcf6
+- [x] 4.2 Partial update test confirms Zod v4 protection — 4acbcf6
+- [x] 4.3 Precision tests use toBeCloseTo — 4acbcf6
 
 #### Manual
 
-- [x] 4.4 Verify expectations independently derived
+- [x] 4.4 Verify expectations independently derived — 4acbcf6
 
 ### Phase 5: §6 Cookbook Update
 
 #### Automated
 
-- [ ] 5.1 Full test suite passes (npx vitest run)
-- [ ] 5.2 Lint passes on updated markdown
+- [x] 5.1 Full test suite passes (npx vitest run)
+- [x] 5.2 Lint passes on updated markdown
 
 #### Manual
 
-- [ ] 5.3 §6.2 self-contained for new contributor
+- [x] 5.3 §6.2 self-contained for new contributor

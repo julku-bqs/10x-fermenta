@@ -12,6 +12,7 @@
 .10x-*
 .github/prompts/skill-explainer.md
 .github/prompts/m*l*-*.md
+.github/prompts/mvp-check.md
 
 # from 10x-astro-starter
 # build output

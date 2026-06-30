@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "$files = jq -r '(.tool_input.filePath // empty), (.tool_input.files[]? // empty), (.tool_input.replacements[]?.filePath // empty)' | Where-Object { $_ -match '\\.(ts|tsx|astro)$' }; if ($files) { npx eslint --fix $files 2>&1 }"
+      }
+    ]
+  }
+}

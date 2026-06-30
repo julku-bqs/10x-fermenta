@@ -13,7 +13,9 @@
     "deploy": "wrangler deploy",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "stryker": "stryker run",
+    "stryker:integration": "stryker run stryker.integration.config.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",

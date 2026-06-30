@@ -228,7 +228,11 @@ const scenarios: PipelineScenario[] = [
   ],
 ];
 
-describe("Sugar pipeline persistence (Risk #4)", () => {
+describe("Sugar persistence roundtrip (Risk #4)", () => {
+  // NOTE: These tests verify that independently-derived sugar values survive the
+  // full POST → DB → query roundtrip without corruption. The client-side calculation
+  // (calculateSugar in BatchForm) is covered by unit tests in sugar-calculation.test.ts.
+  // The seam between calculation and submission (parseFloat) is tested below.
   it.each(scenarios)("%s", async (_name, input, expected) => {
     // Build a valid batch payload with the test ingredients
     const payload = {

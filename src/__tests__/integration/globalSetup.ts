@@ -127,21 +127,38 @@ export async function setup(): Promise<void> {
   // 3. Wait for server readiness
   await waitForServer(TEST_BASE_URL);
 
-  // 4. Provision test user via admin Supabase client
-  const userId = await provisionTestUser();
+  try {
+    // 4. Provision test user via admin Supabase client
+    const userId = await provisionTestUser();
 
-  // 5. Sign in via running dev server to obtain session cookies
-  const cookies = await signInAndCaptureCookies();
+    // 5. Sign in via running dev server to obtain session cookies
+    const cookies = await signInAndCaptureCookies();
 
-  // 6. Write test state to a shared file for test helpers
-  const state = {
-    baseUrl: TEST_BASE_URL,
-    cookies,
-    userId,
-    supabaseUrl: LOCAL_SUPABASE_URL,
-    supabaseServiceRoleKey: LOCAL_SUPABASE_SERVICE_ROLE_KEY,
-  };
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+    // 6. Write test state to a shared file for test helpers
+    const state = {
+      baseUrl: TEST_BASE_URL,
+      cookies,
+      userId,
+      supabaseUrl: LOCAL_SUPABASE_URL,
+      supabaseServiceRoleKey: LOCAL_SUPABASE_SERVICE_ROLE_KEY,
+    };
+    writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+  } catch (err) {
+    // Kill dev server to avoid orphaning the process on port 4322
+    await killDevServer();
+    throw err;
+  }
+}
+
+async function killDevServer(): Promise<void> {
+  if (devServer?.pid) {
+    try {
+      const { execSync } = await import("node:child_process");
+      execSync(`taskkill /pid ${devServer.pid} /T /F`, { stdio: "ignore" });
+    } catch {
+      devServer.kill("SIGKILL");
+    }
+  }
 }
 
 export async function teardown(): Promise<void> {
@@ -158,16 +175,7 @@ export async function teardown(): Promise<void> {
   }
 
   // Kill dev server process tree (Windows shell:true creates cmd.exe wrapper)
-  if (devServer?.pid) {
-    try {
-      // taskkill /T kills the process tree on Windows
-      const { execSync } = await import("node:child_process");
-      execSync(`taskkill /pid ${devServer.pid} /T /F`, { stdio: "ignore" });
-    } catch {
-      // Fallback: signal-based kill
-      devServer.kill("SIGKILL");
-    }
-  }
+  await killDevServer();
 
   // Remove state file
   try {

@@ -37,13 +37,11 @@
   - Tradeoff: The server route does NOT recalculate — it stores what the client sends. This fix would require architectural changes to the route handler.
   - Confidence: LOW — reading the POST route confirms it persists the received values; there is no server-side calculation.
   - Blind spot: Would require verifying route behavior first.
-- **Decision**: PENDING
+- **Decision**: FIXED (Fix A) — Renamed describe block to "Sugar persistence roundtrip" and added clarifying comment documenting scope boundaries.
 
 ### F2 — POST batch rejection tests skip no-DB-write assertion
 
 - **Severity**: ⚠️ WARNING
-- **Impact**: 🔎 MEDIUM — real tradeoff; pause to reason through it
-- **Dimension**: Safety & Quality
 - **Location**: src/__tests__/integration/api-validation.test.ts:107-114
 - **Detail**: Plan requires "every test asserts status 400 AND structured error AND no DB write." The PUT tests use assertNoDbWrite, but POST tests intentionally skip it (comment: "race with parallel test files"). A regression that returns 400 while also inserting a row would go undetected.
 - **Fix A ⭐ Recommended**: Add assertNoDbWrite with unique batch name filter
@@ -56,7 +54,7 @@
   - Tradeoff: Timestamp-based filtering is flaky in fast parallel runs.
   - Confidence: MEDIUM — depends on clock precision.
   - Blind spot: Supabase timestamp resolution unclear.
-- **Decision**: PENDING
+- **Decision**: FIXED (Fix A) — Added assertNoDbWrite with unique sentinel batch name filter per scenario.
 
 ### F3 — No error recovery after dev server spawn
 
@@ -66,7 +64,7 @@
 - **Location**: src/__tests__/integration/globalSetup.ts:108-145
 - **Detail**: setup() spawns the dev server at line 108, then provisions user and signs in. If provisioning or sign-in throws, the spawned dev server is never killed — orphaning the process on port 4322 and causing subsequent test runs to fail with EADDRINUSE.
 - **Fix**: Wrap lines 130-144 in try/catch; on error, kill the dev server process tree before re-throwing.
-- **Decision**: PENDING
+- **Decision**: FIXED — Extracted killDevServer() helper; setup() now wraps post-spawn steps in try/catch and kills dev server on error.
 
 ### F4 — assertNoDbWrite ignores query errors
 
@@ -76,7 +74,7 @@
 - **Location**: src/__tests__/integration/helpers.ts:137-148
 - **Detail**: Both snapshot queries destructure `{ data }` without checking `error`. If the query fails (DB down, table renamed), data is null, the helper uses an empty set, and the assertion vacuously passes — hiding the fact that the DB-write check never ran.
 - **Fix**: Add `if (result.error) throw new Error(...)` after each query.
-- **Decision**: PENDING
+- **Decision**: FIXED — Added error checks after both snapshot queries; throws with descriptive message on DB failure.
 
 ### F5 — Fixture setup ignores Supabase errors
 
@@ -86,7 +84,7 @@
 - **Location**: src/__tests__/integration/api-validation.test.ts:16-38
 - **Detail**: Fixture creation casts `data` to `{ id: string }` without checking `error`. If the insert fails (RLS, schema mismatch), subsequent tests receive undefined IDs and fail with opaque errors.
 - **Fix**: Check `error` after each insert and throw a clear fixture-setup error before tests run.
-- **Decision**: PENDING
+- **Decision**: FIXED — Added error checks after each insert with descriptive fixture-setup error messages.
 
 ### F6 — Separate integration config instead of extending vitest.config.ts
 
@@ -95,7 +93,7 @@
 - **Dimension**: Plan Adherence
 - **Location**: vitest.integration.config.ts
 - **Detail**: Plan specified updating vitest.config.ts with a globalSetup entry. Implementation created a separate vitest.integration.config.ts and excluded integration tests from the primary config. This is arguably better (unit tests stay fast, integration tests run in isolation) but differs from the written plan.
-- **Decision**: PENDING
+- **Decision**: SKIPPED — Separate config is better than what the plan specified (fast unit tests, isolated integration runs).
 
 ### F7 — Unplanned production code change (EntryRow.tsx)
 
@@ -104,4 +102,4 @@
 - **Dimension**: Scope Discipline
 - **Location**: src/components/batches/diary/EntryRow.tsx
 - **Detail**: Commit 1ecd614 adds `?? ""` fallback for undefined entry_date. Commit message: "handle undefined entry_date to satisfy strict TS checks." Small defensive fix discovered during testing, not in plan. Benign scope addition.
-- **Decision**: PENDING
+- **Decision**: SKIPPED — Benign defensive fix discovered during testing.

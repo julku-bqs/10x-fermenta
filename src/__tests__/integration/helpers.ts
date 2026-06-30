@@ -134,8 +134,11 @@ export async function assertNoDbWrite(
   // Snapshot existing IDs before
   const beforeIds: Set<string>[] = [];
   for (const { table, filterColumn, filterValue } of tables) {
-    const { data } = await admin.from(table).select("id").eq(filterColumn, filterValue);
-    const rows = (data ?? []) as { id: string }[];
+    const { data, error } = await admin.from(table).select("id").eq(filterColumn, filterValue);
+    if (error) {
+      throw new Error(`assertNoDbWrite: failed to snapshot "${table}" before action: ${error.message}`);
+    }
+    const rows = data as { id: string }[];
     beforeIds.push(new Set(rows.map((r) => r.id)));
   }
 
@@ -145,8 +148,11 @@ export async function assertNoDbWrite(
   // Check for NEW IDs that didn't exist before
   for (let i = 0; i < tables.length; i++) {
     const { table, filterColumn, filterValue } = tables[i];
-    const { data } = await admin.from(table).select("id").eq(filterColumn, filterValue);
-    const rows = (data ?? []) as { id: string }[];
+    const { data, error } = await admin.from(table).select("id").eq(filterColumn, filterValue);
+    if (error) {
+      throw new Error(`assertNoDbWrite: failed to snapshot "${table}" after action: ${error.message}`);
+    }
+    const rows = data as { id: string }[];
     const newIds = rows.map((r) => r.id).filter((id) => !beforeIds[i].has(id));
     if (newIds.length > 0) {
       throw new Error(

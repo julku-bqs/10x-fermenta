@@ -13,7 +13,7 @@ beforeAll(async () => {
   const userId = getTestUserId();
 
   // Create a batch for PUT tests
-  const { data: batch } = await admin
+  const { data: batch, error: batchError } = await admin
     .from("batches")
     .insert({
       name: "Validation test batch",
@@ -22,10 +22,15 @@ beforeAll(async () => {
     })
     .select("id")
     .single();
-  testBatchId = (batch as { id: string }).id;
+  if (batchError) {
+    throw new Error(`Fixture setup failed (batches insert): ${batchError.message}`);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  testBatchId = batch.id;
 
   // Create a diary entry for PUT diary tests
-  const { data: entry } = await admin
+  const { data: entry, error: entryError } = await admin
     .from("diary_entries")
     .insert({
       batch_id: testBatchId,
@@ -35,7 +40,12 @@ beforeAll(async () => {
     })
     .select("id")
     .single();
-  testDiaryEntryId = (entry as { id: string }).id;
+  if (entryError) {
+    throw new Error(`Fixture setup failed (diary_entries insert): ${entryError.message}`);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  testDiaryEntryId = entry.id;
 });
 
 afterEach(async () => {
@@ -105,11 +115,15 @@ describe("POST /api/batches — validation rejection", () => {
   ];
 
   it.each(scenarios)("%s", async (_name, payload, expectedDetailPaths) => {
-    // POST returns 400 on validation failure, which is an early return before
-    // any DB insert (code-path guarantee). assertNoDbWrite is not used here
-    // because the user_id filter would race with parallel test files creating
-    // batches for the same shared test user.
-    const res = await apiRequest("/api/batches", { method: "POST", body: payload });
+    // Use a unique sentinel name per scenario to enable assertNoDbWrite filtering.
+    // Scenarios that omit `name` (empty object) won't match anyway.
+    const sentinel = `__reject_test_${_name}`;
+    const payloadWithSentinel =
+      typeof payload === "object" && payload !== null && "name" in payload ? { ...payload, name: sentinel } : payload;
+
+    const res = await assertNoDbWrite([{ table: "batches", filterColumn: "name", filterValue: sentinel }], () =>
+      apiRequest("/api/batches", { method: "POST", body: payloadWithSentinel }),
+    );
     await expectRejection(res, expectedDetailPaths);
   });
 

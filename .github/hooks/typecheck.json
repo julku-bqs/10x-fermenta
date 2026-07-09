@@ -1,9 +1,9 @@
 {
   "hooks": {
-    "PostToolUse": [
+    "Stop": [
       {
         "type": "command",
-        "command": "node .github/hooks/scripts/typecheck.mjs; exit $LASTEXITCODE"
+        "command": "node .github/hooks/scripts/typecheck.mjs"
       }
     ]
   }

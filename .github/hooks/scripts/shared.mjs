@@ -1,3 +1,8 @@
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createHash } from "node:crypto";
+import { mkdirSync } from "node:fs";
+
 export const WRITE_TOOLS = new Set([
   "apply_patch",
   "create_file",
@@ -43,4 +48,13 @@ export function getFilePaths(payload) {
 
 export function filterByExtension(paths, pattern) {
   return paths.filter((p) => pattern.test(p));
+}
+
+// Returns an absolute path to a per-repository state file under the OS temp dir,
+// scoped by a hash of the workspace path so hooks in different repos don't clash.
+export function stateFile(cwd, name) {
+  const key = createHash("sha1").update(cwd).digest("hex").slice(0, 12);
+  const dir = join(tmpdir(), "vscode-agent-hooks", key);
+  mkdirSync(dir, { recursive: true });
+  return join(dir, name);
 }

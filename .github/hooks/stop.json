@@ -3,6 +3,10 @@
     "Stop": [
       {
         "type": "command",
+        "command": "node .github/hooks/scripts/typecheck.mjs"
+      },
+      {
+        "type": "command",
         "command": "node .github/hooks/scripts/test-report.mjs"
       }
     ]

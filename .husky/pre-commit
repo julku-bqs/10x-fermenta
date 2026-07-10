@@ -1,1 +1,6 @@
 npx lint-staged
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx' '*.astro')
+if [ -n "$STAGED" ]; then
+  npx vitest related $STAGED --run
+fi

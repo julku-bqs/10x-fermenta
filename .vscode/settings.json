@@ -133,12 +133,9 @@
     "eval": false,
     "Invoke-Expression": false,
     "iex": false,
-    "10x": true
+    "10x": true,
+    "git rev-list": true
   },
   "git.detectWorktrees": true,
-  "git.worktreeIncludeFiles": [
-    ".dev.vars",
-    "node_modules/**",
-    ".github/**"
-  ]
+  "git.worktreeIncludeFiles": [".dev.vars", "node_modules/**", ".github/**"]
 }

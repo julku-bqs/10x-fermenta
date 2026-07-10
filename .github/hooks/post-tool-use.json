@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/lint.mjs; exit $LASTEXITCODE"
+      },
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/test.mjs"
+      }
+    ]
+  }
+}

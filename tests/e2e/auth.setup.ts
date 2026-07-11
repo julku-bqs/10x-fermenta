@@ -23,7 +23,9 @@ setup("authenticate", async ({ page }) => {
   await page.goto("/auth/signin");
 
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
+  // Exact match: a "Show password" toggle button shares the "Password" substring,
+  // so a loose getByLabel("Password") would match both the input and the button.
+  await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
 
   // A successful sign-in redirects to the protected batches list.

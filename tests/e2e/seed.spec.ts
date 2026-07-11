@@ -30,7 +30,11 @@ test("created batch persists after page reload", async ({ page }) => {
   await page.getByLabel("Name").fill(batchName);
   await page.getByLabel("Target Volume (liters)").fill("20");
   await page.getByLabel("Target ABV (%)").fill("12");
-  await page.getByRole("button", { name: "Create Batch" }).click();
+  // Two identical "Create Batch" submit buttons exist (top and bottom of the form).
+  // Click the BOTTOM one: submitting blurs the last field, which can recompute the
+  // validation banner at the TOP of the form. The far-away bottom button stays put
+  // under the pointer (scroll anchoring) instead of shifting out from under the click.
+  await page.getByRole("button", { name: "Create Batch" }).last().click();
 
   // A successful create redirects to the new batch's detail page.
   await page.waitForURL(/\/batches\/[0-9a-f-]+$/);

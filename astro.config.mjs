@@ -12,20 +12,6 @@ export default defineConfig({
   integrations: [react(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
-    resolve: {
-      dedupe: ["react", "react-dom"],
-    },
-    optimizeDeps: {
-      include: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
-    },
-    environments: {
-      ssr: {
-        optimizeDeps: {
-          noDiscovery: true,
-          include: [],
-        },
-      },
-    },
   },
   adapter: cloudflare(),
   env: {

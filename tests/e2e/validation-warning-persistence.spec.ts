@@ -1,45 +1,14 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * SPEC — inconsistent-plan validation warning: display, dismiss, reappear.
- *
- * Provenance
- * ----------
- * Risk: context/foundation/test-plan.md risk #2 (§3 Phase 5, e2e slice) —
- *   "In the browser, e2e proves the wiring: when a saved plan is inconsistent
- *    the warning bar is displayed, Dismiss closes it, and it reappears after
- *    reload (the dismissal is not persisted)."
- *   Unit tests own WHICH rule fires and at what threshold; this spec asserts
- *   only the browser-level warning-bar wiring, never a specific message.
- * Seed: modeled on tests/e2e/seed.spec.ts (role-based locators, unique per-run
- *   data, wait-for-state, self-contained setup/action/assertion/cleanup).
- *
- * Real vs mocked
- * --------------
- * Auth + routing + API + database stay REAL — that is where the integration
- * risk lives. The inconsistent batch is seeded through the real authenticated
- * POST /api/batches (storageState cookies) and removed through DELETE afterward,
- * so the browser drives only the risk under test: the detail page's
- * warning-bar display / dismiss / reappear wiring.
- *
- * Presence signal
- * ---------------
- * The warning bar is identified by its role-based "Dismiss warnings" button
- * (ValidationWarnings.tsx renders it only while the bar is shown). Its
- * visibility is therefore a faithful proxy for the bar itself and keeps the
- * test decoupled from any specific warning message, which is unit-owned.
- *
- * The inconsistency
- * -----------------
- * target_abv (18) exceeds yeast_alcohol_tolerance (12), so the saved plan is
- * inconsistent and the bar is shown. The dismissal lives only in client state
- * (BatchForm's `warningsDismissed`, initialized to false), so a real reload
- * must bring the bar back.
+ * E2E — test-plan.md risk #2: a saved inconsistent plan shows a warning bar,
+ * Dismiss closes it, and it reappears after reload (the dismissal is not persisted).
+ * Seed: tests/e2e/seed.spec.ts. Real boundaries: auth/routing/API/DB — seed via POST,
+ * clean up via DELETE. Signal: the "Dismiss warnings" button is a faithful proxy for the bar.
  */
 
 test("inconsistent-plan warning is dismissable but reappears after reload", async ({ page }) => {
-  // Setup: seed a SAVED, inconsistent batch through the real authenticated API.
-  // Unique name (timestamp suffix) so parallel runs and re-runs never collide.
+  // Seed a saved, inconsistent batch via the real API; unique name avoids collisions.
   const batchName = `E2E Warning Persistence ${Date.now()}`;
   const createResponse = await page.request.post("/api/batches", {
     data: {
@@ -61,13 +30,17 @@ test("inconsistent-plan warning is dismissable but reappears after reload", asyn
     await page.goto(`/batches/${batch.id}`);
     await expect(dismissWarnings).toBeVisible();
 
-    // Dismiss closes the bar — the dismissal lives only in client state.
-    await dismissWarnings.click();
-    await expect(dismissWarnings).toHaveCount(0);
+    // Retry until the island hydrates — an SSR-painted button can drop a pre-hydration click.
+    await expect(async () => {
+      await dismissWarnings.click();
+      await expect(dismissWarnings).toHaveCount(0, { timeout: 1000 });
+    }).toPass({ timeout: 10_000 });
 
-    // The risk: the dismissal is NOT persisted. After a real reload the saved
-    // plan is still inconsistent, so the warning bar must reappear.
+    // The dismissal is not persisted, so after a real reload the bar must reappear.
     await page.reload();
+
+    // Gate on hydration (submit button enabled) so a client-side persist can't flash-pass.
+    await expect(page.getByRole("button", { name: "Save Changes" }).first()).toBeEnabled();
     await expect(dismissWarnings).toBeVisible();
   } finally {
     // Cleanup: remove the seeded batch so the test leaves no residue.

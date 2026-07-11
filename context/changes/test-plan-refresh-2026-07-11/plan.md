@@ -318,14 +318,14 @@ manual confirmation.
 
 #### Automated
 
-- [x] 2.1 e2e un-excluded coherently across §4 row / §5 gate / §7 bullet
-- [x] 2.2 §3 Phase 5 row present with Status `not started` + `—`; Phase 3 hunk untouched
-- [x] 2.3 Vitest `4.1.10`; §8 Strategy + Stack dates `2026-07-11`
-- [x] 2.4 §6 has `6.4 Adding an e2e test` + `6.5 Per-rollout-phase notes`
-- [x] 2.5 Schema/format holds (section order; no code/emoji/anchor in §2); `npx prettier --check` clean
-- [ ] 2.6 Docs commit scope correct (`git show --stat HEAD` = test-plan.md + change.md + research.md)
+- [x] 2.1 e2e un-excluded coherently across §4 row / §5 gate / §7 bullet — 5c77361
+- [x] 2.2 §3 Phase 5 row present with Status `not started` + `—`; Phase 3 hunk untouched — 5c77361
+- [x] 2.3 Vitest `4.1.10`; §8 Strategy + Stack dates `2026-07-11` — 5c77361
+- [x] 2.4 §6 has `6.4 Adding an e2e test` + `6.5 Per-rollout-phase notes` — 5c77361
+- [x] 2.5 Schema/format holds (section order; no code/emoji/anchor in §2); `npx prettier --check` clean — 5c77361
+- [x] 2.6 Docs commit scope correct (`git show --stat HEAD` = test-plan.md + change.md + research.md) — 5c77361
 
 #### Manual
 
-- [x] 2.7 Human confirms coherent e2e framing + true risk-#3 semantics + #7 persistence-consequence
-- [x] 2.8 Phase 3 WIP hunk untouched; copilot-instructions.md in neither commit
+- [x] 2.7 Human confirms coherent e2e framing + true risk-#3 semantics + #7 persistence-consequence — 5c77361
+- [x] 2.8 Phase 3 WIP hunk untouched; copilot-instructions.md in neither commit — 5c77361

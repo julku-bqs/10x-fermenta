@@ -244,7 +244,7 @@ covered — no contradiction with §4/§5. Accessibility exclusion unchanged.
 
 **Contract**: `change.md` status advances per the implement flow (`planned` → `implementing` →
 `complete`) with `updated: 2026-07-11`. Second commit contains `test-plan.md` + `change.md` +
-`research.md` (docs only); it must not include the Phase 1 scaffolding or `copilot-instructions.md`.
+`research.md` + `plan.md` + `plan-brief.md` (the change-folder docs); it must not include the Phase 1 scaffolding or `copilot-instructions.md`.
 
 ### Success Criteria:
 
@@ -259,8 +259,8 @@ covered — no contradiction with §4/§5. Accessibility exclusion unchanged.
 - §6 has `6.4 Adding an e2e test` and `6.5 Per-rollout-phase notes` (old 6.4 renumbered).
 - Schema/format holds: sections still ordered §1→§8; no code fence, emoji, or file:line anchor added
   inside §2; markdown is prettier-clean: `npx prettier --check context/foundation/test-plan.md`.
-- Docs commit scope is correct: `git show --stat HEAD` lists only `test-plan.md`, `change.md`,
-  `research.md`.
+- Docs commit scope is correct: `git show --stat HEAD` lists the change-folder docs `test-plan.md`, `change.md`,
+  `research.md`, `plan.md`, `plan-brief.md`, and excludes the scaffolding + `copilot-instructions.md`.
 
 #### Manual Verification:
 
@@ -323,7 +323,7 @@ manual confirmation.
 - [x] 2.3 Vitest `4.1.10`; §8 Strategy + Stack dates `2026-07-11` — 5c77361
 - [x] 2.4 §6 has `6.4 Adding an e2e test` + `6.5 Per-rollout-phase notes` — 5c77361
 - [x] 2.5 Schema/format holds (section order; no code/emoji/anchor in §2); `npx prettier --check` clean — 5c77361
-- [x] 2.6 Docs commit scope correct (`git show --stat HEAD` = test-plan.md + change.md + research.md) — 5c77361
+- [x] 2.6 Docs commit scope correct (`git show --stat HEAD` = change-folder docs: test-plan.md + change.md + research.md + plan.md + plan-brief.md; excludes scaffolding + copilot-instructions.md) — 5c77361
 
 #### Manual
 

@@ -17,7 +17,7 @@ dotenv.config({ path: ".env" });
  */
 
 const PORT = Number(process.env.E2E_PORT ?? 4321);
-const BASE_URL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${PORT}`;
+const BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 const STORAGE_STATE = "tests/e2e/.auth/user.json";
 
 export default defineConfig({
@@ -54,5 +54,11 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // Silence the DEP0040 punycode deprecation emitted by wrangler's bundled
+    // whatwg-url@5 / tr46@0 (they `require("punycode")`). Scoped to DEP0040 so
+    // other deprecation warnings from the dev server stay visible.
+    env: {
+      NODE_OPTIONS: [process.env.NODE_OPTIONS, "--disable-warning=DEP0040"].filter(Boolean).join(" "),
+    },
   },
 });

@@ -49,10 +49,11 @@ export function EntryRow({ entry, isLast, onToggleComplete, onEdit, onDelete }: 
   }
 
   return (
-    <div className="relative flex gap-4">
+    <div role="listitem" className="relative flex gap-4">
       <div className="flex flex-col items-center pt-1">
         <button
           type="button"
+          aria-label={entry.completed ? "Mark as incomplete" : "Mark as complete"}
           onClick={onToggleComplete}
           className={cn(
             "z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-all duration-200",

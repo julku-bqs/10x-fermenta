@@ -57,3 +57,4 @@ pnpm-debug.log*
 /blob-report/
 /playwright/.cache/
 tests/e2e/.auth/
+.playwright-cli/

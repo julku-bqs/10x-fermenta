@@ -114,7 +114,8 @@ Given a set of ingredients (with amount and sugar content), a target volume, a t
 
 **Intent**: Replace all existing test content with a table-driven test suite covering the research scenarios S1–S8 plus the valid existing scenarios (dry baseline, zero-volume, zero-ABV, multi-ingredient). All expected values derived from local domain constants using inline arithmetic — never imported from production code.
 
-**Contract**: 
+**Contract**:
+
 - Import: `calculateSugar` from `@/lib/services/sugar-calculation`
 - Local constants: `GRAMS_PER_ABV_PER_LITER = 17`, `MIDPOINT_DRY = 0`, `MIDPOINT_SEMI_DRY = 10`, `MIDPOINT_SEMI_SWEET = 30`, `MIDPOINT_SWEET = 60`
 - One `describe("calculateSugar")` with a single `it.each` table covering all scenarios
@@ -129,6 +130,7 @@ Given a set of ingredients (with amount and sugar content), a target volume, a t
 **Intent**: Replace the §6.1 placeholder ("TBD — see §3 Phase 1") with the canonical pattern for adding unit tests to business logic services — documenting the conventions established by this phase so future contributors know how to add tests.
 
 **Contract**: Update the `### 6.1 Adding a unit test for business logic` section with:
+
 - Location: `src/lib/services/__tests__/<service-name>.test.ts`
 - Pattern: table-driven `test.each` with named scenarios
 - Expected values: local domain constants with inline arithmetic (never import from production)
@@ -172,6 +174,7 @@ Given a batch's parameters (yeast presence, target ABV, yeast tolerance, planned
 **Intent**: Replace all existing test content with table-driven tests organized as one `describe` per rule ID. Each rule has a table covering "fires when it should" and "does NOT fire when it should not" (bidirectional). Boundary tests at exact threshold values. Plus a "happy path" test proving a valid batch produces only the advisory.
 
 **Contract**:
+
 - Import: `validateBatch` from `@/lib/services/batch-validation`, `calculateSugar` from `@/lib/services/sugar-calculation` (needed for rules 5–8)
 - One `describe` block per rule ID (9 total): `no-yeast`, `no-target-abv`, `abv-exceeds-tolerance`, `sweetness-wont-stop`, `ingredient-sugar-exceeds-needed`, `total-sugar-insufficient`, `total-sugar-exceeds-target`, `sweetness-out-of-range`, `general-advisory`
 - Each describe uses `it.each` with rows: `[scenario_name, input, should_fire: boolean]`
@@ -215,6 +218,7 @@ Given a batch's process type, planned sweetness, fermentation sugar amount, and 
 **Intent**: This file already exists in the correct location. Replace all content with a comprehensive table-driven test suite covering the 8-quadrant matrix (P1–P8), negative assertions (P9–P12), day offset verification (P13–P14), and ordering (P15) plus boundary cases (P16–P17).
 
 **Contract**:
+
 - Import: `generateProcessPlan` from `@/lib/services/process-plan-generation`
 - Three `describe` blocks:
   1. `"step presence/absence matrix"` — `it.each` with P1–P8 rows, each specifying `expectedPresent: string[]` and `expectedAbsent: string[]` (using `stringContaining` on descriptions)
@@ -282,7 +286,7 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 
 #### Automated
 
-- [x] 0.1 All test files relocated to __tests__/ subfolders — ef637c3
+- [x] 0.1 All test files relocated to **tests**/ subfolders — ef637c3
 - [x] 0.2 npx vitest run discovers and executes all relocated test files — ef637c3
 - [x] 0.3 Relocations committed (git status clean) — ef637c3
 
@@ -290,7 +294,7 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 
 #### Automated
 
-- [x] 1.1 Tests pass: npx vitest run src/lib/services/__tests__/sugar-calculation.test.ts — 5e7425c
+- [x] 1.1 Tests pass: npx vitest run src/lib/services/**tests**/sugar-calculation.test.ts — 5e7425c
 - [x] 1.2 All S1–S8 scenarios present as named test rows — 5e7425c
 - [x] 1.3 Lint passes: npm run lint — 5e7425c
 - [x] 1.4 No imports from production constants — 5e7425c
@@ -300,7 +304,7 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 
 #### Automated
 
-- [x] 2.1 Tests pass: npx vitest run src/lib/services/__tests__/batch-validation.test.ts — 79d9726
+- [x] 2.1 Tests pass: npx vitest run src/lib/services/**tests**/batch-validation.test.ts — 79d9726
 - [x] 2.2 All V1–V12 scenarios present as named test rows — 79d9726
 - [x] 2.3 Every rule tested bidirectionally — 79d9726
 - [x] 2.4 Lint passes: npm run lint — 79d9726
@@ -309,7 +313,7 @@ None — all 3 services are pure CPU-bound functions with sub-millisecond execut
 
 #### Automated
 
-- [x] 3.1 Tests pass: npx vitest run src/lib/services/__tests__/process-plan-generation.test.ts — 67219bf
+- [x] 3.1 Tests pass: npx vitest run src/lib/services/**tests**/process-plan-generation.test.ts — 67219bf
 - [x] 3.2 All P1–P17 scenarios present as named test rows — 67219bf
 - [x] 3.3 Full 2×2×2 matrix covered — 67219bf
 - [x] 3.4 Negative assertions prove conditional steps absent — 67219bf

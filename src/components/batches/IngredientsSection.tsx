@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -36,6 +36,7 @@ interface SugarCardProps {
 }
 
 function SugarCard({ label, icon, amountKg, onChange, isEditing, onToggleEdit }: SugarCardProps) {
+  const id = useId();
   if (isEditing) {
     return (
       <div className="border-border bg-card space-y-3 rounded-lg border p-4">
@@ -45,8 +46,11 @@ function SugarCard({ label, icon, amountKg, onChange, isEditing, onToggleEdit }:
         </div>
         <div className="grid grid-cols-1 gap-3">
           <div>
-            <label className="text-muted-foreground mb-1 block text-xs">Amount (kg)</label>
+            <label htmlFor={id} className="text-muted-foreground mb-1 block text-xs">
+              Amount (kg)
+            </label>
             <input
+              id={id}
               type="number"
               min="0"
               step="0.01"

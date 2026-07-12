@@ -134,7 +134,8 @@
     "Invoke-Expression": false,
     "iex": false,
     "10x": true,
-    "git rev-list": true
+    "git rev-list": true,
+    "playwright-cli": true
   },
   "git.detectWorktrees": true,
   "git.worktreeIncludeFiles": [".dev.vars", "node_modules/**", ".github/**"]

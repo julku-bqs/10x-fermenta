@@ -7,6 +7,7 @@ import { validateBatch } from "@/lib/services/batch-validation";
 import type { ValidationWarning } from "@/lib/services/batch-validation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useHydrated } from "@/components/hooks/useHydrated";
 import { IngredientsList } from "./IngredientsList";
 import { batchInputClass, batchInputErrorClass, batchLabelClass, batchErrorMsgClass } from "./styles";
 import { IngredientsSection } from "./IngredientsSection";
@@ -99,6 +100,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const isHydrated = useHydrated();
   const diaryEntriesRef = useRef<CreateDiaryEntryInput[]>([]);
 
   const [initialValues, setInitialValues] = useState(() => ({
@@ -118,6 +120,8 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
   }));
 
   const isDirtyRef = useRef(false);
+  const isFormDisabled = !isHydrated || isLoading;
+
   useEffect(() => {
     isDirtyRef.current =
       JSON.stringify(form) !== JSON.stringify(initialValues.form) ||
@@ -256,7 +260,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">{form.name || title}</h1>
         <div className="flex items-center gap-4">
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isFormDisabled}>
             {isLoading ? "Saving…" : mode === "create" ? "Create Batch" : "Save Changes"}
           </Button>
           <a href="/batches" className="text-muted-foreground hover:text-foreground text-sm">
@@ -281,6 +285,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 set("name", e.target.value);
               }}
+              disabled={isFormDisabled}
               placeholder="e.g. Apple Cider 2025"
               className={cn(batchInputClass, fieldErrors.name && batchInputErrorClass)}
             />
@@ -303,6 +308,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
                   set("batch_date", new Date().toISOString().slice(0, 10));
                 }
               }}
+              disabled={isFormDisabled}
               className={cn(batchInputClass, fieldErrors.batch_date && batchInputErrorClass)}
             />
             {fieldErrors.batch_date && <p className={batchErrorMsgClass}>{fieldErrors.batch_date}</p>}
@@ -318,6 +324,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 set("process_type", e.target.value);
               }}
+              disabled={isFormDisabled}
               className={cn(batchInputClass, fieldErrors.process_type && batchInputErrorClass)}
             >
               <option value="juice">Juice</option>
@@ -344,6 +351,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 set("target_volume_liters", e.target.value);
               }}
+              disabled={isFormDisabled}
               placeholder="e.g. 20"
               className={cn(batchInputClass, fieldErrors.target_volume_liters && batchInputErrorClass)}
             />
@@ -366,6 +374,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 set("target_abv", e.target.value);
               }}
+              disabled={isFormDisabled}
               placeholder="e.g. 12"
               className={cn(batchInputClass, fieldErrors.target_abv && batchInputErrorClass)}
             />
@@ -382,6 +391,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
               onChange={(e) => {
                 handleSweetnessChange(e.target.value);
               }}
+              disabled={isFormDisabled}
               className={cn(batchInputClass, fieldErrors.planned_sweetness && batchInputErrorClass)}
             >
               <option value="dry">Dry (default)</option>
@@ -469,7 +479,7 @@ export function BatchForm({ mode, title, initialData, onSuccess }: BatchFormProp
       </div>
 
       <div className="flex items-center justify-end gap-4 pt-2">
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isFormDisabled}>
           {isLoading ? "Saving…" : mode === "create" ? "Create Batch" : "Save Changes"}
         </Button>
         <a href="/batches" className="text-muted-foreground hover:text-foreground text-sm">

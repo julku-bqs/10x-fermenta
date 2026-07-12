@@ -221,7 +221,7 @@ export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange 
 
       {/* Edit mode: API-backed entries */}
       {sorted.length > 0 && (
-        <div className="pl-1">
+        <div role="list" aria-label="Diary entries" className="pl-1">
           {sorted.map((entry, i) => (
             <EntryRow
               key={entry.id}
@@ -242,7 +242,7 @@ export function DiarySection({ batchParams, batchId, mode, onLocalEntriesChange 
 
       {/* Create mode: local entries */}
       {localEntries.length > 0 && (
-        <div className="pl-1">
+        <div role="list" className="pl-1">
           {localEntries.map((entry, i) => (
             <EntryRow
               key={entry._localId}

@@ -302,27 +302,27 @@ Cleanup: `finally` `DELETE /api/batches/{id}`.
 
 #### Automated
 
-- [x] 2.1 Spec passes: `npm run test:e2e -- diary-regenerate-preserve-rebuild`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Full E2E suite still green: `npm run test:e2e`
+- [x] 2.1 Spec passes: `npm run test:e2e -- diary-regenerate-preserve-rebuild` — 5cb0fee
+- [x] 2.2 Linting passes: `npm run lint` — 5cb0fee
+- [x] 2.3 Full E2E suite still green: `npm run test:e2e` — 5cb0fee
 
 #### Manual
 
-- [ ] 2.4 Deliberate break confirms the spec goes red then green after restore
-- [ ] 2.5 The four oracles each map to a distinct facet of the risk
+- [x] 2.4 Deliberate break confirms the spec goes red then green after restore — 5cb0fee
+- [x] 2.5 The four oracles each map to a distinct facet of the risk — 5cb0fee
 
 ### Phase 3: Risk #7a — Sugar-Fields Round-Trip
 
 #### Automated
 
-- [ ] 3.1 Spec passes: `npm run test:e2e -- sugar-fields-roundtrip`
-- [ ] 3.2 Linting passes: `npm run lint`
-- [ ] 3.3 Full E2E suite still green: `npm run test:e2e`
+- [x] 3.1 Spec passes: `npm run test:e2e -- sugar-fields-roundtrip`
+- [x] 3.2 Linting passes: `npm run lint`
+- [x] 3.3 Full E2E suite still green: `npm run test:e2e`
 
 #### Manual
 
-- [ ] 3.4 Deliberate break confirms the spec goes red then green after restore
-- [ ] 3.5 Both cards, both input paths, and Cancel-discard are each exercised
+- [x] 3.4 Deliberate break confirms the spec goes red then green after restore
+- [x] 3.5 Both cards, both input paths, and Cancel-discard are each exercised
 
 ### Phase 4: Risk #7b — Ingredient-Order Round-Trip
 

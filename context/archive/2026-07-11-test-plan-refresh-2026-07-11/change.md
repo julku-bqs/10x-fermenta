@@ -1,10 +1,10 @@
 ---
 change_id: test-plan-refresh-2026-07-11
 title: Refresh test plan to add Playwright E2E coverage for risks #2, #3, #7
-status: impl_reviewed
+status: archived
 created: 2026-07-11
-updated: 2026-07-11
-archived_at: null
+updated: 2026-07-12
+archived_at: 2026-07-12T20:55:26Z
 ---
 
 ## Notes

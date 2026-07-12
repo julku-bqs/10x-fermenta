@@ -1,4 +1,5 @@
 <!-- PLAN-REVIEW-REPORT -->
+
 # Plan Review: Batch Delete & Duplicate
 
 - **Plan**: context/changes/batch-delete-duplicate/plan.md
@@ -9,13 +10,13 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| End-State Alignment | PASS |
-| Lean Execution | PASS |
-| Architectural Fitness | PASS |
-| Blind Spots | FAIL → PASS (F1 fixed) |
-| Plan Completeness | WARNING → PASS (F2, F3 fixed) |
+| Dimension             | Verdict                       |
+| --------------------- | ----------------------------- |
+| End-State Alignment   | PASS                          |
+| Lean Execution        | PASS                          |
+| Architectural Fitness | PASS                          |
+| Blind Spots           | FAIL → PASS (F1 fixed)        |
+| Plan Completeness     | WARNING → PASS (F2, F3 fixed) |
 
 ## Grounding
 

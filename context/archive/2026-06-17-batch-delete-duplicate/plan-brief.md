@@ -16,25 +16,27 @@ Users can delete any batch via a confirmation dialog (batch + diary entries remo
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) |
-| --- | --- | --- |
-| Delete cascade behavior | Hard cascade delete (batch + diary entries) | Clean, no orphan data, acceptable for a personal tool with no undo requirement |
-| Delete confirmation UX | AlertDialog with batch name | Prevents accidental deletion, matches existing shadcn/ui patterns |
-| Post-delete navigation | Redirect to /batches | Clean flow — user sees remaining batches immediately |
-| Duplicate approach | Client-side pre-fill via `?from={batchId}` on create page | Reuses existing create flow, no new API endpoint needed |
-| Duplicate data scope | Copy params + ingredients, blank name/date, fresh diary | Most useful — duplicates a recipe for a new batch run |
-| Action placement | Detail page only | Follows S-05/S-06 roadmap split; list actions come in S-06 |
-| Data passing for duplicate | URL query parameter + server-side fetch | Secure (RLS), shareable, follows existing SSR pattern |
+| Decision                   | Choice                                                    | Why (1 sentence)                                                               |
+| -------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Delete cascade behavior    | Hard cascade delete (batch + diary entries)               | Clean, no orphan data, acceptable for a personal tool with no undo requirement |
+| Delete confirmation UX     | AlertDialog with batch name                               | Prevents accidental deletion, matches existing shadcn/ui patterns              |
+| Post-delete navigation     | Redirect to /batches                                      | Clean flow — user sees remaining batches immediately                           |
+| Duplicate approach         | Client-side pre-fill via `?from={batchId}` on create page | Reuses existing create flow, no new API endpoint needed                        |
+| Duplicate data scope       | Copy params + ingredients, blank name/date, fresh diary   | Most useful — duplicates a recipe for a new batch run                          |
+| Action placement           | Detail page only                                          | Follows S-05/S-06 roadmap split; list actions come in S-06                     |
+| Data passing for duplicate | URL query parameter + server-side fetch                   | Secure (RLS), shareable, follows existing SSR pattern                          |
 
 ## Scope
 
 **In scope:**
+
 - DELETE API endpoint for batches
 - Confirmation dialog component (shadcn/ui AlertDialog)
 - Duplicate button navigating to pre-filled create form
 - Extend create page to accept `?from={batchId}` query param
 
 **Out of scope:**
+
 - Batch list actions (S-06)
 - Soft delete / undo
 - Database migrations (none needed)
@@ -46,10 +48,10 @@ Two lightweight additions following established patterns. Delete adds a `DELETE`
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-| --- | --- | --- |
-| 1. Delete API + Confirmation UI | Working delete with confirmation dialog | Low — follows existing diary entry DELETE pattern exactly |
-| 2. Duplicate via Pre-fill | Duplicate button + pre-filled create form | Low — reuses existing create flow with `initialData` prop |
+| Phase                           | What it delivers                          | Key risk                                                  |
+| ------------------------------- | ----------------------------------------- | --------------------------------------------------------- |
+| 1. Delete API + Confirmation UI | Working delete with confirmation dialog   | Low — follows existing diary entry DELETE pattern exactly |
+| 2. Duplicate via Pre-fill       | Duplicate button + pre-filled create form | Low — reuses existing create flow with `initialData` prop |
 
 **Prerequisites:** shadcn/ui AlertDialog component must be installed (check if already available)
 **Estimated effort:** ~1 session across 2 phases

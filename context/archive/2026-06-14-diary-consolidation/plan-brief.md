@@ -16,17 +16,18 @@ A single `EntryRow` component in its own file renders diary entries for both cre
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) |
-| --- | --- | --- |
-| `entry_date` in base schema | Optional with backend default to today | Preserves both endpoint behaviors while fixing silent failure on empty date |
-| EntryRow prop type | `CreateDiaryEntryInput` directly | Matches the shared schema shape; eliminates need for a separate view-model type |
-| Task #4 (error surfacing) | Out of scope | Keep this a pure refactor + bug fix |
-| EntryRow file location | New file `EntryRow.tsx` | Separation of concerns; DiarySection.tsx orchestrates, EntryRow renders |
-| Notes container behavior | Always render (show "No notes" if null) | Correct behavior per TimelineEntry; LocalEntryRow was the buggy one |
+| Decision                    | Choice                                  | Why (1 sentence)                                                                |
+| --------------------------- | --------------------------------------- | ------------------------------------------------------------------------------- |
+| `entry_date` in base schema | Optional with backend default to today  | Preserves both endpoint behaviors while fixing silent failure on empty date     |
+| EntryRow prop type          | `CreateDiaryEntryInput` directly        | Matches the shared schema shape; eliminates need for a separate view-model type |
+| Task #4 (error surfacing)   | Out of scope                            | Keep this a pure refactor + bug fix                                             |
+| EntryRow file location      | New file `EntryRow.tsx`                 | Separation of concerns; DiarySection.tsx orchestrates, EntryRow renders         |
+| Notes container behavior    | Always render (show "No notes" if null) | Correct behavior per TimelineEntry; LocalEntryRow was the buggy one             |
 
 ## Scope
 
 **In scope:**
+
 - Merge TimelineEntry + LocalEntryRow → EntryRow
 - Extract diaryEntryBaseSchema, compose both schemas from it
 - Remove LocalDiaryEntry type (use CreateDiaryEntryInput)
@@ -34,6 +35,7 @@ A single `EntryRow` component in its own file renders diary entries for both cre
 - Fix entry_date: backend defaults to today, UI restores on blur
 
 **Out of scope:**
+
 - Surfacing diary generation failures (task #4)
 - API contract or response shape changes
 - Auto-generation logic changes
@@ -45,11 +47,11 @@ Schema-first refactor: establish the shared base schema (Phase 1), extract the u
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-| --- | --- | --- |
-| 1. Extract Shared Schema | Single source of truth for diary entry validation + backend date default | Batch inline schema removal could miss a subtle validation difference |
-| 2. Extract EntryRow | Unified component with bug fixes (notes, date blur) | Rendering parity with both originals — must not regress animations/transitions |
-| 3. Wire Up & Cleanup | Dead code removal, type migration | External imports of `LocalDiaryEntry` could be missed |
+| Phase                    | What it delivers                                                         | Key risk                                                                       |
+| ------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| 1. Extract Shared Schema | Single source of truth for diary entry validation + backend date default | Batch inline schema removal could miss a subtle validation difference          |
+| 2. Extract EntryRow      | Unified component with bug fixes (notes, date blur)                      | Rendering parity with both originals — must not regress animations/transitions |
+| 3. Wire Up & Cleanup     | Dead code removal, type migration                                        | External imports of `LocalDiaryEntry` could be missed                          |
 
 **Prerequisites:** None — this is a standalone refactor
 **Estimated effort:** ~1 session, 3 phases

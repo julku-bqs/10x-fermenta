@@ -1,10 +1,10 @@
 ---
 change_id: diary-consolidation
 title: Consolidate duplicated diary entry UI components and schemas
-status: impl_reviewed
+status: archived
 created: 2026-06-14
-updated: 2026-06-16
-archived_at: null
+updated: 2026-07-12
+archived_at: 2026-07-12T20:55:26Z
 ---
 
 ## Notes

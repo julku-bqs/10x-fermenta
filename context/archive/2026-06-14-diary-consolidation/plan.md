@@ -122,6 +122,7 @@ Create `src/components/batches/diary/EntryRow.tsx` with a single component that 
 **Intent**: Single component accepting `CreateDiaryEntryInput` as entry shape plus `isLast`, `onToggleComplete`, `onEdit`, `onDelete` callbacks. Renders the timeline UI with checkbox, clickable title, edit mode, and notes expand container. Notes container always renders — shows entry notes or italic "No notes" placeholder. The title/description button toggles the expand state for all entries; the "Show notes" button is a secondary affordance rendered only when notes are present. Date input has an onblur handler that restores today's date when cleared.
 
 **Contract**: Props interface:
+
 ```typescript
 interface EntryRowProps {
   entry: Required<CreateDiaryEntryInput>;
@@ -131,6 +132,7 @@ interface EntryRowProps {
   onDelete: () => void;
 }
 ```
+
 Imports `cn` from `@/lib/utils`, icons from `lucide-react`, `batchInputClass` from `../styles`, `CreateDiaryEntryInput` from `@/lib/schemas/diary-entry`. Contains a co-located `formatDate` helper (moved from DiarySection.tsx).
 
 #### 2. Date onblur behavior

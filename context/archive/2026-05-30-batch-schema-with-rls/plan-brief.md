@@ -16,20 +16,21 @@ Three tables with enums, indexes, and RLS policies exist in the public schema. A
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) |
-|----------|--------|-------------------|
-| Yeast modeling | Nullable columns on batch table | Simplest approach matching the common single-yeast case; extensible to catalog FK in v2. |
-| Sweetness representation | Postgres enum (dry, semi_dry, semi_sweet, sweet) | Covers standard winemaking levels needed for calculation branching logic. |
-| Ingredient type model | Technical enum: user_input, fermentation_sugar, sweetness_sugar | Not user-facing; user enters ingredients freely, only auto-generated sugar entries carry technical types. |
-| Primary keys | UUIDv4 (gen_random_uuid) + created_at for ordering | Zero custom code; standard Supabase pattern; UUIDv7 adds complexity with marginal benefit at MVP scale. |
-| Process entry ordering | Integer sort_order column | Simple, allows reordering via UPDATE without linked-list complexity. |
-| RLS granularity | Single ALL policy per table | Minimal SQL for MVP flat-user model; trivial to split into per-operation later. |
-| Deployment method | Supabase MCP + local migration file | Immediate verification + git-tracked migration for CI/CD. |
-| Verification approach | SQL-based isolation proof + security advisors | Directly proves the NFR ("one user's data never visible to another"). |
+| Decision                 | Choice                                                          | Why (1 sentence)                                                                                          |
+| ------------------------ | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Yeast modeling           | Nullable columns on batch table                                 | Simplest approach matching the common single-yeast case; extensible to catalog FK in v2.                  |
+| Sweetness representation | Postgres enum (dry, semi_dry, semi_sweet, sweet)                | Covers standard winemaking levels needed for calculation branching logic.                                 |
+| Ingredient type model    | Technical enum: user_input, fermentation_sugar, sweetness_sugar | Not user-facing; user enters ingredients freely, only auto-generated sugar entries carry technical types. |
+| Primary keys             | UUIDv4 (gen_random_uuid) + created_at for ordering              | Zero custom code; standard Supabase pattern; UUIDv7 adds complexity with marginal benefit at MVP scale.   |
+| Process entry ordering   | Integer sort_order column                                       | Simple, allows reordering via UPDATE without linked-list complexity.                                      |
+| RLS granularity          | Single ALL policy per table                                     | Minimal SQL for MVP flat-user model; trivial to split into per-operation later.                           |
+| Deployment method        | Supabase MCP + local migration file                             | Immediate verification + git-tracked migration for CI/CD.                                                 |
+| Verification approach    | SQL-based isolation proof + security advisors                   | Directly proves the NFR ("one user's data never visible to another").                                     |
 
 ## Scope
 
 **In scope:**
+
 - `batches` table with params, yeast columns, timestamps
 - `ingredients` table with type enum (user_input, fermentation_sugar, sweetness_sugar), sugar_content, unit, sort_order
 - `diary_entries` table with description, sort_order (the user's working diary; pre-populated by process generation in S-03, freely editable)
@@ -39,6 +40,7 @@ Three tables with enums, indexes, and RLS policies exist in the public schema. A
 - FK cascade (batch deletion cascades to children)
 
 **Out of scope:**
+
 - API routes (S-01)
 - TypeScript types or client code
 - Seed data
@@ -52,10 +54,10 @@ Single atomic migration containing: enum definitions → table creation → RLS 
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-|-------|-----------------|----------|
-| 1. Schema Migration | Tables, enums, RLS policies, indexes applied to project | Schema mismatch with PRD requirements — mitigated by manual review |
-| 2. RLS Verification | Proof that cross-user data access is impossible | False-positive verification if test setup doesn't properly simulate auth context |
+| Phase               | What it delivers                                        | Key risk                                                                         |
+| ------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 1. Schema Migration | Tables, enums, RLS policies, indexes applied to project | Schema mismatch with PRD requirements — mitigated by manual review               |
+| 2. RLS Verification | Proof that cross-user data access is impossible         | False-positive verification if test setup doesn't properly simulate auth context |
 
 **Prerequisites:** Supabase project linked and accessible via MCP tools (confirmed).
 **Estimated effort:** ~1 session, 2 phases.

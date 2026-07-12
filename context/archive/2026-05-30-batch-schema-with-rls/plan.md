@@ -20,6 +20,7 @@ Create the foundational database schema for Fermenta: tables for batches, ingred
 ## Desired End State
 
 Three tables exist in the public schema (`batches`, `ingredients`, `diary_entries`) with:
+
 - Appropriate columns matching PRD requirements.
 - Postgres enums for `process_type`, `sweetness_level`, and `ingredient_type`.
 - RLS enabled on all tables with a single ALL policy per table. `batches` enforces `auth.uid() = user_id`; `ingredients` and `diary_entries` derive ownership through `batch_id -> batches.user_id`.
@@ -59,27 +60,32 @@ Create the migration SQL with all tables, enums, RLS policies, and indexes. Appl
 **Contract**:
 
 Enums:
+
 - `process_type`: `pulp`, `juice`
 - `sweetness_level`: `dry`, `semi_dry`, `semi_sweet`, `sweet`
 - `ingredient_type`: `user_input`, `fermentation_sugar`, `sweetness_sugar`
 
 Tables:
+
 - `batches`: `id` (uuid PK, default gen_random_uuid()), `user_id` (uuid NOT NULL, references auth.users), `name` (text NOT NULL), `batch_date` (date), `process_type` (process_type enum NOT NULL), `target_volume_liters` (numeric), `target_abv` (numeric), `planned_sweetness` (sweetness_level NOT NULL DEFAULT 'dry'), `yeast_name` (text), `yeast_alcohol_tolerance` (numeric), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 - `ingredients`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `type` (ingredient_type NOT NULL DEFAULT 'user_input'), `name` (text NOT NULL), `amount` (numeric), `unit` (text), `sugar_content_percent` (numeric — sugar content as percentage of ingredient weight/volume), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 - `diary_entries`: `id` (uuid PK, default gen_random_uuid()), `batch_id` (uuid NOT NULL, FK → batches ON DELETE CASCADE), `description` (text NOT NULL), `sort_order` (integer NOT NULL DEFAULT 0), `created_at` (timestamptz DEFAULT now()), `updated_at` (timestamptz DEFAULT now())
 
 RLS:
+
 - `ALTER TABLE <table> ENABLE ROW LEVEL SECURITY;` on all three tables
 - One ALL policy on `batches`: `USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)`
 - One ALL policy on `ingredients`: `USING (EXISTS (SELECT 1 FROM batches b WHERE b.id = ingredients.batch_id AND b.user_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM batches b WHERE b.id = ingredients.batch_id AND b.user_id = auth.uid()))`
 - One ALL policy on `diary_entries`: `USING (EXISTS (SELECT 1 FROM batches b WHERE b.id = diary_entries.batch_id AND b.user_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM batches b WHERE b.id = diary_entries.batch_id AND b.user_id = auth.uid()))`
 
 Indexes:
+
 - `batches(user_id)` — fast per-user listing
 - `ingredients(batch_id)` — fast per-batch lookup
 - `diary_entries(batch_id)` — fast per-batch lookup
 
 Triggers:
+
 - `moddatetime` extension enabled
 - BEFORE UPDATE trigger on all three tables setting `updated_at = now()` via `moddatetime`
 
@@ -115,6 +121,7 @@ Prove that RLS policies correctly isolate user data by running targeted SQL quer
 **Intent**: Insert test rows as two simulated users and prove that each user's SELECT/UPDATE/DELETE cannot reach the other's data. Clean up test data after verification.
 
 **Contract**:
+
 - Insert batches for two different UUIDs (simulated user_id values)
 - Query with `SET LOCAL role = 'authenticated'; SET LOCAL request.jwt.claims = '{"sub":"<user_a_uuid>"}'` to simulate authenticated user context
 - SELECT should return only user A's batches when authenticated as A

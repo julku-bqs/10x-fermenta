@@ -7,6 +7,7 @@ Phase 2 of the test-plan rollout: prove that data flows correctly through the ap
 ## Current State Analysis
 
 Phase 1 (core business logic) is complete — 18 scenarios for `calculateSugar()`, boundary tests for validation warnings, process plan generation tests. Schema-level unit tests exist in `src/lib/schemas/__tests__/batch.test.ts` covering Zod parse behavior. No integration tests exist that verify:
+
 - Persistence fidelity (does what the route accepts actually persist correctly?)
 - Validation at the route level (is the schema applied before DB write?)
 - Roundtrip correctness (save value === reload value through string↔number conversion)
@@ -21,6 +22,7 @@ Phase 1 (core business logic) is complete — 18 scenarios for `calculateSugar()
 ## Desired End State
 
 After this plan completes:
+
 1. A test file proves the full ingredient→sugar pipeline persists independently-derived expected kg values in the database
 2. Integration tests prove all 4 batch mutation routes (POST/PUT batch, POST/PUT diary) reject malformed input with 400 + structured details and leave DB unchanged
 3. Integration tests prove save roundtrip fidelity (value at save === value on reload) for both calculated and manually-entered sugar values, and that unsaved edits are not persisted
@@ -45,7 +47,7 @@ Test files live at `src/__tests__/integration/` to signal the different testing 
 
 **Timing & lifecycle** — `globalSetup` starts `astro dev --port 4322` and waits for the server to respond to a health check before returning. It also provisions the test user and signs in via `POST /api/auth/signin` to obtain session cookies. Credentials are persisted to `process.env` for the test context. `teardown()` stops the dev server. If local Supabase is not running, the server will fail to start — globalSetup should detect this and fail with a clear error message.
 
-**State sequencing** — each integration test must create its own batch/diary via the admin Supabase client (not through API endpoints) for isolation, then clean up in `afterEach`. Tests that verify "no write occurred" must query the DB *after* the rejected request and assert row count unchanged — timing is synchronous since fetch calls are awaited.
+**State sequencing** — each integration test must create its own batch/diary via the admin Supabase client (not through API endpoints) for isolation, then clean up in `afterEach`. Tests that verify "no write occurred" must query the DB _after_ the rejected request and assert row count unchanged — timing is synchronous since fetch calls are awaited.
 
 ---
 
@@ -64,6 +66,7 @@ Establish reusable infrastructure for HTTP-based integration tests against a run
 **Intent**: Start the Astro dev server on a dedicated test port, provision a test user in local Supabase Auth, sign in to obtain session cookies, and persist credentials for the test context.
 
 **Contract**: Exports `setup()` and `teardown()` functions:
+
 - `setup()`: Spawns `astro dev --port 4322` as a child process, waits for HTTP readiness (poll `GET http://localhost:4322/` until 200 or timeout after 30s). Creates test user via admin Supabase client (`auth.admin.createUser`). Signs in via `fetch("http://localhost:4322/api/auth/signin", { method: "POST", body: { email, password } })` and captures `Set-Cookie` header. Writes `TEST_COOKIES`, `TEST_USER_ID`, and `TEST_BASE_URL` to `process.env`.
 - `teardown()`: Kills the dev server child process.
 
@@ -74,6 +77,7 @@ Establish reusable infrastructure for HTTP-based integration tests against a run
 **Intent**: Provide factory functions for making authenticated API requests and for direct DB operations (setup/teardown/verification).
 
 **Contract**:
+
 - `getAdminClient()` → `SupabaseClient` with service role key (for data setup/teardown/verification)
 - `apiRequest(path: string, options?: { method?, body?, cookies? })` → `fetch()` wrapper that prepends `TEST_BASE_URL`, injects `TEST_COOKIES` header, sets `Content-Type: application/json`, and returns the Response
 - `apiRequestUnauthenticated(path, options)` → same but without cookies (for testing auth guard)
@@ -135,6 +139,7 @@ Prove that given ingredients with known sugar content, the full pipeline (aggreg
 **Intent**: Table-driven integration tests that create a batch via the POST route with specific ingredients, then query the DB to verify stored `fermentation_sugar_kg` and `sweetness_sugar_kg` match independently calculated expected values.
 
 **Contract**: Uses `it.each` with scenarios structured as:
+
 ```typescript
 type PipelineScenario = [
   name: string,
@@ -146,6 +151,7 @@ type PipelineScenario = [
 Expected values are derived inline using local domain constants (×10, ×17, ÷1000) — never imported from production code. Uses `toBeCloseTo(value, 6)` for floating-point comparison.
 
 Scenarios must include:
+
 - S1: Single ingredient, dry wine — verifies basic aggregation + formula
 - S2: Multiple ingredients, various sugar contents — verifies summation across array
 - S3: Null sugar_content_percent on some ingredients — verifies null→0 treatment
@@ -208,11 +214,12 @@ Prove that all 4 batch mutation routes (POST batch, PUT batch, POST diary, PUT d
 type RejectionScenario = [
   name: string,
   payload: unknown,
-  expectedDetailPaths: string[] // e.g., ["name", "process_type"]
+  expectedDetailPaths: string[], // e.g., ["name", "process_type"]
 ];
 ```
 
 **POST `/api/batches`** scenarios:
+
 - Missing `name` (required field)
 - Missing `process_type` (required enum field)
 - Invalid `process_type` value ("sparkling")
@@ -224,17 +231,20 @@ type RejectionScenario = [
 - Empty object `{}`
 
 **PUT `/api/batches/[id]`** scenarios:
+
 - Negative `fermentation_sugar_kg`
 - Invalid `planned_sweetness` enum
 - Ingredient with negative `amount_liters`
 - `target_volume_liters` of 0 (must be positive)
 
 **POST `/api/batches/[id]/diary`** scenarios:
+
 - Missing `description` (required)
 - Empty string `description`
 - Invalid `entry_date` format ("not-a-date")
 
 **PUT `/api/batches/[id]/diary/[entryId]`** scenarios:
+
 - Invalid `entry_date` format
 - Empty description when explicitly provided (partial update schema allows omitting but not empty)
 
@@ -289,10 +299,11 @@ Prove save roundtrip (form value at save time === API response === reload value)
 **Contract**: Scenarios:
 
 ```typescript
-type LifecycleScenario = [name: string, sugarValues: { fermentation_sugar_kg: number, sweetness_sugar_kg: number }];
+type LifecycleScenario = [name: string, sugarValues: { fermentation_sugar_kg: number; sweetness_sugar_kg: number }];
 ```
 
 **Roundtrip scenarios** (PUT then GET, assert values match):
+
 - L1: Standard calculated values (2.55, 0.3)
 - L2: Zero values (0, 0) — falsy but valid
 - L3: Very small values (0.001, 0.0005) — precision test
@@ -300,9 +311,11 @@ type LifecycleScenario = [name: string, sugarValues: { fermentation_sugar_kg: nu
 - L5: Manually-typed-style values (1.5, 0) — non-round fermentation, zero sweetness
 
 **Partial update protection** (PUT without sugar fields, assert sugar unchanged):
+
 - L6: Create batch with sugar (2.5, 0.3) → PUT `{ name: "Updated" }` (no sugar fields) → GET → assert sugar still (2.5, 0.3)
 
 **Sequential save** (simulates cancel semantic):
+
 - L7: PUT sugar (1.0, 0.5) → PUT sugar (2.0, 1.0) → GET → assert (2.0, 1.0) — last save wins
 - L8: PUT sugar (1.0, 0.5) → no second PUT → GET → assert (1.0, 0.5) — "cancel" = no PUT means DB unchanged
 

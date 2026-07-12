@@ -17,22 +17,24 @@ Integration tests prove — against a real local Supabase — that (1) sugar val
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) | Source |
-|----------|--------|-------------------|--------|
-| DB strategy | Real local Supabase | Mocking proves mock behavior, not persistence correctness | Plan |
-| Route scope for Risk #5 | 4 batch routes (POST/PUT batch + diary) | Auth routes have no domain data mutation risk | Plan |
-| Test infrastructure approach | HTTP requests to running Astro dev server | Full stack integration with zero mocks — tests middleware, routing, handlers, and DB together | Plan |
-| Expected value derivation | Local constants + inline arithmetic | Prevents oracle problem — never import production constants | Research |
+| Decision                     | Choice                                    | Why (1 sentence)                                                                              | Source   |
+| ---------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------- | -------- |
+| DB strategy                  | Real local Supabase                       | Mocking proves mock behavior, not persistence correctness                                     | Plan     |
+| Route scope for Risk #5      | 4 batch routes (POST/PUT batch + diary)   | Auth routes have no domain data mutation risk                                                 | Plan     |
+| Test infrastructure approach | HTTP requests to running Astro dev server | Full stack integration with zero mocks — tests middleware, routing, handlers, and DB together | Plan     |
+| Expected value derivation    | Local constants + inline arithmetic       | Prevents oracle problem — never import production constants                                   | Research |
 
 ## Scope
 
 **In scope:**
+
 - Sugar pipeline end-to-end (ingredients → DB) with 7 scenarios
 - API rejection for 4 routes with 15+ malformed payloads
 - Save/reload roundtrip for 8 lifecycle scenarios
 - §6.2 cookbook update
 
 **Out of scope:**
+
 - Auth route validation (low risk for data corruption)
 - Browser-level e2e testing
 - Concurrent edit handling
@@ -58,13 +60,13 @@ Test file → fetch("http://localhost:4322/api/batches", { Cookie: ... })
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-|-------|-----------------|----------|
-| 1. Integration test infrastructure | Helpers, globalSetup, module mock, APIContext factory | Local Supabase not running → clear error needed |
-| 2. Risk #4: Sugar pipeline persistence | 7 pipeline scenarios + parseFloat seam tests | Expected values must be independently derived, not oracle-copied |
-| 3. Risk #5: API validation rejection | 15+ rejection scenarios across 4 routes | Must verify DB unchanged, not just 400 status |
-| 4. Risk #7: Save/reload lifecycle | 8 lifecycle scenarios including partial update | Zod v4 `.default()` could silently zero fields |
-| 5. §6 Cookbook update | test-plan.md §6.2 filled in | Must be self-contained for new contributors |
+| Phase                                  | What it delivers                                      | Key risk                                                         |
+| -------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------- |
+| 1. Integration test infrastructure     | Helpers, globalSetup, module mock, APIContext factory | Local Supabase not running → clear error needed                  |
+| 2. Risk #4: Sugar pipeline persistence | 7 pipeline scenarios + parseFloat seam tests          | Expected values must be independently derived, not oracle-copied |
+| 3. Risk #5: API validation rejection   | 15+ rejection scenarios across 4 routes               | Must verify DB unchanged, not just 400 status                    |
+| 4. Risk #7: Save/reload lifecycle      | 8 lifecycle scenarios including partial update        | Zod v4 `.default()` could silently zero fields                   |
+| 5. §6 Cookbook update                  | test-plan.md §6.2 filled in                           | Must be self-contained for new contributors                      |
 
 **Prerequisites:** Local Supabase running (`npx supabase start` in WSL), Phase 1 tests passing.
 **Estimated effort:** ~2-3 sessions across 5 phases.

@@ -1,4 +1,5 @@
 <!-- PLAN-REVIEW-REPORT -->
+
 # Plan Review: Data Integrity and Interaction Tests
 
 - **Plan**: context/changes/testing-data-integrity/plan.md
@@ -9,13 +10,13 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| End-State Alignment | PASS |
-| Lean Execution | PASS |
-| Architectural Fitness | PASS |
-| Blind Spots | PASS |
-| Plan Completeness | PASS |
+| Dimension             | Verdict |
+| --------------------- | ------- |
+| End-State Alignment   | PASS    |
+| Lean Execution        | PASS    |
+| Architectural Fitness | PASS    |
+| Blind Spots           | PASS    |
+| Plan Completeness     | PASS    |
 
 ## Grounding
 
@@ -78,12 +79,12 @@ Re-review: 7/7 paths verified, astro --port confirmed, Progress↔Phase 5/5 matc
 
 ## Triage Summary
 
-| Outcome | Findings |
-|---------|----------|
-| Fixed | F1, F2, F3, F4, F5 (5) |
-| Skipped | — (0) |
-| Accepted | — (0) |
-| Dismissed | — (0) |
+| Outcome   | Findings               |
+| --------- | ---------------------- |
+| Fixed     | F1, F2, F3, F4, F5 (5) |
+| Skipped   | — (0)                  |
+| Accepted  | — (0)                  |
+| Dismissed | — (0)                  |
 
 ## Architectural Decision Record
 

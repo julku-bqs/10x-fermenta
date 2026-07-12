@@ -22,6 +22,7 @@ last_updated_by: Copilot
 ## Research Question
 
 Ground the three risk response intents for test-plan Phase 2 in actual code paths:
+
 - **Risk #4**: Ingredient → sugar aggregation → calculation → persisted fields pipeline
 - **Risk #5**: API route input validation — zod schemas, error handling, malformed input rejection
 - **Risk #7**: Sugar field save/cancel/reload lifecycle
@@ -47,14 +48,17 @@ Ground the three risk response intents for test-plan Phase 2 in actual code path
 #### Sugar Aggregation (the critical conversion)
 
 **`src/lib/services/sugar-calculation.ts:39-43`**:
+
 ```
 total_ingredient_sugar_grams = SUM(amount_liters × sugar_content_percent × 10)
 ```
+
 Factor 10 = "1% of 1 liter = 10 grams of sugar". Null `sugar_content_percent` treated as 0.
 
 #### Calculation Formula
 
 **`src/lib/services/sugar-calculation.ts:45-51`**:
+
 ```
 sugar_needed_for_abv_grams = target_abv × 17 × target_volume_liters
 fermentation_sugar_grams = MAX(0, sugar_needed_for_abv_grams - total_ingredient_sugar_grams)
@@ -80,13 +84,13 @@ Constant: `SUGAR_PER_ABV_GRAM_PER_LITER = 17` (line 6).
 
 #### Unit Conversion Map
 
-| Location | Direction | Formula |
-|----------|-----------|---------|
-| `sugar-calculation.ts:41` | ingredients → grams | `L × % × 10` |
-| `sugar-calculation.ts:48` | grams → kg (storage) | `÷ 1000` |
-| `sugar-calculation.ts:51` | grams → kg (storage) | `÷ 1000` |
-| `batch-validation.ts:72,82` | kg → grams (validation) | `× 1000` |
-| `batch-validation.ts:100` | kg → g/L (validation) | `× 1000 ÷ volume` |
+| Location                    | Direction               | Formula           |
+| --------------------------- | ----------------------- | ----------------- |
+| `sugar-calculation.ts:41`   | ingredients → grams     | `L × % × 10`      |
+| `sugar-calculation.ts:48`   | grams → kg (storage)    | `÷ 1000`          |
+| `sugar-calculation.ts:51`   | grams → kg (storage)    | `÷ 1000`          |
+| `batch-validation.ts:72,82` | kg → grams (validation) | `× 1000`          |
+| `batch-validation.ts:100`   | kg → g/L (validation)   | `× 1000 ÷ volume` |
 
 **Test implication**: Integration test must verify the full chain — given ingredients with known sugar percentages + volumes, the final persisted `fermentation_sugar_kg` and `sweetness_sugar_kg` must match independently derived expected values (using the `× 10`, `× 17`, `÷ 1000` factors).
 
@@ -96,14 +100,14 @@ Constant: `SUGAR_PER_ABV_GRAM_PER_LITER = 17` (line 6).
 
 #### Routes With Zod Validation
 
-| Route | Method | Schema | File:Line |
-|-------|--------|--------|-----------|
-| `/api/batches` | POST | `createBatchSchema` | `src/pages/api/batches/index.ts:21` |
-| `/api/batches/[id]` | PUT | `updateBatchSchema` | `src/pages/api/batches/[id]/index.ts:46` |
-| `/api/batches/[id]/diary` | POST | `createDiaryEntrySchema` | `src/pages/api/batches/[id]/diary/index.ts:51` |
-| `/api/batches/[id]/diary/[entryId]` | PUT | `updateDiaryEntrySchema` | `src/pages/api/batches/[id]/diary/[entryId].ts:27` |
-| `/api/auth/signin` | POST | `signInSchema` | `src/pages/api/auth/signin.ts:10` |
-| `/api/auth/signup` | POST | `signUpSchema` | `src/pages/api/auth/signup.ts:10` |
+| Route                               | Method | Schema                   | File:Line                                          |
+| ----------------------------------- | ------ | ------------------------ | -------------------------------------------------- |
+| `/api/batches`                      | POST   | `createBatchSchema`      | `src/pages/api/batches/index.ts:21`                |
+| `/api/batches/[id]`                 | PUT    | `updateBatchSchema`      | `src/pages/api/batches/[id]/index.ts:46`           |
+| `/api/batches/[id]/diary`           | POST   | `createDiaryEntrySchema` | `src/pages/api/batches/[id]/diary/index.ts:51`     |
+| `/api/batches/[id]/diary/[entryId]` | PUT    | `updateDiaryEntrySchema` | `src/pages/api/batches/[id]/diary/[entryId].ts:27` |
+| `/api/auth/signin`                  | POST   | `signInSchema`           | `src/pages/api/auth/signin.ts:10`                  |
+| `/api/auth/signup`                  | POST   | `signUpSchema`           | `src/pages/api/auth/signup.ts:10`                  |
 
 #### Validation Pattern (consistent across all routes)
 
@@ -118,12 +122,14 @@ if (!result.success) {
 #### Error Response Shape
 
 **`src/lib/api.ts:24-32`** — `jsonValidationError()`:
+
 ```json
 {
   "error": "Validation failed",
   "details": { "field.path": ["error message 1", "error message 2"] }
 }
 ```
+
 HTTP status: **400**.
 
 #### Key Schema Constraints (batch)
@@ -157,6 +163,7 @@ HTTP status: **400**.
 #### Form State Architecture
 
 **`src/components/batches/BatchForm.tsx:28-49`**:
+
 - `FormState` interface stores sugar as **strings** (`fermentation_sugar_kg: string`)
 - `useState<FormState>` initialized from `initialData?.fermentation_sugar_kg.toString() ?? "0"`
 - `initialValues` ref (lines 104-118) = snapshot at load time, used for dirty detection
@@ -164,18 +171,20 @@ HTTP status: **400**.
 #### Calculate → Form State (no auto-save)
 
 **`src/components/batches/IngredientsSection.tsx:122-138`**:
+
 1. User clicks "🧮 Calculate" button (line 200)
 2. `calculateSugar()` called (line 126)
 3. Result emitted via `onBatchChange({ fermentation_sugar_kg, sweetness_sugar_kg })` (lines 133-136)
 4. `BatchForm` receives and updates string state (lines 431-440):
    ```tsx
-   fermentation_sugar_kg: updates.fermentation_sugar_kg.toString()
+   fermentation_sugar_kg: updates.fermentation_sugar_kg.toString();
    ```
 5. **No save occurs** — user must explicitly click "Save Changes"
 
 #### Manual Edit → Form State
 
 **`src/components/batches/IngredientsSection.tsx:167-179`** (SugarCard component):
+
 - User clicks the sugar badge to enter edit mode
 - Types a number in the input field
 - `onChange` calls `onBatchChange({ fermentation_sugar_kg: kg })` (line 172)
@@ -184,6 +193,7 @@ HTTP status: **400**.
 #### Save → DB → Response
 
 **`src/components/batches/BatchForm.tsx:157-226`**:
+
 1. `parseFloat(form.fermentation_sugar_kg) || 0` (line 170) — string → number
 2. Zod validation (line 176-186)
 3. `fetch()` to API (lines 190-196)
@@ -195,6 +205,7 @@ HTTP status: **400**.
 #### Reload (page navigation)
 
 **`src/pages/batches/[id].astro:17-24`**:
+
 - Astro server-side: `supabase.from("batches").select("*").eq("id", id).single()`
 - Fresh `Batch` object passed as `initialData` prop to `BatchForm`
 - Form re-initializes from DB values
@@ -202,6 +213,7 @@ HTTP status: **400**.
 #### Cancel Behavior
 
 **`src/components/batches/BatchForm.tsx:262-265, 475-477`**:
+
 - Cancel = `<a href="/batches">` — **plain navigation link**, not a form reset
 - **No "restore last-saved"** button exists
 - Dirty guard: `beforeunload` event (lines 128-137) shows browser confirmation if form is dirty
@@ -219,6 +231,7 @@ HTTP status: **400**.
 ```
 
 **Test implication**: Integration tests must verify:
+
 1. **Save roundtrip**: value in form at save time === value returned from API === value on reload
 2. **Cancel does NOT persist**: edit → cancel → reload shows last-saved value (not the edit)
 3. **Manual edit save**: manually typed value persists correctly (not just calculated values)

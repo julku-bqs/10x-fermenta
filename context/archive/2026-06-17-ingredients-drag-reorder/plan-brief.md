@@ -16,13 +16,13 @@ Users drag ingredients via a grip handle (desktop) or long-press (mobile) to reo
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) |
-| --- | --- | --- |
-| DnD library | @dnd-kit/sortable | Purpose-built React sortable with first-class accessibility, well-documented, lightweight (~15kb) |
-| Drag trigger | Grip handle (desktop) + long-press (mobile) | Avoids conflict with click-to-edit; clear affordance on both platforms |
-| Edit mode interaction | Disable entire DnD when any card is in edit mode | Simplest approach — zero ambiguity, trivial to implement via `editingIndex !== null` check |
-| Accessibility | Built-in keyboard sensor with ARIA | Free with @dnd-kit; meets WCAG without additional UI clutter |
-| Visual feedback | Smooth vertical shift animation (CSS transforms) | Built into @dnd-kit's sortable preset; clear feedback of drop position |
+| Decision              | Choice                                           | Why (1 sentence)                                                                                  |
+| --------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| DnD library           | @dnd-kit/sortable                                | Purpose-built React sortable with first-class accessibility, well-documented, lightweight (~15kb) |
+| Drag trigger          | Grip handle (desktop) + long-press (mobile)      | Avoids conflict with click-to-edit; clear affordance on both platforms                            |
+| Edit mode interaction | Disable entire DnD when any card is in edit mode | Simplest approach — zero ambiguity, trivial to implement via `editingIndex !== null` check        |
+| Accessibility         | Built-in keyboard sensor with ARIA               | Free with @dnd-kit; meets WCAG without additional UI clutter                                      |
+| Visual feedback       | Smooth vertical shift animation (CSS transforms) | Built into @dnd-kit's sortable preset; clear feedback of drop position                            |
 
 ## Scope
 
@@ -33,10 +33,11 @@ Users drag ingredients via a grip handle (desktop) or long-press (mobile) to reo
 ## Architecture / Approach
 
 `DndContext` + `SortableContext` wraps the ingredients list in `IngredientsSection`. Three sensors handle input: `PointerSensor` (handle-only), `TouchSensor`, `KeyboardSensor`. Each `IngredientCard` calls `useSortable` and renders a `GripVertical` handle. On drag end, `arrayMove` reorders the array and propagates through existing `onBatchChange` → batch save flow.
+
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-| --- | --- | --- |
+| Phase                              | What it delivers                                                          | Key risk                                                                                          |
+| ---------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | 1. DnD Integration & Reorder Logic | Full drag-and-drop with grip handle, sensors, animations, edit-mode guard | IngredientCard refactor from `<button>` to `<div>` wrapper may need careful click-target handling |
 
 **Prerequisites:** None beyond S-02 (ingredients section exists — already complete)

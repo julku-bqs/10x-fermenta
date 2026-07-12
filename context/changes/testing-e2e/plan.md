@@ -287,24 +287,24 @@ Cleanup: `finally` `DELETE /api/batches/{id}`.
 
 #### Automated
 
-- [x] 1.1 Linting passes: `npm run lint`
-- [x] 1.2 Build passes: `npm run build`
-- [x] 1.3 Existing unit/integration tests pass: `npm run test`
-- [x] 1.4 Existing E2E specs still pass: `npm run test:e2e`
+- [x] 1.1 Linting passes: `npm run lint` — 50251b9
+- [x] 1.2 Build passes: `npm run build` — 50251b9
+- [x] 1.3 Existing unit/integration tests pass: `npm run test` — 50251b9
+- [x] 1.4 Existing E2E specs still pass: `npm run test:e2e` — 50251b9
 
 #### Manual
 
-- [x] 1.5 Sugar card + diary toggle show no visual change
-- [x] 1.6 Sugar input `id` matches label `htmlFor`; toggle accessible name flips with completion state
-- [x] 1.7 Diary exposes a named list (`role=list` "Diary entries") with `listitem` rows; no visual change
+- [x] 1.5 Sugar card + diary toggle show no visual change — 50251b9
+- [x] 1.6 Sugar input `id` matches label `htmlFor`; toggle accessible name flips with completion state — 50251b9
+- [x] 1.7 Diary exposes a named list (`role=list` "Diary entries") with `listitem` rows; no visual change — 50251b9
 
 ### Phase 2: Risk #3 — Diary Regenerate Preserve-and-Rebuild
 
 #### Automated
 
-- [ ] 2.1 Spec passes: `npm run test:e2e -- diary-regenerate-preserve-rebuild`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Full E2E suite still green: `npm run test:e2e`
+- [x] 2.1 Spec passes: `npm run test:e2e -- diary-regenerate-preserve-rebuild`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Full E2E suite still green: `npm run test:e2e`
 
 #### Manual
 

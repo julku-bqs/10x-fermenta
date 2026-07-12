@@ -315,24 +315,24 @@ Cleanup: `finally` `DELETE /api/batches/{id}`.
 
 #### Automated
 
-- [x] 3.1 Spec passes: `npm run test:e2e -- sugar-fields-roundtrip`
-- [x] 3.2 Linting passes: `npm run lint`
-- [x] 3.3 Full E2E suite still green: `npm run test:e2e`
+- [x] 3.1 Spec passes: `npm run test:e2e -- sugar-fields-roundtrip` — ddd5c5b
+- [x] 3.2 Linting passes: `npm run lint` — ddd5c5b
+- [x] 3.3 Full E2E suite still green: `npm run test:e2e` — ddd5c5b
 
 #### Manual
 
-- [x] 3.4 Deliberate break confirms the spec goes red then green after restore
-- [x] 3.5 Both cards, both input paths, and Cancel-discard are each exercised
+- [x] 3.4 Deliberate break confirms the spec goes red then green after restore — ddd5c5b
+- [x] 3.5 Both cards, both input paths, and Cancel-discard are each exercised — ddd5c5b
 
 ### Phase 4: Risk #7b — Ingredient-Order Round-Trip
 
 #### Automated
 
-- [ ] 4.1 Spec passes: `npm run test:e2e -- ingredient-order-roundtrip`
-- [ ] 4.2 Linting passes: `npm run lint`
-- [ ] 4.3 Full E2E suite still green: `npm run test:e2e`
+- [x] 4.1 Spec passes: `npm run test:e2e -- ingredient-order-roundtrip`
+- [x] 4.2 Linting passes: `npm run lint`
+- [x] 4.3 Full E2E suite still green: `npm run test:e2e`
 
 #### Manual
 
-- [ ] 4.4 Deliberate break confirms the spec goes red then green after restore
-- [ ] 4.5 Keyboard reorder is stable across repeated runs
+- [x] 4.4 Deliberate break confirms the spec goes red then green after restore
+- [x] 4.5 Keyboard reorder is stable across repeated runs

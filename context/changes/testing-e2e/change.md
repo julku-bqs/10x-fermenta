@@ -1,7 +1,7 @@
 ---
 change_id: testing-e2e
 title: "E2E UI-wiring coverage: diary regenerate + sugar/ingredient round-trip"
-status: implementing
+status: implemented
 created: 2026-07-12
 updated: 2026-07-12
 archived_at: null

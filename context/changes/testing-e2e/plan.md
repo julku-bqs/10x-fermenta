@@ -328,11 +328,11 @@ Cleanup: `finally` `DELETE /api/batches/{id}`.
 
 #### Automated
 
-- [x] 4.1 Spec passes: `npm run test:e2e -- ingredient-order-roundtrip`
-- [x] 4.2 Linting passes: `npm run lint`
-- [x] 4.3 Full E2E suite still green: `npm run test:e2e`
+- [x] 4.1 Spec passes: `npm run test:e2e -- ingredient-order-roundtrip` — 052ab05
+- [x] 4.2 Linting passes: `npm run lint` — 052ab05
+- [x] 4.3 Full E2E suite still green: `npm run test:e2e` — 052ab05
 
 #### Manual
 
-- [x] 4.4 Deliberate break confirms the spec goes red then green after restore
-- [x] 4.5 Keyboard reorder is stable across repeated runs
+- [x] 4.4 Deliberate break confirms the spec goes red then green after restore — 052ab05
+- [x] 4.5 Keyboard reorder is stable across repeated runs — 052ab05

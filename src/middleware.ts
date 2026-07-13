@@ -5,6 +5,7 @@ const PROTECTED_ROUTES = ["/batches", "/api/batches"];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createClient(context.request.headers, context.cookies);
+  context.locals.supabase = supabase;
 
   if (supabase) {
     const {

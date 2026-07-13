@@ -1,13 +1,13 @@
 import type { APIRoute } from "astro";
-import { createClient } from "@/lib/supabase";
 import { createBatchSchema } from "@/lib/schemas/batch";
 import { generateProcessPlan } from "@/lib/services/process-plan-generation";
 import { jsonOk, jsonCreated, jsonError, jsonValidationError } from "@/lib/api";
 import type { Batch } from "@/types";
 
 export const POST: APIRoute = async (context) => {
-  const supabase = createClient(context.request.headers, context.cookies);
+  const supabase = context.locals.supabase;
   if (!supabase || !context.locals.user) {
+    console.error("Failed to create batch: Supabase client unavailable");
     return jsonError("Server configuration error", 500);
   }
 
@@ -80,8 +80,9 @@ export const POST: APIRoute = async (context) => {
 };
 
 export const GET: APIRoute = async (context) => {
-  const supabase = createClient(context.request.headers, context.cookies);
+  const supabase = context.locals.supabase;
   if (!supabase || !context.locals.user) {
+    console.error("Failed to fetch batches: Supabase client unavailable");
     return jsonError("Server configuration error", 500);
   }
 

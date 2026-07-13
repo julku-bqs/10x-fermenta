@@ -1,9 +1,9 @@
 ---
 change_id: fail-visible-batch-list
 title: Make batch-list load failures visible instead of an empty state
-status: new
+status: implementing
 created: 2026-07-12
-updated: 2026-07-12
+updated: 2026-07-14
 archived_at: null
 ---
 

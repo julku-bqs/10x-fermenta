@@ -375,9 +375,9 @@ using `createClient` and are unaffected.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass, including the new handler test: `npm run test`
-- [x] 1.2 Linting (type-checked) passes: `npm run lint`
-- [x] 1.3 Production build passes: `npm run build`
+- [x] 1.1 Unit tests pass, including the new handler test: `npm run test` — f30c8b1
+- [x] 1.2 Linting (type-checked) passes: `npm run lint` — f30c8b1
+- [x] 1.3 Production build passes: `npm run build` — f30c8b1
 
 #### Manual
 
@@ -388,9 +388,9 @@ using `createClient` and are unaffected.
 
 #### Automated
 
-- [ ] 2.1 Linting passes: `npm run lint`
-- [ ] 2.2 Production build passes: `npm run build`
-- [ ] 2.3 Existing unit tests still pass: `npm run test`
+- [x] 2.1 Linting passes: `npm run lint`
+- [x] 2.2 Production build passes: `npm run build`
+- [x] 2.3 Existing unit tests still pass: `npm run test`
 
 #### Manual
 

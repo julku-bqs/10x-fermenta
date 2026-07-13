@@ -1,22 +1,9 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { BatchListPage } from "@/components/batches/BatchListPage";
-import { createClient } from "@/lib/supabase";
-import type { BatchListItem } from "@/types";
-
-const supabase = createClient(Astro.request.headers, Astro.cookies);
-let batches: BatchListItem[] = [];
-
-if (supabase) {
-  const { data } = await supabase
-    .from("batches")
-    .select("id, name, batch_date, process_type, target_volume_liters, target_abv, planned_sweetness")
-    .order("created_at", { ascending: false });
-  batches = data ?? [];
-}
 ---
 
 <AppLayout title="My Batches">
   <h1 class="mb-8 text-2xl font-bold">My Batches</h1>
-  <BatchListPage client:only="react" batches={batches} />
+  <BatchListPage client:only="react" />
 </AppLayout>

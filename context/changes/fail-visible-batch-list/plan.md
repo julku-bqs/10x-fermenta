@@ -381,21 +381,21 @@ using `createClient` and are unaffected.
 
 #### Manual
 
-- [ ] 1.4 Review confirms `src/pages/api/batches/index.ts` no longer imports `@/lib/supabase` and both handlers read `context.locals.supabase`
-- [ ] 1.5 Happy-path endpoint still returns 200 via `npm run test:integration` (optional — requires local Supabase)
+- [x] 1.4 Review confirms `src/pages/api/batches/index.ts` no longer imports `@/lib/supabase` and both handlers read `context.locals.supabase`
+- [x] 1.5 Happy-path endpoint still returns 200 via `npm run test:integration` (optional — requires local Supabase)
 
 ### Phase 2: Wire the page to the endpoint + visible error state (UI)
 
 #### Automated
 
-- [x] 2.1 Linting passes: `npm run lint`
-- [x] 2.2 Production build passes: `npm run build`
-- [x] 2.3 Existing unit tests still pass: `npm run test`
+- [x] 2.1 Linting passes: `npm run lint` — 173bcec
+- [x] 2.2 Production build passes: `npm run build` — 173bcec
+- [x] 2.3 Existing unit tests still pass: `npm run test` — 173bcec
 
 #### Manual
 
-- [ ] 2.4 Happy path: list renders with correct count and working cards/table toggle
-- [ ] 2.5 Empty: new user sees "No batches yet" (distinct from error)
-- [ ] 2.6 Error: forced backend failure shows the inline warning + Try again; Retry recovers
-- [ ] 2.7 Loading indicator appears briefly under network throttling
-- [ ] 2.8 Existing e2e stays green: `npm run test:e2e`
+- [x] 2.4 Happy path: list renders with correct count and working cards/table toggle
+- [x] 2.5 Empty: new user sees "No batches yet" (distinct from error)
+- [x] 2.6 Error: forced backend failure shows the inline warning + Try again; Retry recovers
+- [x] 2.7 Loading indicator appears briefly under network throttling
+- [x] 2.8 Existing e2e stays green: `npm run test:e2e`

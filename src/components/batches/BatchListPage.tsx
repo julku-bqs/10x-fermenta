@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { BatchListItem } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,14 @@ export function BatchListPage() {
   });
   const [state, setState] = useState<State>({ status: "loading" });
   const [reloadKey, setReloadKey] = useState(0);
+  const fetchedKeyRef = useRef<number | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    // Guard against React StrictMode's double effect-invoke firing two requests
+    // (dev-only). Keyed on reloadKey so Retry still re-fetches. Mirrors DiarySection.
+    if (fetchedKeyRef.current === reloadKey) return;
+    fetchedKeyRef.current = reloadKey;
+
     async function fetchBatches() {
       try {
         const res = await fetch("/api/batches");
@@ -30,19 +35,16 @@ export function BatchListPage() {
           return;
         }
         if (!res.ok) {
-          if (!cancelled) setState({ status: "error" });
+          setState({ status: "error" });
           return;
         }
         const body = (await res.json()) as { data?: BatchListItem[] };
-        if (!cancelled) setState({ status: "ready", batches: body.data ?? [] });
+        setState({ status: "ready", batches: body.data ?? [] });
       } catch {
-        if (!cancelled) setState({ status: "error" });
+        setState({ status: "error" });
       }
     }
     void fetchBatches();
-    return () => {
-      cancelled = true;
-    };
   }, [reloadKey]);
 
   function retry() {

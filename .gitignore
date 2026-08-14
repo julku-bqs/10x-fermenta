@@ -58,3 +58,5 @@ pnpm-debug.log*
 /playwright/.cache/
 tests/e2e/.auth/
 .playwright-cli/
+
+ignore-*

@@ -1,4 +1,5 @@
 <!-- PLAN-REVIEW-REPORT -->
+
 # Plan Review: Visual Identity & Design System
 
 - **Plan**: context/changes/visual-identity/plan.md
@@ -9,13 +10,13 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| End-State Alignment | PASS |
-| Lean Execution | PASS |
+| Dimension             | Verdict |
+| --------------------- | ------- |
+| End-State Alignment   | PASS    |
+| Lean Execution        | PASS    |
 | Architectural Fitness | WARNING |
-| Blind Spots | FAIL |
-| Plan Completeness | WARNING |
+| Blind Spots           | FAIL    |
+| Plan Completeness     | WARNING |
 
 ## Grounding
 

@@ -25,6 +25,7 @@ Establish Fermenta's warm winery visual identity — a cohesive design language 
 ## Desired End State
 
 After this plan is complete:
+
 - The app has a warm, winery-themed visual identity with cream backgrounds, burgundy primary actions, amber secondary actions, and Playfair Display for headings.
 - A floating topbar provides global navigation on all authenticated pages (home, batches, sign out).
 - The landing page says "Fermenta" with a winery-appropriate motto, features that describe the product, and warm earth-tone styling with Playfair Display headings.
@@ -64,6 +65,7 @@ Replace the neutral gray CSS tokens with a warm earth-tone palette, add Playfair
 **Intent**: Replace all `:root` CSS variables from neutral gray (0 chroma) to a warm cream/burgundy/amber palette. Remove the `bg-cosmic` utility. Add `@font-face` or Google Fonts import for Playfair Display.
 
 **Contract**: The CSS variable names (`--background`, `--foreground`, `--primary`, `--primary-foreground`, `--secondary`, `--secondary-foreground`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`) remain the same — only their oklch values change. New color mapping:
+
 - `--background`: warm cream (e.g., `oklch(0.98 0.01 80)`)
 - `--foreground`: dark warm brown (e.g., `oklch(0.20 0.02 50)`)
 - `--primary`: deep burgundy (e.g., `oklch(0.35 0.12 20)` — approximately #722F37)
@@ -373,7 +375,7 @@ Restyle the batch list page with the new palette, then restructure the batch for
 
 #### Manual
 
-- [ ] 1.3 Pages render with warm cream background and burgundy buttons
+- [x] 1.3 Pages render with warm cream background and burgundy buttons
 
 ### Phase 2: Layout & Navigation
 
@@ -384,8 +386,8 @@ Restyle the batch list page with the new palette, then restructure the batch for
 
 #### Manual
 
-- [ ] 2.3 Floating topbar visible on all batch pages with working navigation
-- [ ] 2.4 Content area has consistent padding and max-width
+- [x] 2.3 Floating topbar visible on all batch pages with working navigation
+- [x] 2.4 Content area has consistent padding and max-width
 
 ### Phase 3: Landing & Auth Pages
 
@@ -396,9 +398,9 @@ Restyle the batch list page with the new palette, then restructure the batch for
 
 #### Manual
 
-- [ ] 3.3 Landing page shows Fermenta branding with Playfair Display and warm palette
-- [ ] 3.4 Auth pages use warm cream styling with burgundy accents
-- [ ] 3.5 All text readable with sufficient contrast
+- [x] 3.3 Landing page shows Fermenta branding with Playfair Display and warm palette
+- [x] 3.4 Auth pages use warm cream styling with burgundy accents
+- [x] 3.5 All text readable with sufficient contrast
 
 ### Phase 4: Batch Pages & Form Restructuring
 
@@ -409,8 +411,8 @@ Restyle the batch list page with the new palette, then restructure the batch for
 
 #### Manual
 
-- [ ] 4.3 Batch list uses warm palette with burgundy button and amber badges
-- [ ] 4.4 Batch form renders 2-column grid on desktop
-- [ ] 4.5 Ingredients list shows yeast as first item
-- [ ] 4.6 Form submission works end-to-end (create and edit)
-- [ ] 4.7 Responsive collapse to single column on mobile
+- [x] 4.3 Batch list uses warm palette with burgundy button and amber badges
+- [x] 4.4 Batch form renders 2-column grid on desktop
+- [x] 4.5 Ingredients list shows yeast as first item
+- [x] 4.6 Form submission works end-to-end (create and edit)
+- [x] 4.7 Responsive collapse to single column on mobile

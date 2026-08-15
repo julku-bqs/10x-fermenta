@@ -20,21 +20,22 @@ The app has a cohesive warm winery identity: cream backgrounds, burgundy primary
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) | Source |
-|---|---|---|---|
-| Color mood | Warm earth tones (burgundy, amber, cream) | Evokes the winemaking craft directly; feels inviting for the hobbyist persona. | Plan |
-| Page mode | Light with cream base, dark topbar anchor | Readable for data-heavy forms; warm feel without eye strain. | Plan |
-| Form layout | 2-column responsive card grid | Scales to many sections without vertical scroll; mirrors the paper form zones. | Plan |
-| Yeast placement | First item in ingredients list (mockup) | Yeast is functionally an ingredient; establishes the slot S-02 will fill. | Plan |
-| Typography | System UI for forms, Playfair Display for titles/landing | Readability for data entry; personality for branding. | Plan |
-| Navigation | Floating topbar, global on all authenticated pages | Clear nav anchor without eating horizontal space needed for 2-col grid. | Plan |
-| Section cards | Borderless with background contrast | Modern, airy feel; subtle shade differences delineate zones. | Plan |
-| Button colors | Burgundy primary, amber/gold secondary | Cohesive with earth palette; burgundy stands out on cream. | Plan |
-| Scope | Full restyle including landing page refresh | Complete brand coherence end-to-end from first visit. | Plan |
+| Decision        | Choice                                                   | Why (1 sentence)                                                               | Source |
+| --------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------ | ------ |
+| Color mood      | Warm earth tones (burgundy, amber, cream)                | Evokes the winemaking craft directly; feels inviting for the hobbyist persona. | Plan   |
+| Page mode       | Light with cream base, dark topbar anchor                | Readable for data-heavy forms; warm feel without eye strain.                   | Plan   |
+| Form layout     | 2-column responsive card grid                            | Scales to many sections without vertical scroll; mirrors the paper form zones. | Plan   |
+| Yeast placement | First item in ingredients list (mockup)                  | Yeast is functionally an ingredient; establishes the slot S-02 will fill.      | Plan   |
+| Typography      | System UI for forms, Playfair Display for titles/landing | Readability for data entry; personality for branding.                          | Plan   |
+| Navigation      | Floating topbar, global on all authenticated pages       | Clear nav anchor without eating horizontal space needed for 2-col grid.        | Plan   |
+| Section cards   | Borderless with background contrast                      | Modern, airy feel; subtle shade differences delineate zones.                   | Plan   |
+| Button colors   | Burgundy primary, amber/gold secondary                   | Cohesive with earth palette; burgundy stands out on cream.                     | Plan   |
+| Scope           | Full restyle including landing page refresh              | Complete brand coherence end-to-end from first visit.                          | Plan   |
 
 ## Scope
 
 **In scope:**
+
 - Global CSS token replacement (neutral → warm earth tones)
 - Playfair Display font addition
 - Floating topbar creation (global navigation)
@@ -46,6 +47,7 @@ The app has a cohesive warm winery identity: cream backgrounds, burgundy primary
 - IngredientsList mockup component (yeast as first item)
 
 **Out of scope:**
+
 - Dark mode
 - Mobile-first responsive optimization
 - Ingredients CRUD logic (S-02)
@@ -61,12 +63,12 @@ Key structural change: `BatchForm.tsx` moves from `<form class="space-y-8">` to 
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-|---|---|---|
-| 1. Design System Foundation | Warm palette tokens in CSS, Playfair font, button updates | Color contrast issues on cream backgrounds |
-| 2. Layout & Navigation | AppLayout + floating topbar global on all pages | Breaking existing page layout flow |
-| 3. Landing & Auth Pages | Winery-branded landing ("Fermenta"), warm auth forms | Copy/content quality of landing page |
-| 4. Batch Pages & Form Grid | 2-col card grid form, warm batch list, ingredients mockup | Form usability regression; grid layout edge cases |
+| Phase                       | What it delivers                                          | Key risk                                          |
+| --------------------------- | --------------------------------------------------------- | ------------------------------------------------- |
+| 1. Design System Foundation | Warm palette tokens in CSS, Playfair font, button updates | Color contrast issues on cream backgrounds        |
+| 2. Layout & Navigation      | AppLayout + floating topbar global on all pages           | Breaking existing page layout flow                |
+| 3. Landing & Auth Pages     | Winery-branded landing ("Fermenta"), warm auth forms      | Copy/content quality of landing page              |
+| 4. Batch Pages & Form Grid  | 2-col card grid form, warm batch list, ingredients mockup | Form usability regression; grid layout edge cases |
 
 **Prerequisites:** S-01 (batch-crud-and-params) is done — pages to restyle exist.
 **Estimated effort:** ~2-3 sessions across 4 phases.

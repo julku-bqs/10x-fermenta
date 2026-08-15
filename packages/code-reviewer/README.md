@@ -1,6 +1,6 @@
 # @10x-fermenta/code-reviewer
 
-A minimal, custom **code-review agent** built on the [GitHub Copilot SDK](https://docs.github.com/en/copilot/how-tos/copilot-sdk). It feeds a git diff to Copilot's agent runtime and prints a Markdown review. `src/index.ts` is a thin CLI entry point; the reusable pieces (`CodeReviewer`, `getDiff`) are meant to be embedded in larger integrations such as a CI job.
+A minimal, custom **code-review agent** built on the [GitHub Copilot SDK](https://docs.github.com/en/copilot/how-tos/copilot-sdk). It feeds a git diff to Copilot's agent runtime and prints a structured, zod-validated JSON review (summary, findings, nitpicks, and token/credit cost). `src/index.ts` is a thin CLI entry point; the reusable pieces (`CodeReviewer`, `getDiff`) are meant to be embedded in larger integrations such as a CI job.
 
 ## Why the Copilot SDK
 
@@ -57,8 +57,8 @@ npx tsx src/index.ts --staged
 import { CodeReviewer } from "@10x-fermenta/code-reviewer";
 
 const reviewer = new CodeReviewer({ model: "auto" });
-const { review } = await reviewer.review(myDiffString);
-console.log(review);
+const result = await reviewer.review(myDiffString);
+console.log(result.summary, result.findings, result.cost);
 ```
 
 ## CI: review every pull request
@@ -109,7 +109,7 @@ jobs:
 | `src/reviewer.ts` | `CodeReviewer` — manages the Copilot client/session. The integration API.    |
 | `src/agent.ts`    | The review rubric/system prompt and prompt builder. Customize behavior here. |
 | `src/git.ts`      | Resolves a `DiffSource` (stdin / file / base ref / staged) into a diff.      |
-| `src/schemas.ts`  | Zod entry point for future structured output. No model defined yet.          |
+| `src/schemas.ts`  | Zod schemas for the structured output (summary, findings, nitpicks, cost).   |
 
 ## Extending the agent
 
@@ -119,8 +119,10 @@ The SDK supports much more than a single prompt. Natural next steps:
 - **Custom tools & MCP servers:** let the agent fetch extra context ([MCP docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/mcp)).
 - **Streaming:** subscribe to `assistant.message_delta` for live output ([streaming docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/streaming-events)).
 - **Session limits:** cap AI-credit spend per run in CI ([docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/session-limits)).
-- **Structured output:** `zod` is already installed and scaffolded in `src/schemas.ts`, ready for when you switch the review from Markdown to a validated JSON shape.
+- **Structured output:** the review is returned as a `zod`-validated object (`src/schemas.ts`). Extend the schema there as your needs grow.
 
 ## Notes
 
 This package is intentionally standalone (its own `package.json` / `node_modules`) so the native Copilot CLI dependency stays out of the Astro/Cloudflare app build. It is excluded from the repo's root ESLint and TypeScript programs.
+
+The reviewer runs **read-only**: the diff is passed inline and agent tools are disabled (`availableTools: []`). Per the SDK's agent loop a turn only continues when the model requests a tool, so with none available a review is a single turn (one LLM call). The SDK has no native max-turns setting, so this is how the cost is bounded.

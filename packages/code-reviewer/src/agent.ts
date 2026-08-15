@@ -1,10 +1,10 @@
 /**
  * The review agent's behavior lives here so it is easy to extend or swap.
  *
- * `REVIEW_SYSTEM_PROMPT` is the reviewer's rubric/identity. `buildReviewPrompt`
- * assembles the full message (rubric + diff) sent to Copilot. Point the
- * `CodeReviewer` at a different set of instructions to specialize the agent
- * (e.g. security-only review, or enforcing this repo's conventions).
+ * `REVIEW_SYSTEM_PROMPT` is the reviewer's rubric, identity, and JSON output
+ * contract; `CodeReviewer` passes it as the session's system message (append
+ * mode). `buildReviewPrompt` wraps just the diff for the user turn. Point the
+ * `CodeReviewer` at different instructions to specialize the agent.
  */
 
 export const REVIEW_SYSTEM_PROMPT = `You are a senior software engineer performing a focused code review of a unified git diff.
@@ -21,28 +21,29 @@ Rules:
 - Be specific: reference the file and, when possible, the changed line.
 - Prefer a concrete suggested fix over a vague concern.
 
-Output format (Markdown):
-## Summary
-One or two sentences on the overall risk of this change.
+Respond with a SINGLE JSON object and nothing else — no Markdown, no code fences, no prose before or after. The object MUST match this shape exactly:
 
-## Findings
-For each issue, a bullet: **[blocker|high|medium|low] path/to/file** — what is wrong and how to fix it.
-
-## Nitpicks
-Optional, minor style/readability suggestions.
-
-If there are no significant issues, respond with exactly: "✅ No significant issues found."`;
+{
+  "summary": string,                 // 1-2 sentences on the overall risk of this change
+  "findings": [                      // [] if there are none
+    {
+      "severity": "blocker" | "high" | "medium" | "low",
+      "filePath": string,            // file path as it appears in the diff
+      "lineNumber": string | null,   // a single line "42" or an inclusive range "10-15"; null if not line-specific
+      "message": string              // what is wrong AND how to fix it
+    }
+  ],
+  "nitpicks": string[]               // minor style/readability notes; [] if none
+}`;
 
 /**
- * Build the prompt sent to Copilot: the rubric followed by the diff in a fenced
- * block so the model treats it as data, not instructions.
+ * Build the user-turn message: just the diff to review. The reviewer's rubric
+ * and JSON contract are supplied separately as the session's system message
+ * (see `REVIEW_SYSTEM_PROMPT` and `CodeReviewer`).
  */
-export function buildReviewPrompt(diff: string, instructions: string = REVIEW_SYSTEM_PROMPT): string {
+export function buildReviewPrompt(diff: string): string {
   return [
-    instructions,
-    "",
-    "Review the following unified diff:",
-    "",
+    "Review the following unified diff and respond with only the JSON object described in your instructions:",
     "```diff",
     diff.trim(),
     "```",

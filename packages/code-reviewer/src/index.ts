@@ -81,9 +81,9 @@ async function main(): Promise<void> {
   const diff = getDiff(source);
 
   const reviewer = new CodeReviewer({ model });
-  const { review } = await reviewer.review(diff);
+  const result = await reviewer.review(diff);
 
-  process.stdout.write(`${review}\n`);
+  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }
 
 main().catch((error: unknown) => {

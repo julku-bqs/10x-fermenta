@@ -16,20 +16,21 @@ A logged-in user can create a batch via a single-page form (name, date, process 
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) |
-| --- | --- | --- |
-| Form structure | Single scrollable form with sections | Fast to fill with ~8 fields; no wizard friction |
-| API pattern | JSON request/response (not form POST+redirect) | Enables typed responses and field-level validation errors |
-| URL structure | /batches, /batches/new, /batches/[id] | Clean REST semantics; browser-back works naturally |
-| Validation | Shared zod schema on client + server | Single source of truth; instant feedback + server safety |
-| List view | Cards (default) + table toggle, localStorage | Power users get density; casual users get scannability |
-| Post-creation flow | Redirect to /batches/[id] | Natural entry point for viewing and later adding ingredients |
-| Detail page | Full edit mode (PUT endpoint) | PRD says "every field is editable"; delete button disabled for now |
-| Error UX | Banner at top + field-level inline errors | Matches auth form patterns, covers both server and validation errors |
+| Decision           | Choice                                         | Why (1 sentence)                                                     |
+| ------------------ | ---------------------------------------------- | -------------------------------------------------------------------- |
+| Form structure     | Single scrollable form with sections           | Fast to fill with ~8 fields; no wizard friction                      |
+| API pattern        | JSON request/response (not form POST+redirect) | Enables typed responses and field-level validation errors            |
+| URL structure      | /batches, /batches/new, /batches/[id]          | Clean REST semantics; browser-back works naturally                   |
+| Validation         | Shared zod schema on client + server           | Single source of truth; instant feedback + server safety             |
+| List view          | Cards (default) + table toggle, localStorage   | Power users get density; casual users get scannability               |
+| Post-creation flow | Redirect to /batches/[id]                      | Natural entry point for viewing and later adding ingredients         |
+| Detail page        | Full edit mode (PUT endpoint)                  | PRD says "every field is editable"; delete button disabled for now   |
+| Error UX           | Banner at top + field-level inline errors      | Matches auth form patterns, covers both server and validation errors |
 
 ## Scope
 
 **In scope:**
+
 - Batch creation form (all fields from batches table)
 - Batch list page with card/table layout toggle
 - Batch detail/edit page with save
@@ -40,6 +41,7 @@ A logged-in user can create a batch via a single-page form (name, date, process 
 - Dashboard removal + Topbar navigation to /batches
 
 **Out of scope:**
+
 - Batch deletion (button visible but disabled)
 - Ingredients (S-02)
 - Sugar calculation/validation (S-02)
@@ -64,13 +66,13 @@ Pages fetch data server-side for SSR. React forms submit to JSON API routes. Sha
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-| --- | --- | --- |
-| 1. Foundation | zod, types, schemas, API helpers, middleware | Low — pure setup, no runtime behavior |
-| 2. API Routes | POST/GET/PUT endpoints for batches | Low — straightforward CRUD with RLS |
-| 3. Batch Creation UI | React form + /batches/new page | Medium — first interactive domain component |
-| 4. Batch List & Detail UI | Card/table list + detail/edit page | Medium — most UI surface area |
-| 5. Dashboard Removal | Delete placeholder, Topbar links to /batches | Low — 3 file changes, pure cleanup |
+| Phase                     | What it delivers                             | Key risk                                    |
+| ------------------------- | -------------------------------------------- | ------------------------------------------- |
+| 1. Foundation             | zod, types, schemas, API helpers, middleware | Low — pure setup, no runtime behavior       |
+| 2. API Routes             | POST/GET/PUT endpoints for batches           | Low — straightforward CRUD with RLS         |
+| 3. Batch Creation UI      | React form + /batches/new page               | Medium — first interactive domain component |
+| 4. Batch List & Detail UI | Card/table list + detail/edit page           | Medium — most UI surface area               |
+| 5. Dashboard Removal      | Delete placeholder, Topbar links to /batches | Low — 3 file changes, pure cleanup          |
 
 **Prerequisites:** F-01 schema deployed (done), auth working (done)
 **Estimated effort:** ~2 sessions across 5 phases

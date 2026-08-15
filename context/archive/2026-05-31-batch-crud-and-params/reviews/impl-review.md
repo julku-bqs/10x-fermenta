@@ -1,4 +1,5 @@
 <!-- IMPL-REVIEW-REPORT -->
+
 # Implementation Review: Batch CRUD & Parameters
 
 - **Plan**: context/changes/batch-crud-and-params/plan.md
@@ -9,14 +10,14 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| Plan Adherence | PASS ✅ |
-| Scope Discipline | WARNING ⚠️ |
-| Safety & Quality | WARNING ⚠️ |
-| Architecture | PASS ✅ |
-| Pattern Consistency | PASS ✅ |
-| Success Criteria | PASS ✅ |
+| Dimension           | Verdict    |
+| ------------------- | ---------- |
+| Plan Adherence      | PASS ✅    |
+| Scope Discipline    | WARNING ⚠️ |
+| Safety & Quality    | WARNING ⚠️ |
+| Architecture        | PASS ✅    |
+| Pattern Consistency | PASS ✅    |
+| Success Criteria    | PASS ✅    |
 
 ## Findings
 

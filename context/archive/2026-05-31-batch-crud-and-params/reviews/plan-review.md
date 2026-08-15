@@ -1,4 +1,5 @@
 <!-- PLAN-REVIEW-REPORT -->
+
 # Plan Review: Batch CRUD & Parameters
 
 - **Plan**: context/changes/batch-crud-and-params/plan.md
@@ -9,13 +10,13 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| End-State Alignment | PASS |
-| Lean Execution | PASS |
-| Architectural Fitness | PASS |
-| Blind Spots | WARNING |
-| Plan Completeness | WARNING (was FAIL, fixed) |
+| Dimension             | Verdict                   |
+| --------------------- | ------------------------- |
+| End-State Alignment   | PASS                      |
+| Lean Execution        | PASS                      |
+| Architectural Fitness | PASS                      |
+| Blind Spots           | WARNING                   |
+| Plan Completeness     | WARNING (was FAIL, fixed) |
 
 ## Grounding
 

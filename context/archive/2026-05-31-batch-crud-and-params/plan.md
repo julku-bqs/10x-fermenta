@@ -78,6 +78,7 @@ Install zod, create shared types/schemas, add API response helpers, and update m
 **Intent**: Define the single source of truth for batch input validation — used by API routes and React form.
 
 **Contract**: Exports:
+
 - `createBatchSchema` — zod object validating POST body (name: string min 1, batch_date: string date or null, process_type: enum pulp|juice, target_volume_liters: number positive or null, target_abv: number 0-100 or null, planned_sweetness: enum dry|semi_dry|semi_sweet|sweet, yeast_name: string or null, yeast_alcohol_tolerance: number 0-100 or null)
 - `updateBatchSchema` — same as create but all fields optional (partial)
 - Type exports: `CreateBatchInput`, `UpdateBatchInput` inferred from schemas
@@ -89,6 +90,7 @@ Install zod, create shared types/schemas, add API response helpers, and update m
 **Intent**: Define TypeScript interfaces for batch domain entities (DB row shape) and API response envelope.
 
 **Contract**: Exports:
+
 - `Batch` interface matching the `batches` table columns (id, user_id, name, batch_date, process_type, target_volume_liters, target_abv, planned_sweetness, yeast_name, yeast_alcohol_tolerance, created_at, updated_at)
 - `ApiResponse<T>` generic type: `{ data: T } | { error: string; details?: Record<string, string[]> }`
 - `BatchListItem` — subset of Batch for list display (id, name, batch_date, process_type, target_volume_liters, target_abv, planned_sweetness)
@@ -100,6 +102,7 @@ Install zod, create shared types/schemas, add API response helpers, and update m
 **Intent**: Provide consistent JSON response factories for API routes — success and error responses with proper status codes and content-type headers.
 
 **Contract**: Exports:
+
 - `jsonOk<T>(data: T): Response` — 200 with JSON body `{ data }`
 - `jsonCreated<T>(data: T): Response` — 201 with JSON body `{ data }`
 - `jsonError(message: string, status?: number, details?: Record<string, string[]>): Response` — error response with given status (default 400)
@@ -145,6 +148,7 @@ Create the JSON API endpoints for batch CRUD: create (POST), list (GET), get sin
 **Intent**: Handle batch creation (POST) and listing (GET) for the authenticated user. POST validates input with `createBatchSchema`, inserts into `batches` table, returns the created batch. GET queries all user's batches ordered by `created_at` desc.
 
 **Contract**:
+
 - `POST` — accepts JSON body, validates with `createBatchSchema`, inserts row with `user_id` from `context.locals.user.id`, returns `jsonCreated(batch)`. On validation failure: `jsonValidationError`. On Supabase error: `jsonError(message, 500)`.
 - `GET` — queries `batches` table (RLS filters to user), selects all columns, orders by `created_at` desc, returns `jsonOk(batches)`.
 
@@ -155,6 +159,7 @@ Create the JSON API endpoints for batch CRUD: create (POST), list (GET), get sin
 **Intent**: Handle fetching (GET) and updating (PUT) a single batch by ID. RLS ensures only the owner can access.
 
 **Contract**:
+
 - `GET` — fetches single batch by `id` param. Returns `jsonOk(batch)` or `jsonError("Batch not found", 404)`.
 - `PUT` — validates JSON body with `updateBatchSchema`, updates the batch row, returns `jsonOk(updatedBatch)`. On validation failure: `jsonValidationError`. On not found: `jsonError("Batch not found", 404)`.
 

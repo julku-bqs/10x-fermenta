@@ -1,4 +1,5 @@
 <!-- PLAN-REVIEW-REPORT -->
+
 # Plan Review: process-plan-generation (2026-06-14 — final)
 
 **Plan**: `context/changes/process-plan-generation/plan.md`
@@ -18,6 +19,7 @@ No changes required. Proceed with Phase 1.
 ## Consistency Checks
 
 ### ✅ Internal consistency
+
 - Step table (§Generated Step Definitions) matches domain_knowledge.md §10 day offsets exactly
 - Domain decisions (lines 111-121) cite correct domain_knowledge.md sections
 - Exclusions (sulfite, pectic enzyme, degassing) align with domain_knowledge.md §9 non-prescriptive principles
@@ -26,17 +28,20 @@ No changes required. Proceed with Phase 1.
 - Ownership promotion trigger + regenerate function = user/promoted entries always preserved (consistent)
 
 ### ✅ PRD coverage
+
 - FR-010: "generated process plan based on process type (two templates)" → steps 1a/1b + pulp conditionals ✓
 - FR-011: "edit, add, and remove entries" → full CRUD in Phase 2-3 ✓
 - "For non-dry wines: sugar addition, fermentation stop/interruption, sweetness correction" → steps 2, 14, 15 ✓
 - "Generated process steps are editable" → immediate individual save + inline edit ✓
 
 ### ✅ Prerequisite status
+
 - `sugar-fields-refactoring`: **LANDED** — `Batch.fermentation_sugar_kg` exists in types.ts:20, schema:18
 - `IngredientType` removed — Ingredient interface is now just `{ name, amount_liters, sugar_content_percent }`
 - Phase 0 mockups: **COMPLETE** — DiaryMockupC.tsx, DiaryMockupSwitcher.tsx, mockData.ts present
 
 ### ✅ Codebase alignment
+
 - Plan correctly identifies route conflict (`[id].ts` still a file — Phase 2 step 0 handles it)
 - Plan correctly identifies Zod stripping risk (Phase 2 step 1b adds diary_entries to schema)
 - Plan uses `BatchParams` DTO (Phase 1) — not yet in types.ts (by design, created in Phase 1)

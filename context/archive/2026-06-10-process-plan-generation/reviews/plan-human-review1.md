@@ -21,17 +21,22 @@ Update proposed mockup alternatives with information about 'notes' place in the 
 ## Phase 1: Schema Migration + Domain Logic
 
 ### Database migration
+
 Also add a column for notes.
 
 ### Generation logic module
+
 GenerationInput is incorrect. This must be flexible. GenerationInput should take all batch parameters (preferably bacth object), and most likely calculation result (if available). All these parameters might be useful to make decision about including entry or not.
 
 ### Step description constants
+
 Don't need to group by any category. All these are flat per analysis. They are only conditions, so all identified categories are artificial in this case - not real
 
 ## Phase 3: UI Implementation
+
 Similar concern: batchParams should get the batch itself and a calculation result if available
 
 ### Wire into BatchForm
+
 Contract is incorrect. Basically create/edit modes are the same mode (or almost the same).
 'Create mode' shouldn't limit adding diary entries. There will be simply no auto-generated entries yet, but user should be able to add their own - they should be collected locally, and once batch is created, they should be attached to it for persistance (one call to batch create with optional list of diary entries - another RPC should add them atomically, without performing a delete of 'auto'; alternatively some BFF layer could be implemented to handle batcg and diary entry add separately while accepting altogether in a one request)

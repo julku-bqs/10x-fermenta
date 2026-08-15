@@ -25,6 +25,7 @@ Implement S-03: auto-generate a process plan (winemaking diary entries) when a b
 ## Desired End State
 
 A user creating a new batch sees auto-generated process diary entries immediately after creation. On the batch detail page, diary entries appear chronologically by date. The user can:
+
 1. See all diary entries sorted by `entry_date` — default ASC (chronological), with a sort toggle button/icon next to the section heading to switch between ASC and DESC
 2. Mark entries as "completed" via a visual toggle (icon/background, not a bare checkbox)
 3. Edit any entry's description, date, and notes
@@ -88,27 +89,28 @@ The "Regenerate Plan" operation must be atomic: DELETE all entries with `entry_t
 
 Steps are generated based on batch parameters. Format: `<description> (day offset) [conditions]`. All steps are a flat list — conditions determine inclusion; categories are not structural. Steps 1a/1b are mutually exclusive (only one appears per batch).
 
-| # | Description | Day Offset | Conditions |
-|---|---|---|---|
-| 1a | Prepare must — pour juice into fermenter, add nutrients | 0 | process_type = 'juice' |
-| 1b | Prepare must — crush fruit, destem, add to fermenter, add nutrients | 0 | process_type = 'pulp' |
-| 2 | Add fermentation sugar (if above 25°Blg — split into portions) | 0 | batch.fermentation_sugar_kg > 0 |
-| 3 | Pitch yeast | 0 | always |
-| 4 | Begin cap management — punch down 2–3× daily until pressing | 1 | process_type = 'pulp' |
-| 5 | Monitor primary fermentation | 5 | always |
-| 6 | Press — separate wine from pomace | 10 | process_type = 'pulp' |
-| 7 | Rack to secondary fermenter | 14 | always |
-| 8 | Monitor secondary fermentation | 21 | always |
-| 9 | Confirm fermentation complete (2× same reading) | 28 | always |
-| 10 | Rack off lees — transfer to clean vessel | 35 | always |
-| 11 | Bulk aging — check clarity, rack if needed | 60 | always |
-| 12 | Aging check — taste, check clarity | 120 | always |
-| 13 | Aging check — taste, assess readiness | 240 | always |
-| 14 | Stabilize wine | 330 | planned_sweetness ≠ 'dry' |
-| 15 | Back-sweeten to target sweetness | 332 | planned_sweetness ≠ 'dry' |
-| 16 | Bottling | 365 | always |
+| #   | Description                                                         | Day Offset | Conditions                      |
+| --- | ------------------------------------------------------------------- | ---------- | ------------------------------- |
+| 1a  | Prepare must — pour juice into fermenter, add nutrients             | 0          | process_type = 'juice'          |
+| 1b  | Prepare must — crush fruit, destem, add to fermenter, add nutrients | 0          | process_type = 'pulp'           |
+| 2   | Add fermentation sugar (if above 25°Blg — split into portions)      | 0          | batch.fermentation_sugar_kg > 0 |
+| 3   | Pitch yeast                                                         | 0          | always                          |
+| 4   | Begin cap management — punch down 2–3× daily until pressing         | 1          | process_type = 'pulp'           |
+| 5   | Monitor primary fermentation                                        | 5          | always                          |
+| 6   | Press — separate wine from pomace                                   | 10         | process_type = 'pulp'           |
+| 7   | Rack to secondary fermenter                                         | 14         | always                          |
+| 8   | Monitor secondary fermentation                                      | 21         | always                          |
+| 9   | Confirm fermentation complete (2× same reading)                     | 28         | always                          |
+| 10  | Rack off lees — transfer to clean vessel                            | 35         | always                          |
+| 11  | Bulk aging — check clarity, rack if needed                          | 60         | always                          |
+| 12  | Aging check — taste, check clarity                                  | 120        | always                          |
+| 13  | Aging check — taste, assess readiness                               | 240        | always                          |
+| 14  | Stabilize wine                                                      | 330        | planned_sweetness ≠ 'dry'       |
+| 15  | Back-sweeten to target sweetness                                    | 332        | planned_sweetness ≠ 'dry'       |
+| 16  | Bottling                                                            | 365        | always                          |
 
 **Domain decisions (resolved):**
+
 1. **No sulfite in default steps** — generated plan includes only steps that are universally performed regardless of recipe. Sulfite is a per-recipe decision; users add it as a manual entry if their process requires it.
 2. **Pectic enzyme excluded** — same principle: not universally performed. Users who use pectic enzyme add it as a manual entry at their preferred timing (at crush or post-fermentation for clarity correction).
 3. **Single sugar step with guidance** — description hints at splitting for high-Blg musts (>25°Blg, the verified osmotic stress threshold per MoreWineMaking and peer-reviewed literature). A measurement-driven split into separate day 0 / day N steps is deferred to v2 when real measurement data is available.
@@ -126,8 +128,8 @@ Steps are generated based on batch parameters. Format: `<description> (day offse
 ```typescript
 // Conceptual shape (not implementation code)
 interface StepTemplate {
-  key: string;               // unique ID for localization
-  description: string;       // display text (extractable constant)
+  key: string; // unique ID for localization
+  description: string; // display text (extractable constant)
   offsetDays: number;
   condition: (input: GenerationInput) => boolean;
 }
@@ -140,12 +142,14 @@ interface GenerationInput {
 ```
 
 This approach is:
+
 - **Simple**: flat list, no inheritance hierarchies or visitor complexity
 - **Testable**: each condition is a pure function
 - **Extensible**: adding a step = adding an entry to the array
 - **Localizable**: `key` field enables future i18n lookup
 
 Alternative patterns considered:
+
 - Template Method: overkill for a flat list of conditional steps
 - Strategy: appropriate if templates diverged significantly by process type, but conditions are simple predicates
 - Visitor: no tree structure to traverse
@@ -230,6 +234,7 @@ Migrate the `diary_entries` table (add `entry_date`, `completed`, `entry_type`; 
 **Intent**: Evolve the diary_entries schema to support process plan generation — add entry_date for chronological sorting, completed for visual tracking, entry_type to distinguish auto-generated from user-created entries, notes for free-text annotations, and drop the premature sort_order column. Add an UPDATE trigger that promotes entry_type from 'auto' to 'user' when description or notes are modified. Also enforce batch_date NOT NULL with a backfill migration.
 
 **Contract**: Migration:
+
 1. Adds columns `entry_date DATE NOT NULL`, `completed BOOLEAN NOT NULL DEFAULT false`, `entry_type TEXT NOT NULL DEFAULT 'user' CHECK (entry_type IN ('auto', 'user'))`, `notes TEXT DEFAULT NULL`.
 2. Drops column `sort_order`.
 3. Backfills existing batches: `UPDATE batches SET batch_date = created_at::date WHERE batch_date IS NULL`.
@@ -306,6 +311,7 @@ export interface BatchParams {
 **Contract**: Exports `generateProcessPlan(input: GenerationInput): DiaryEntryDraft[]` where `GenerationInput` accepts the full `Batch` object plus an optional calculation result (sugar calculation output, if available). The function uses whichever batch fields and calculation results are relevant for step conditions — keeping the input flexible for future condition additions without signature changes. Each `DiaryEntryDraft` has `description`, `entry_date` (computed from `batch_date + offset`), and `entry_type: 'auto'`. Also exports `STEP_TEMPLATES` constant array for testability and future localization.
 
 Key implementation details:
+
 - Steps 1a/1b are **mutually exclusive** — condition predicates are complementary (`process_type = 'juice'` vs `process_type = 'pulp'`)
 - The sugar step condition checks `batch.fermentation_sugar_kg > 0` (a batch-level field after sugar-fields-refactoring lands). This covers both calculated and manually-entered sugar amounts directly without ingredient array lookups
 - Day 0 steps (prepare must, sugar, pitch yeast) all share the same date — multiple entries on same day is valid. Cap management starts Day 1 (cap forms after fermentation begins).
@@ -325,6 +331,7 @@ Key implementation details:
 **Intent**: Comprehensive unit tests proving generation correctness — step inclusion/exclusion based on conditions, date offset computation, edge cases (null batch_date, all conditions met, no conditions met).
 
 **Contract**: Test cases covering:
+
 - Juice + dry (no added sugar) → 11 steps (all "always" steps with juice variant of step 1)
 - Juice + dry + fermentation_sugar_kg > 0 → 12 steps (adds sugar step)
 - Juice + semi_sweet + fermentation_sugar_kg > 0 → 14 steps (adds sugar + stabilize + back-sweeten)
@@ -386,6 +393,7 @@ Create CRUD endpoints for diary entries, integrate auto-generation into batch cr
 **Intent**: Allow the batch creation payload to include optional user-added diary entries (from create mode).
 
 **Contract**: Add an optional `diary_entries` field to `createBatchSchema`:
+
 ```typescript
 diary_entries: z.array(z.object({
   description: z.string().min(1),
@@ -393,6 +401,7 @@ diary_entries: z.array(z.object({
   notes: z.string().nullable().optional(),
 })).optional(),
 ```
+
 This prevents Zod from stripping the field during validation. The handler reads `result.data.diary_entries` and passes them to the diary insertion logic.
 
 #### 2. Diary entries CRUD endpoint
@@ -426,9 +435,10 @@ This prevents Zod from stripping the field during validation. The handler reads 
 **Intent**: After successfully creating a batch, auto-generate diary entries server-side before returning the response. Also accept optional user-added diary entries from the create form and persist them atomically.
 
 **Contract**: The POST body gains an optional `diary_entries: { description, entry_date, notes? }[]` field (user-added entries from create mode). After the batch insert succeeds:
+
 1. Call `generateProcessPlan()` with the new batch, bulk-insert generated entries with `entry_type: 'auto'`.
 2. If user-added diary entries are present in the request, bulk-insert them with `entry_type: 'user'`.
-Both inserts happen via an RPC or sequential inserts within the same request. If diary insertion fails, log the error but still return the created batch (diary generation is non-blocking — user can regenerate manually).
+   Both inserts happen via an RPC or sequential inserts within the same request. If diary insertion fails, log the error but still return the created batch (diary generation is non-blocking — user can regenerate manually).
 
 ### Success Criteria:
 
@@ -541,6 +551,7 @@ Refactor IngredientsSection to use the same `BatchParams` DTO that DiarySection 
 **Intent**: Replace the ad-hoc prop interface with the shared `BatchParams` DTO + a single partial-update callback.
 
 **Contract**: Remove the local `BatchParams` interface definition. Replace props:
+
 - Remove: `ingredients`, `onChange`, `batchParams` (local type), `fermentationSugarKg`, `sweetnessSugarKg`, `onSugarChange`
 - Add: `batchParams: BatchParams` (from `@/types`), `onBatchChange: (updates: Partial<BatchParams>) => void`
 

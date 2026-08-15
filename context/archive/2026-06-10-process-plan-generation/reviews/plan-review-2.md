@@ -1,4 +1,5 @@
 <!-- PLAN-REVIEW-REPORT -->
+
 # Plan Review: process-plan-generation (Round 2)
 
 **Plan**: `context/changes/process-plan-generation/plan.md`
@@ -19,9 +20,10 @@ However, **3 HIGH/MEDIUM findings from the prior review were never patched into 
 ## Findings
 
 ### F1: [UNRESOLVED from prior review] Route conflict — `[id].ts` blocks nested diary routes
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **HIGH** | Feasibility | Phase 2 |
+
+| Severity | Category    | Phase affected |
+| -------- | ----------- | -------------- |
+| **HIGH** | Feasibility | Phase 2        |
 
 **Status**: Identified in plan-review-old.md as F1. Plan was NOT updated.
 
@@ -32,9 +34,10 @@ However, **3 HIGH/MEDIUM findings from the prior review were never patched into 
 ---
 
 ### F2: [UNRESOLVED from prior review] Zod schema strips `diary_entries` from batch creation payload
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **HIGH** | Contract break | Phase 2 |
+
+| Severity | Category       | Phase affected |
+| -------- | -------------- | -------------- |
+| **HIGH** | Contract break | Phase 2        |
 
 **Status**: Identified in plan-review-old.md as F2. Plan was NOT updated.
 
@@ -45,9 +48,10 @@ However, **3 HIGH/MEDIUM findings from the prior review were never patched into 
 ---
 
 ### F3: [UNRESOLVED from prior review] DiarySection `batch: Batch` prop doesn't exist in create mode
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **MEDIUM** | Contract inconsistency | Phase 3 |
+
+| Severity   | Category               | Phase affected |
+| ---------- | ---------------------- | -------------- |
+| **MEDIUM** | Contract inconsistency | Phase 3        |
 
 **Status**: Identified in plan-review-old.md as F3. Plan was NOT updated.
 
@@ -58,9 +62,10 @@ However, **3 HIGH/MEDIUM findings from the prior review were never patched into 
 ---
 
 ### F4: [NEW] `regenerate_diary_entries` RPC doesn't insert `notes` column
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **LOW** | Incomplete contract | Phase 1 |
+
+| Severity | Category            | Phase affected |
+| -------- | ------------------- | -------------- |
+| **LOW**  | Incomplete contract | Phase 1        |
 
 **Problem**: The RPC at plan line 248 inserts `(batch_id, description, entry_date, entry_type, completed)` but omits the `notes` column. Generated entries have NULL notes, which is fine. However, the `p_entries` JSONB could later be extended with notes — the INSERT should be future-proofed.
 
@@ -71,9 +76,10 @@ More importantly: if a step template ever produces a `notes` value (e.g., "Use 2
 ---
 
 ### F5: [NEW] Phase 0 is complete but Progress section shows it pending
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **LOW** | Stale progress | Phase 0, Phase 3 |
+
+| Severity | Category       | Phase affected   |
+| -------- | -------------- | ---------------- |
+| **LOW**  | Stale progress | Phase 0, Phase 3 |
 
 **Problem**: Mockup components (`DiaryMockupA`, `DiaryMockupB`, `DiaryMockupC`, `DiaryMockupSwitcher`, `mockData.ts`) are all implemented and wired into BatchForm. But the Progress section still shows all Phase 0 items as `- [ ]` unchecked. This will confuse the implementer about where to start.
 
@@ -83,13 +89,13 @@ More importantly: if a step template ever produces a `notes` value (e.g., "Use 2
 
 ## Triage Checklist
 
-| # | Severity | Finding | Recommended action | **Triage outcome** |
-|---|----------|---------|-------------------|-------------------|
-| F1 | HIGH | Route conflict blocks Phase 2 | Fix now | ✅ **Fixed** — added Phase 2 §0 route restructuring prerequisite |
-| F2 | HIGH | Zod strips diary_entries | Fix now | ✅ **Fixed** — added Phase 2 §1b schema extension |
-| F3 | MEDIUM | Batch prop incompatible in create mode | Fix now | ✅ **Fixed** — introduced `BatchParams` DTO in Phase 1, DiarySection uses `batchParams + batchId`, Phase 3.5 added for IngredientsSection refactoring |
-| F4 | LOW | RPC INSERT omits notes | Accept | ✅ **Fixed** — added `notes` column to RPC INSERT |
-| F5 | LOW | Phase 0 progress stale | Fix now | ✅ **Already resolved** — Phase 0 items were already marked done |
+| #   | Severity | Finding                                | Recommended action | **Triage outcome**                                                                                                                                    |
+| --- | -------- | -------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | HIGH     | Route conflict blocks Phase 2          | Fix now            | ✅ **Fixed** — added Phase 2 §0 route restructuring prerequisite                                                                                      |
+| F2  | HIGH     | Zod strips diary_entries               | Fix now            | ✅ **Fixed** — added Phase 2 §1b schema extension                                                                                                     |
+| F3  | MEDIUM   | Batch prop incompatible in create mode | Fix now            | ✅ **Fixed** — introduced `BatchParams` DTO in Phase 1, DiarySection uses `batchParams + batchId`, Phase 3.5 added for IngredientsSection refactoring |
+| F4  | LOW      | RPC INSERT omits notes                 | Accept             | ✅ **Fixed** — added `notes` column to RPC INSERT                                                                                                     |
+| F5  | LOW      | Phase 0 progress stale                 | Fix now            | ✅ **Already resolved** — Phase 0 items were already marked done                                                                                      |
 
 ---
 

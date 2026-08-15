@@ -1,4 +1,5 @@
 <!-- PLAN-REVIEW-REPORT -->
+
 # Plan Review: process-plan-generation
 
 **Plan**: `context/changes/process-plan-generation/plan.md`
@@ -18,9 +19,10 @@ However, codebase verification uncovered **3 structural issues** that will cause
 ## Findings
 
 ### F1: Route conflict — `[id].ts` blocks nested diary routes
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **HIGH** | Feasibility | Phase 2 |
+
+| Severity | Category    | Phase affected |
+| -------- | ----------- | -------------- |
+| **HIGH** | Feasibility | Phase 2        |
 
 **What the plan says**: Create `src/pages/api/batches/[id]/diary.ts`, `src/pages/api/batches/[id]/diary/[entryId].ts`, and `src/pages/api/batches/[id]/diary/regenerate.ts`.
 
@@ -33,9 +35,10 @@ However, codebase verification uncovered **3 structural issues** that will cause
 ---
 
 ### F2: Zod schema strips `diary_entries` from batch creation payload
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **HIGH** | Contract break | Phase 2 |
+
+| Severity | Category       | Phase affected |
+| -------- | -------------- | -------------- |
+| **HIGH** | Contract break | Phase 2        |
 
 **What the plan says**: "The POST body gains an optional `diary_entries: [...]` field (user-added entries from create mode)."
 
@@ -44,6 +47,7 @@ However, codebase verification uncovered **3 structural issues** that will cause
 **Impact**: User-added diary entries from create mode will be silently lost.
 
 **Fix**: Explicitly add `diary_entries` as an optional field to `createBatchSchema` (preferred over `.passthrough()` for type safety):
+
 ```typescript
 diary_entries: z.array(z.object({
   description: z.string().min(1),
@@ -51,14 +55,16 @@ diary_entries: z.array(z.object({
   notes: z.string().nullable().optional(),
 })).optional(),
 ```
+
 Then the handler reads `result.data.diary_entries` and passes them to the diary insertion logic.
 
 ---
 
 ### F3: DiarySection receives `batch: Batch` but no Batch exists in create mode
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **MEDIUM** | Contract inconsistency | Phase 3 |
+
+| Severity   | Category               | Phase affected |
+| ---------- | ---------------------- | -------------- |
+| **MEDIUM** | Contract inconsistency | Phase 3        |
 
 **What the plan says**: DiarySection accepts `batch: Batch` (the full batch object) plus `mode: 'create' | 'edit'`.
 
@@ -67,15 +73,17 @@ Then the handler reads `result.data.diary_entries` and passes them to the diary 
 **Impact**: TypeScript will reject passing a partial/fake Batch object. Either the plan's contract is wrong or the component needs two distinct prop shapes.
 
 **Fix**: Two options (recommend A):
+
 - **(A)** Accept `batch: Batch | null` — in create mode pass `null`, DiarySection infers params from a separate `batchParams` prop (matching IngredientsSection pattern). In edit mode, full Batch is available.
 - **(B)** Create a `BatchFormState` type that DiarySection accepts, separate from `Batch`. Map form fields to this type in both modes.
 
 ---
 
 ### F4: Phase 0 mockups already implemented (plan is stale)
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **LOW** | Stale reference | Phase 0, Phase 3 |
+
+| Severity | Category        | Phase affected   |
+| -------- | --------------- | ---------------- |
+| **LOW**  | Stale reference | Phase 0, Phase 3 |
 
 **What the plan says**: BatchForm has a placeholder "Process diary — coming soon" at lines 443-446. Phase 0 creates mockup components from scratch.
 
@@ -88,9 +96,10 @@ Then the handler reads `result.data.diary_entries` and passes them to the diary 
 ---
 
 ### F5: Phase 1 test intent references "null batch_date" edge case
-| Severity | Category | Phase affected |
-|----------|----------|----------------|
-| **LOW** | Internal contradiction | Phase 1 |
+
+| Severity | Category               | Phase affected |
+| -------- | ---------------------- | -------------- |
+| **LOW**  | Internal contradiction | Phase 1        |
 
 **What the plan says** (line 283): Unit test intent mentions "edge cases (null batch_date, all conditions met, no conditions met)."
 
@@ -104,13 +113,13 @@ Then the handler reads `result.data.diary_entries` and passes them to the diary 
 
 ## Triage Checklist
 
-| # | Severity | Finding | Recommended action |
-|---|----------|---------|-------------------|
-| F1 | HIGH | Route conflict blocks Phase 2 | **Fix now** — add `[id].ts` → `[id]/index.ts` rename as Phase 2 prerequisite |
-| F2 | HIGH | Zod strips diary_entries | **Fix now** — add field to createBatchSchema in plan |
-| F3 | MEDIUM | Batch prop incompatible in create mode | **Fix now** — clarify contract (recommend option A) |
-| F4 | LOW | Phase 0 possibly already done | **Verify & update** — check mockup status |
-| F5 | LOW | Stale "null batch_date" test reference | **Fix now** — trivial text cleanup |
+| #   | Severity | Finding                                | Recommended action                                                           |
+| --- | -------- | -------------------------------------- | ---------------------------------------------------------------------------- |
+| F1  | HIGH     | Route conflict blocks Phase 2          | **Fix now** — add `[id].ts` → `[id]/index.ts` rename as Phase 2 prerequisite |
+| F2  | HIGH     | Zod strips diary_entries               | **Fix now** — add field to createBatchSchema in plan                         |
+| F3  | MEDIUM   | Batch prop incompatible in create mode | **Fix now** — clarify contract (recommend option A)                          |
+| F4  | LOW      | Phase 0 possibly already done          | **Verify & update** — check mockup status                                    |
+| F5  | LOW      | Stale "null batch_date" test reference | **Fix now** — trivial text cleanup                                           |
 
 ---
 

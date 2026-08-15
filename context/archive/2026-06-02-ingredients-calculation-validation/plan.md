@@ -23,6 +23,7 @@ Add ingredient management, sugar calculation, and validation warnings to the bat
 ## Desired End State
 
 A user on the batch detail page can:
+
 1. Add ingredients (name + amount in liters + sugar content %) via inline editable cards
 2. Click a "Calculate" button (near sugar entries) that computes fermentation sugar (always) and sweetness sugar (non-dry only) and fills those values in the form
 3. See a warnings banner at the top of the form that fires on field blur — listing any domain inconsistencies
@@ -84,6 +85,7 @@ Migrate to JSONB ingredients storage, set up Vitest, define sugar calculation an
 **Intent**: Add an `ingredients` JSONB column to the `batches` table. Drop the separate `ingredients` table and the `ingredient_type` enum (no data exists; types live in application-level TypeScript only).
 
 **Contract**:
+
 ```sql
 ALTER TABLE batches ADD COLUMN ingredients jsonb NOT NULL DEFAULT '[]';
 -- Drop ingredients table and all associated objects
@@ -114,6 +116,7 @@ DROP TYPE ingredient_type;
 **Intent**: Add `Ingredient` interface, `IngredientType`, `SweetnessLevel` type exports. Update `Batch` interface to include `ingredients` field.
 
 **Contract**:
+
 ```typescript
 export type IngredientType = "user_input" | "fermentation_sugar" | "sweetness_sugar";
 export type SweetnessLevel = "dry" | "semi_dry" | "semi_sweet" | "sweet";
@@ -121,9 +124,9 @@ export type SweetnessLevel = "dry" | "semi_dry" | "semi_sweet" | "sweet";
 export interface Ingredient {
   type: IngredientType;
   name: string;
-  amount_liters: number;       // liters for ingredients, kg for sugar (1L≈1kg)
-  sugar_content_percent: number | null;  // null for ingredients with no sugar info
-  sort_order: number;          // -2 fermentation, -1 sweetness, 0+ user
+  amount_liters: number; // liters for ingredients, kg for sugar (1L≈1kg)
+  sugar_content_percent: number | null; // null for ingredients with no sugar info
+  sort_order: number; // -2 fermentation, -1 sweetness, 0+ user
 }
 
 // Update Batch interface to include:
@@ -137,15 +140,22 @@ export interface Ingredient {
 **Intent**: Pure function that computes fermentation sugar and sweetness sugar amounts given batch parameters and current user ingredients. Runs client-side — imported by React components. Also importable server-side by future features (S-03 diary generation).
 
 **Contract**:
+
 ```typescript
 export const SUGAR_PER_ABV_GRAM_PER_LITER = 17;
 
 export const SWEETNESS_MIDPOINTS: Record<SweetnessLevel, number> = {
-  dry: 0, semi_dry: 10, semi_sweet: 30, sweet: 60
+  dry: 0,
+  semi_dry: 10,
+  semi_sweet: 30,
+  sweet: 60,
 };
 
 export const SWEETNESS_RANGES: Record<SweetnessLevel, [number, number]> = {
-  dry: [0, 0], semi_dry: [5, 15], semi_sweet: [15, 45], sweet: [45, 80]
+  dry: [0, 0],
+  semi_dry: [5, 15],
+  semi_sweet: [15, 45],
+  sweet: [45, 80],
 };
 
 export interface CalculationInput {
@@ -156,8 +166,8 @@ export interface CalculationInput {
 }
 
 export interface CalculationResult {
-  fermentation_sugar_kg: number;     // 0 if ingredient sugar already sufficient
-  sweetness_sugar_kg: number;        // 0 if dry
+  fermentation_sugar_kg: number; // 0 if ingredient sugar already sufficient
+  sweetness_sugar_kg: number; // 0 if dry
   total_ingredient_sugar_grams: number;
   sugar_needed_for_abv_grams: number;
 }
@@ -166,6 +176,7 @@ export function calculateSugar(input: CalculationInput): CalculationResult;
 ```
 
 The function:
+
 - Sums sugar from `user_input` ingredients only: `sum(amount_liters × (sugar_content_percent ?? 0) × 10)` grams
 - `sugar_needed_for_abv = target_abv × SUGAR_PER_ABV_GRAM_PER_LITER × target_volume_liters` grams
 - `fermentation_sugar_grams = max(0, sugar_needed_for_abv - total_ingredient_sugar)`
@@ -181,10 +192,11 @@ The function:
 **Intent**: Pure function that takes batch params + all ingredients and returns a list of active warnings. Runs client-side on blur.
 
 **Contract**:
+
 ```typescript
 export interface ValidationWarning {
-  id: string;       // stable key for React rendering
-  message: string;  // user-facing text
+  id: string; // stable key for React rendering
+  message: string; // user-facing text
 }
 
 export interface ValidationInput {
@@ -200,6 +212,7 @@ export function validateBatch(input: ValidationInput): ValidationWarning[];
 ```
 
 Warning rules (all single amber severity):
+
 1. **No yeast** (`!has_yeast`) → "No yeast specified — using wild yeast can give unpredictable results."
 2. **No target ABV** (`target_abv === null`) → "No target ABV specified — calculation results may be incomplete."
 3. **ABV > yeast tolerance** (`target_abv > yeast_alcohol_tolerance`, only when both non-null) → "Target ABV exceeds yeast alcohol tolerance. The plan is inconsistent."
@@ -218,6 +231,7 @@ Rules only fire when their required inputs are non-null.
 **Intent**: Exhaustive test coverage for the calculation function.
 
 **Contract**: Test cases covering:
+
 - Dry wine, no ingredients → full fermentation sugar needed
 - Dry wine, partial ingredient sugar → correct deficit
 - Dry wine, ingredient sugar exceeds target → fermentation_sugar_kg = 0
@@ -342,6 +356,7 @@ Wire everything together in the batch form: ingredient list with inline editing,
 **Contract**: Props: `ingredients: Ingredient[]`, `onChange: (ingredients: Ingredient[]) => void`, `batchParams: { target_volume_liters, target_abv, planned_sweetness }`.
 
 Behavior:
+
 - "Add ingredient" button → appends new `user_input` entry to form state (name empty, amount 0, sort_order = max+1)
 - Calculate button (🧮 icon) → runs `calculateSugar()` with current form state, updates/creates sugar entries in the ingredients array
 - Sugar entries auto-created on initial batch setup (when array has no sugar entries and params are filled)
@@ -371,6 +386,7 @@ Behavior:
 **Intent**: Major refactor to support ingredients in form state. Replace "More ingredients — coming soon" with `IngredientsSection`. Add `ValidationWarnings` at top. Wire validation to fire on blur. Save button persists batch params + ingredients together. Cancel reverts to initialData. Add `beforeunload` guard for unsaved changes.
 
 **Contract**:
+
 - Form state extended: add `ingredients: Ingredient[]` to `FormState`
 - Initialize ingredients from `initialData.ingredients ?? []`
 - Render `ValidationWarnings` above the form grid — warnings computed via `validateBatch()` on blur

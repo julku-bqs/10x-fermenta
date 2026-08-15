@@ -1,4 +1,5 @@
 <!-- PLAN-REVIEW-REPORT -->
+
 # Plan Review: Ingredients, Sugar Calculation & Validation Warnings
 
 - **Plan**: context/changes/ingredients-calculation-validation/plan.md
@@ -9,13 +10,13 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| End-State Alignment | PASS |
-| Lean Execution | PASS |
-| Architectural Fitness | PASS |
-| Blind Spots | PASS |
-| Plan Completeness | PASS (after fixes) |
+| Dimension             | Verdict            |
+| --------------------- | ------------------ |
+| End-State Alignment   | PASS               |
+| Lean Execution        | PASS               |
+| Architectural Fitness | PASS               |
+| Blind Spots           | PASS               |
+| Plan Completeness     | PASS (after fixes) |
 
 ## Grounding
 

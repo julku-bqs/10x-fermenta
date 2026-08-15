@@ -23,9 +23,9 @@ Additionally, sugar (which is ingredient) should be expressed in kilograms to pr
 4. I can see potential pitfall we need to avoid: Calculation input shouldn't be taken from current DB state, but form current form state (user might not yet save the batch to update parameters)
 
 5. `fermentation_sugar = max(0, sugar_needed_for_abv - total_ingredient_sugar)` - this is true, but this is also a crtitical point to understand, because it has significatn edge-cases:
-Assume `sugar_needed_for_abv - total_ingredient_sugar` is negative. This might produce a warning, but it also might be expected to achieve target sweetness from residual sugar, even without adding sweetness sugar (or adding less than if we had no ingredient_sugar).
-To give more correct calculation, probably yeast_tolerance should be taken into consideration as optional input parameter (if no yeast tolerance provided, we don't know how much abv we could achive, so we assume target_abv could always be achieved. This is basically equal to yest_tolerance = 100%).
-Now assume the input contains yeast_tolerance. If `sugar_needed_for_abv - total_ingredient_sugar` is negative and yeast_tolerance is higher than target_abv (or not provided = 100%), target_abv is unreachable, it would be higher, up to yeast_tolerance. This is one of the validation rules we need to apply, and it's found in this calculation. We should either return a warning from here, or return corrected target_abv, to delegate validation rule apply to the caller (input.target_abv == output.target_abv). Calculate API endpoint should apply validation rules and return the warning to UI for display. **OR** the result should be inspected in UI to put a warning (more consistent with other validation done currently in frontend layer - unless it's changed). On the other hand, pahse 3 addresses it in a different place, so maybe this part could not care about it
+   Assume `sugar_needed_for_abv - total_ingredient_sugar` is negative. This might produce a warning, but it also might be expected to achieve target sweetness from residual sugar, even without adding sweetness sugar (or adding less than if we had no ingredient_sugar).
+   To give more correct calculation, probably yeast_tolerance should be taken into consideration as optional input parameter (if no yeast tolerance provided, we don't know how much abv we could achive, so we assume target_abv could always be achieved. This is basically equal to yest_tolerance = 100%).
+   Now assume the input contains yeast_tolerance. If `sugar_needed_for_abv - total_ingredient_sugar` is negative and yeast_tolerance is higher than target_abv (or not provided = 100%), target_abv is unreachable, it would be higher, up to yeast_tolerance. This is one of the validation rules we need to apply, and it's found in this calculation. We should either return a warning from here, or return corrected target_abv, to delegate validation rule apply to the caller (input.target_abv == output.target_abv). Calculate API endpoint should apply validation rules and return the warning to UI for display. **OR** the result should be inspected in UI to put a warning (more consistent with other validation done currently in frontend layer - unless it's changed). On the other hand, pahse 3 addresses it in a different place, so maybe this part could not care about it
 
 ### Yeast
 
@@ -48,7 +48,6 @@ On the other hand, deffering ingredients save, might conflict with other concern
 ## Validation engine
 
 I'm still considering what should be the correct place to put validation rules. UI gives convenience, but backend seems to be a better place for it. THese are domain critical validations and core of the project. Can we revise or discuss more one approach or another?
-
 
 ## UI Components
 

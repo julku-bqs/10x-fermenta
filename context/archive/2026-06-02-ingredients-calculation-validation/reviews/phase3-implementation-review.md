@@ -9,6 +9,7 @@
 **Issue:** The "leave page" warning fires after clicking **Create Batch**, which is wrong. Creating a batch is a commit action — it persists a new entry, so it should clear dirty state, not trigger a warning.
 
 **Expected behaviour:**
+
 - Warning should fire on: cancel, browser back, navigation away
 - Warning should **not** fire on: clicking "Create Batch" (treat as a save/commit that resolves dirty state)
 
@@ -31,6 +32,7 @@
 **Issue:** Sugar ingredients are only injected after the Calculate button is clicked. Calculate is a compute action — it should not be responsible for adding UI elements.
 
 **Expected behaviour:**
+
 - **Fermentation sugar** — always present in the form
 - **Sweetness sugar** — present only for non-dry wines
 - **Calculate** — computes values only; it does not add or remove ingredient rows
@@ -65,7 +67,7 @@
 2. The result object is passed into validation
 3. Validation consumes calculation output — it never re-derives primitives itself
 
-**Edge case to handle:** The user may not have clicked Calculate yet (e.g. they typed values but skipped it). Validation must still operate on *some* calculated result. The solution is to run calculation eagerly as an internal step before validation — not to inline calculation logic inside individual rules.
+**Edge case to handle:** The user may not have clicked Calculate yet (e.g. they typed values but skipped it). Validation must still operate on _some_ calculated result. The solution is to run calculation eagerly as an internal step before validation — not to inline calculation logic inside individual rules.
 
 **Constraint:** Validation must never own calculation. It receives output; it does not produce it.
 
@@ -97,6 +99,7 @@ function validateBatch(batch, calc):
 ```
 
 Each rule is responsible for:
+
 - Determining whether it applies to the given batch state
 - Returning a warning if the condition is violated, or null if not
 

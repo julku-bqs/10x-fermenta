@@ -9,7 +9,16 @@ export function parseReview(raw: string): Review {
   } catch {
     throw new Error(`Model did not return valid JSON.\nRaw response:\n${raw.slice(0, 800)}`);
   }
-  return ReviewSchema.parse(parsed);
+  const result = ReviewSchema.safeParse(parsed);
+  if (!result.success) {
+    const issues = result.error.issues
+      .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+      .join("; ");
+    throw new Error(
+      `Model JSON did not match the review schema (${issues}).\nRaw response:\n${raw.slice(0, 800)}`,
+    );
+  }
+  return result.data;
 }
 
 /** Pull the JSON object out of a response that may include fences or prose. */

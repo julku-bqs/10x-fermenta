@@ -14,6 +14,7 @@
  *   git diff | code-reviewer --stdin   # review piped diff
  *   code-reviewer --model gpt-5.4      # override the model
  */
+import { parseArgs } from "node:util";
 import { getDiff, type DiffSource } from "./git.js";
 import { createReviewAgent } from "./agents/factory.js";
 
@@ -35,49 +36,42 @@ Options:
 With no source flag, reviews uncommitted changes (git diff HEAD), or reads
 stdin automatically when input is piped.`;
 
-function parseArgs(argv: string[]): CliOptions {
-  const source: DiffSource = {};
-  let model: string | undefined;
+function parseCliArgs(argv: string[]): CliOptions {
+  const { values } = parseArgs({
+    args: argv,
+    allowPositionals: false,
+    options: {
+      stdin: { type: "boolean" },
+      staged: { type: "boolean" },
+      cached: { type: "boolean" },
+      file: { type: "string" },
+      base: { type: "string" },
+      model: { type: "string" },
+      help: { type: "boolean", short: "h" },
+    },
+  });
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
-    switch (arg) {
-      case "--stdin":
-        source.stdin = true;
-        break;
-      case "--staged":
-      case "--cached":
-        source.staged = true;
-        break;
-      case "--file":
-        source.file = argv[++i];
-        break;
-      case "--base":
-        source.base = argv[++i];
-        break;
-      case "--model":
-        model = argv[++i];
-        break;
-      case "-h":
-      case "--help":
-        process.stdout.write(`${HELP}\n`);
-        process.exit(0);
-        break;
-      default:
-        throw new Error(`Unknown argument: ${arg}`);
-    }
+  if (values.help) {
+    process.stdout.write(`${HELP}\n`);
+    process.exit(0);
   }
+
+  const source: DiffSource = {};
+  if (values.stdin) source.stdin = true;
+  if (values.staged || values.cached) source.staged = true;
+  if (values.file !== undefined) source.file = values.file;
+  if (values.base !== undefined) source.base = values.base;
 
   // Auto-detect piped input when no explicit source was given.
   if (!source.stdin && !source.file && !source.base && !source.staged && !process.stdin.isTTY) {
     source.stdin = true;
   }
 
-  return { source, model };
+  return { source, model: values.model };
 }
 
 async function main(): Promise<void> {
-  const { source, model } = parseArgs(process.argv.slice(2));
+  const { source, model } = parseCliArgs(process.argv.slice(2));
   const diff = getDiff(source);
 
   const reviewer = createReviewAgent({ model });

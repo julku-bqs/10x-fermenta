@@ -323,47 +323,47 @@ None. The runtime path is identical — one LLM turn per review, per-call client
 
 #### Automated
 
-- [ ] 1.1 Typecheck passes (`npm run typecheck`)
-- [ ] 1.2 No references to old module paths (`./agent.js`, `./schemas.js`) remain
+- [x] 1.1 Typecheck passes (`npm run typecheck`)
+- [x] 1.2 No references to old module paths (`./agent.js`, `./schemas.js`) remain
 
 #### Manual
 
-- [ ] 1.3 Module boundaries read cleanly (schemas pure, prompts strings, core interface-only)
+- [x] 1.3 Module boundaries read cleanly (schemas pure, prompts strings, core interface-only)
 
 ### Phase 2: Extract the Copilot implementation behind the interface
 
 #### Automated
 
-- [ ] 2.1 Typecheck passes (`npm run typecheck`)
-- [ ] 2.2 `reviewer.ts` removed; no `./reviewer.js` imports remain
-- [ ] 2.3 `CopilotReviewAgent implements ReviewAgent` compiles
+- [x] 2.1 Typecheck passes (`npm run typecheck`)
+- [x] 2.2 `reviewer.ts` removed; no `./reviewer.js` imports remain
+- [x] 2.3 `CopilotReviewAgent implements ReviewAgent` compiles
 
 #### Manual
 
-- [ ] 2.4 Copilot session options + cost accounting unchanged (diff review)
+- [x] 2.4 Copilot session options + cost accounting unchanged (diff review)
 
 ### Phase 3: Entry points + package metadata
 
 #### Automated
 
-- [ ] 3.1 Typecheck passes (`npm run typecheck`)
-- [ ] 3.2 Build succeeds (`npm run build`)
-- [ ] 3.3 `dist/index.d.ts` and `dist/cli.js` exist after build
-- [ ] 3.4 `dist/index.js` is side-effect-free (no shebang / no execution on import)
-- [ ] 3.5 Offline wiring smoke: empty diff prints "No changes to review" JSON with zeroed cost (no auth/credits)
+- [x] 3.1 Typecheck passes (`npm run typecheck`)
+- [x] 3.2 Build succeeds (`npm run build`)
+- [x] 3.3 `dist/index.d.ts` and `dist/cli.js` exist after build
+- [x] 3.4 `dist/index.js` is side-effect-free (no shebang / no execution on import)
+- [x] 3.5 Offline wiring smoke: empty diff prints "No changes to review" JSON with zeroed cost (no auth/credits)
 
 #### Manual
 
-- [ ] 3.6 Piped review produces the same JSON shape (summary/findings/nitpicks/cost)
-- [ ] 3.7 `--help` prints; stdin auto-detected; `--model` respected
+- [x] 3.6 Piped review produces the same JSON shape (summary/findings/nitpicks/cost)
+- [x] 3.7 `--help` prints; stdin auto-detected; `--model` respected
 
 ### Phase 4: Documentation
 
 #### Automated
 
-- [ ] 4.1 No `dist/index.js` references remain in README
-- [ ] 4.2 No `CodeReviewer` references remain in the package
+- [x] 4.1 No `dist/index.js` references remain in README
+- [x] 4.2 No `CodeReviewer` references remain in the package
 
 #### Manual
 
-- [ ] 4.3 README embedding + CLI examples are copy-paste runnable
+- [x] 4.3 README embedding + CLI examples are copy-paste runnable

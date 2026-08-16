@@ -1,9 +1,11 @@
 import { CopilotClient } from "@github/copilot-sdk";
 
-import { REVIEW_SYSTEM_PROMPT, buildReviewPrompt } from "./agent.js";
-import { ReviewSchema, type Review, type ReviewCost, type ReviewResult } from "./schemas.js";
+import type { ReviewAgent } from "../../core/review-agent.js";
+import { REVIEW_SYSTEM_PROMPT, buildReviewPrompt } from "../../prompts/review-prompt.js";
+import { type ReviewCost, type ReviewResult } from "../../schemas/review.js";
+import { parseReview } from "./parse.js";
 
-export interface CodeReviewerOptions {
+export interface CopilotReviewAgentOptions {
   /** Model id to use. Defaults to `COPILOT_MODEL` env var, then `"auto"`. */
   model?: string;
   /** Override the reviewer's system prompt / rubric. */
@@ -13,16 +15,16 @@ export interface CodeReviewerOptions {
 /**
  * A reusable code-review agent built on the GitHub Copilot SDK.
  *
- * Import `CodeReviewer` from other code (CLI, CI job, server) and call
- * {@link CodeReviewer.review} with a diff. The SDK boots the bundled Copilot
- * CLI as a JSON-RPC server, runs the agent loop, and returns a structured,
- * zod-validated {@link ReviewResult}.
+ * Construct a `CopilotReviewAgent` (directly or via `createReviewAgent`) from
+ * other code (CLI, CI job, server) and call {@link CopilotReviewAgent.review}
+ * with a diff. The SDK boots the bundled Copilot CLI as a JSON-RPC server, runs
+ * the agent loop, and returns a structured, zod-validated {@link ReviewResult}.
  */
-export class CodeReviewer {
+export class CopilotReviewAgent implements ReviewAgent {
   private readonly model: string;
   private readonly instructions: string;
 
-  constructor(options: CodeReviewerOptions = {}) {
+  constructor(options: CopilotReviewAgentOptions = {}) {
     this.model = options.model ?? process.env.COPILOT_MODEL ?? "auto";
     this.instructions = options.instructions ?? REVIEW_SYSTEM_PROMPT;
   }
@@ -101,26 +103,4 @@ export class CodeReviewer {
       await client.stop();
     }
   }
-}
-
-/** Extract and validate the model's JSON review from its raw text response. */
-function parseReview(raw: string): Review {
-  const candidate = extractJsonObject(raw);
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(candidate);
-  } catch {
-    throw new Error(`Model did not return valid JSON.\nRaw response:\n${raw.slice(0, 800)}`);
-  }
-  return ReviewSchema.parse(parsed);
-}
-
-/** Pull the JSON object out of a response that may include fences or prose. */
-function extractJsonObject(text: string): string {
-  const trimmed = text.trim();
-  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  const body = fenced?.[1] ?? trimmed;
-  const start = body.indexOf("{");
-  const end = body.lastIndexOf("}");
-  return start !== -1 && end > start ? body.slice(start, end + 1) : body;
 }

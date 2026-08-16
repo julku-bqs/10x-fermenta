@@ -1,6 +1,6 @@
 # @10x-fermenta/code-reviewer
 
-A minimal, custom **code-review agent** built on the [GitHub Copilot SDK](https://docs.github.com/en/copilot/how-tos/copilot-sdk). It feeds a git diff to Copilot's agent runtime and prints a structured, zod-validated JSON review (summary, findings, nitpicks, and token/credit cost). `src/index.ts` is a thin CLI entry point; the reusable pieces (`CodeReviewer`, `getDiff`) are meant to be embedded in larger integrations such as a CI job.
+A minimal, custom **code-review agent** built on the [GitHub Copilot SDK](https://docs.github.com/en/copilot/how-tos/copilot-sdk). It feeds a git diff to Copilot's agent runtime and prints a structured, zod-validated JSON review (summary, findings, nitpicks, and token/credit cost). `src/cli.ts` is a thin CLI entry point; the reusable pieces (`createReviewAgent`, `CopilotReviewAgent`, `getDiff`) are meant to be embedded in larger integrations such as a CI job.
 
 ## Why the Copilot SDK
 
@@ -34,11 +34,11 @@ npm run review
 
 # Or with the built binary
 npm run build
-node dist/index.js --staged            # staged changes
-node dist/index.js --base origin/main  # <base>...HEAD
-node dist/index.js --file changes.diff # a diff file
-git diff | node dist/index.js --stdin  # piped diff
-node dist/index.js --model gpt-5.4     # override the model
+node dist/cli.js --staged            # staged changes
+node dist/cli.js --base origin/main  # <base>...HEAD
+node dist/cli.js --file changes.diff # a diff file
+git diff | node dist/cli.js --stdin  # piped diff
+node dist/cli.js --model gpt-5.4     # override the model
 ```
 
 During development you can skip the build and run directly with `tsx`. Pass flags
@@ -47,16 +47,16 @@ straight to `tsx` — `npm run <script> -- --flag` may swallow flags such as
 
 ```bash
 git diff | npm run dev                    # piped input is auto-detected (no --stdin needed)
-npx tsx src/index.ts --base origin/main   # pass flags directly
-npx tsx src/index.ts --staged
+npx tsx src/cli.ts --base origin/main     # pass flags directly
+npx tsx src/cli.ts --staged
 ```
 
 ## Embedding in your own code
 
 ```ts
-import { CodeReviewer } from "@10x-fermenta/code-reviewer";
+import { createReviewAgent } from "@10x-fermenta/code-reviewer";
 
-const reviewer = new CodeReviewer({ model: "auto" });
+const reviewer = createReviewAgent({ model: "auto" });
 const result = await reviewer.review(myDiffString);
 console.log(result.summary, result.findings, result.cost);
 ```
@@ -94,7 +94,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git diff origin/${{ github.base_ref }}...HEAD | node dist/index.js --stdin > review.md
+          git diff origin/${{ github.base_ref }}...HEAD | node dist/cli.js --stdin > review.md
       - name: Post the review as a comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -103,13 +103,17 @@ jobs:
 
 ## Project layout
 
-| File              | Responsibility                                                               |
-| ----------------- | ---------------------------------------------------------------------------- |
-| `src/index.ts`    | CLI entry point (arg parsing + wiring). Extend this for new commands.        |
-| `src/reviewer.ts` | `CodeReviewer` — manages the Copilot client/session. The integration API.    |
-| `src/agent.ts`    | The review rubric/system prompt and prompt builder. Customize behavior here. |
-| `src/git.ts`      | Resolves a `DiffSource` (stdin / file / base ref / staged) into a diff.      |
-| `src/schemas.ts`  | Zod schemas for the structured output (summary, findings, nitpicks, cost).   |
+| File                                         | Responsibility                                                                  |
+| -------------------------------------------- | ------------------------------------------------------------------------------- |
+| `src/cli.ts`                                 | CLI entry point (arg parsing + wiring). Extend this for new commands.           |
+| `src/index.ts`                               | Public API barrel — re-exports the agent, factory, schemas, and prompts.        |
+| `src/core/review-agent.ts`                   | `ReviewAgent` interface — the backend-agnostic seam.                            |
+| `src/agents/factory.ts`                      | `createReviewAgent(config)` — selects a `ReviewAgent` implementation.           |
+| `src/agents/copilot/copilot-review-agent.ts` | `CopilotReviewAgent` — manages the Copilot client/session. The integration API. |
+| `src/agents/copilot/parse.ts`                | Extracts and zod-validates the model's JSON reply.                              |
+| `src/prompts/review-prompt.ts`               | The review rubric/system prompt and prompt builder. Customize behavior here.    |
+| `src/schemas/review.ts`                      | Zod schemas for the structured output (summary, findings, nitpicks, cost).      |
+| `src/git.ts`                                 | Resolves a `DiffSource` (stdin / file / base ref / staged) into a diff.         |
 
 ## Extending the agent
 
@@ -119,7 +123,15 @@ The SDK supports much more than a single prompt. Natural next steps:
 - **Custom tools & MCP servers:** let the agent fetch extra context ([MCP docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/mcp)).
 - **Streaming:** subscribe to `assistant.message_delta` for live output ([streaming docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/streaming-events)).
 - **Session limits:** cap AI-credit spend per run in CI ([docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/session-limits)).
-- **Structured output:** the review is returned as a `zod`-validated object (`src/schemas.ts`). Extend the schema there as your needs grow.
+- **Structured output:** the review is returned as a `zod`-validated object (`src/schemas/review.ts`). Extend the schema there as your needs grow.
+
+### Adding a backend
+
+Every review agent implements the `ReviewAgent` interface (`src/core/review-agent.ts`) — a single `review(diff) => Promise<ReviewResult>` seam. To add a backend, implement that interface and register it in `createReviewAgent` (`src/agents/factory.ts`); callers select it via the `provider` field and never touch a concrete class.
+
+### Evals (promptfoo)
+
+The package is structured so a [promptfoo custom provider](https://www.promptfoo.dev/docs/providers/custom-api/) can `import { createReviewAgent }` and map the returned `ReviewResult` onto promptfoo's `{ output, tokenUsage, cost }` shape (`cost` already carries `tokensIn` / `tokensOut` and, when available, `aiCredits`). Wiring up the eval environment itself is intentionally out of scope for this package.
 
 ## Notes
 

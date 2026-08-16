@@ -2,9 +2,9 @@
  * The review agent's behavior lives here so it is easy to extend or swap.
  *
  * `REVIEW_SYSTEM_PROMPT` is the reviewer's rubric, identity, and JSON output
- * contract; `CodeReviewer` passes it as the session's system message (append
+ * contract; the review agent passes it as the session's system message (append
  * mode). `buildReviewPrompt` wraps just the diff for the user turn. Point the
- * `CodeReviewer` at different instructions to specialize the agent.
+ * review agent at different instructions to specialize the agent.
  */
 
 export const REVIEW_SYSTEM_PROMPT = `You are a senior software engineer performing a focused code review of a unified git diff.
@@ -39,7 +39,7 @@ Respond with a SINGLE JSON object and nothing else — no Markdown, no code fenc
 /**
  * Build the user-turn message: just the diff to review. The reviewer's rubric
  * and JSON contract are supplied separately as the session's system message
- * (see `REVIEW_SYSTEM_PROMPT` and `CodeReviewer`).
+ * (see `REVIEW_SYSTEM_PROMPT` and the review agent implementation).
  */
 export function buildReviewPrompt(diff: string): string {
   return [

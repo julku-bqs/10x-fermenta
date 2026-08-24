@@ -86,7 +86,7 @@ export class CopilotReviewAgent extends BaseReviewAgent {
 
       // Resolves once the session is idle, so every `assistant.usage` event for
       // the turn has already been delivered to the handlers above.
-      await session.sendAndWait({ prompt: buildReviewPrompt(input.diff) });
+      await session.sendAndWait({ prompt: buildReviewPrompt(input) });
 
       // The model that actually produced the review (resolved even if "auto"
       // was requested); prefer the message producer, fall back to usage.

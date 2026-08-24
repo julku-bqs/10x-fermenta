@@ -549,9 +549,9 @@ jobs:
 
 #### Automated
 
-- [x] 2.1 Build succeeds
-- [x] 2.2 Type checking passes
-- [x] 2.3 Unit tests pass — decline short-circuit (runReview not called) + normal verdict attach
+- [x] 2.1 Build succeeds — e580df2
+- [x] 2.2 Type checking passes — e580df2
+- [x] 2.3 Unit tests pass — decline short-circuit (runReview not called) + normal verdict attach — e580df2
 
 #### Manual
 
@@ -561,8 +561,8 @@ jobs:
 
 #### Automated
 
-- [ ] 3.1 Build + type check pass
-- [ ] 3.2 Unit tests pass incl. the `buildReviewPrompt` trim/title test
+- [x] 3.1 Build + type check pass
+- [x] 3.2 Unit tests pass incl. the `buildReviewPrompt` trim/title test
 
 #### Manual
 

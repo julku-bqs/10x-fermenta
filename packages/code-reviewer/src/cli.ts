@@ -21,17 +21,21 @@ import { createReviewAgent } from "./agents/factory.js";
 interface CliOptions {
   source: DiffSource;
   model?: string;
+  title?: string;
+  description?: string;
 }
 
 const HELP = `code-reviewer — review a git diff with a custom GitHub Copilot agent
 
 Options:
-  --stdin            Read the diff from stdin
-  --file <path>      Read the diff from a file
-  --base <ref>       Diff <ref>...HEAD (e.g. origin/main)
-  --staged           Review staged changes (git diff --cached)
-  --model <id>       Model to use (default: auto)
-  -h, --help         Show this help
+  --stdin              Read the diff from stdin
+  --file <path>        Read the diff from a file
+  --base <ref>         Diff <ref>...HEAD (e.g. origin/main)
+  --staged             Review staged changes (git diff --cached)
+  --title <text>       Pull-request title to include as review context
+  --description <text> Pull-request description to include as review context
+  --model <id>         Model to use (default: auto)
+  -h, --help           Show this help
 
 With no source flag, reviews uncommitted changes (git diff HEAD), or reads
 stdin automatically when input is piped.`;
@@ -46,6 +50,8 @@ function parseCliArgs(argv: string[]): CliOptions {
       cached: { type: "boolean" },
       file: { type: "string" },
       base: { type: "string" },
+      title: { type: "string" },
+      description: { type: "string" },
       model: { type: "string" },
       help: { type: "boolean", short: "h" },
     },
@@ -67,15 +73,15 @@ function parseCliArgs(argv: string[]): CliOptions {
     source.stdin = true;
   }
 
-  return { source, model: values.model };
+  return { source, model: values.model, title: values.title, description: values.description };
 }
 
 async function main(): Promise<void> {
-  const { source, model } = parseCliArgs(process.argv.slice(2));
+  const { source, model, title, description } = parseCliArgs(process.argv.slice(2));
   const diff = getDiff(source);
 
   const reviewer = createReviewAgent({ model });
-  const result = await reviewer.review({ diff });
+  const result = await reviewer.review({ diff, title, description });
 
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }

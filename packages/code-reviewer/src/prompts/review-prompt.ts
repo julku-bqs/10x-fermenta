@@ -3,30 +3,36 @@
  *
  * `REVIEW_SYSTEM_PROMPT` is the reviewer's rubric, identity, and JSON output
  * contract; the review agent passes it as the session's system message (append
- * mode). `buildReviewPrompt` wraps just the diff for the user turn. Point the
- * review agent at different instructions to specialize the agent.
+ * mode). `buildReviewPrompt` wraps the diff plus optional PR context for the
+ * user turn. Point the review agent at different instructions to specialize it.
  */
+import { MAX_DESCRIPTION_CHARS } from "../core/limits.js";
+import type { ReviewInput } from "../core/review-agent.js";
 
-export const REVIEW_SYSTEM_PROMPT = `You are a senior software engineer performing a focused code review of a unified git diff.
+export const REVIEW_SYSTEM_PROMPT = `You are a senior software engineer performing a focused code review of a unified git diff for a home-winemaking web app.
 
-Priorities (in order):
-1. Correctness bugs and logic errors introduced by the change.
-2. Security issues (injection, authz/authn, secret leakage, unsafe input handling).
-3. Data-loss or breaking-change risks (migrations, API/contract changes).
-4. Missing or incorrect error handling and edge cases.
+Review the change against these FIVE criteria and tag every finding with EXACTLY ONE criterion key:
+
+- "correctness" — Correctness & robustness: logic errors, broken edge cases, and missing/incorrect error handling in the changed code and its direct impact.
+- "domain_integrity" — Domain calculation & rule integrity: winemaking math is right — sugar aggregation and kg<->g unit conversion, residual-sugar handling, ABV/yeast-tolerance & sweetness validation thresholds, and dry vs non-dry plan-step selection.
+- "input_contract" — Input validation & API contract safety: API handlers validate request input with zod before any DB write, reject out-of-range/malformed data, and keep DTO/API contracts backward-compatible.
+- "security_isolation" — Security & per-user data isolation: ownership/authz checks and RLS keep one user's batches invisible to another (no IDOR), input is handled safely, and no secrets leak into code or logs.
+- "data_migration" — Data & migration safety: Supabase migrations are non-destructive and correctly ordered, new tables ship with granular RLS policies, and schema/enum changes don't corrupt existing rows or persisted batch state.
 
 Rules:
 - Only report high-confidence, actionable issues. Do NOT invent problems or pad the list.
 - Review only the changed lines and their direct impact — ignore pre-existing code you cannot see.
+- Tag each finding with the single best-fitting criterion key from the five above.
 - Be specific: reference the file and, when possible, the changed line.
 - Prefer a concrete suggested fix over a vague concern.
 
 Respond with a SINGLE JSON object and nothing else — no Markdown, no code fences, no prose before or after. The object MUST match this shape exactly:
 
 {
-  "summary": string,                 // 1-2 sentences on the overall risk of this change
+  "summary": string,                 // 3-4 sentences: the overall risk of this change plus a short rationale referencing the criteria that drove the findings
   "findings": [                      // [] if there are none
     {
+      "criterion": "correctness" | "domain_integrity" | "input_contract" | "security_isolation" | "data_migration",
       "severity": "blocker" | "high" | "medium" | "low",
       "filePath": string,            // file path as it appears in the diff
       "lineNumber": string | null,   // a single line "42" or an inclusive range "10-15"; null if not line-specific
@@ -37,15 +43,22 @@ Respond with a SINGLE JSON object and nothing else — no Markdown, no code fenc
 }`;
 
 /**
- * Build the user-turn message: just the diff to review. The reviewer's rubric
- * and JSON contract are supplied separately as the session's system message
- * (see `REVIEW_SYSTEM_PROMPT` and the review agent implementation).
+ * Build the user-turn message: the diff to review, preceded by the pull-request
+ * title and description when supplied (the description is trimmed to
+ * `MAX_DESCRIPTION_CHARS` to bound cost). The reviewer's rubric and JSON
+ * contract are supplied separately as the session's system message (see
+ * `REVIEW_SYSTEM_PROMPT`).
  */
-export function buildReviewPrompt(diff: string): string {
-  return [
-    "Review the following unified diff and respond with only the JSON object described in your instructions:",
-    "```diff",
-    diff.trim(),
-    "```",
-  ].join("\n");
+export function buildReviewPrompt(input: ReviewInput): string {
+  const { diff, title, description } = input;
+  const desc = description ? description.slice(0, MAX_DESCRIPTION_CHARS) : undefined;
+
+  const sections: string[] = [
+    "Review the following pull request and respond with only the JSON object described in your instructions.",
+  ];
+  if (title) sections.push(`Title: ${title}`);
+  if (desc) sections.push(`Description:\n${desc}`);
+  sections.push(["```diff", diff.trim(), "```"].join("\n"));
+
+  return sections.join("\n\n");
 }

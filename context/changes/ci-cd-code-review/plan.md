@@ -586,8 +586,8 @@ jobs:
 
 #### Automated
 
-- [x] 5.1 Workflow YAML parses (actionlint clean if available)
-- [x] 5.2 Existing CI (`ci.yml`) stays green on the branch
+- [x] 5.1 Workflow YAML parses (actionlint clean if available) — afeb76c
+- [x] 5.2 Existing CI (`ci.yml`) stays green on the branch — afeb76c
 
 #### Manual
 

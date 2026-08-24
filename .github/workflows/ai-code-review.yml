@@ -2,7 +2,7 @@ name: AI Code Review
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, ci-sandbox] # ci-sandbox: throwaway test base standing in for main (sandbox-only)
     # 'labeled' lets an on-demand ai-cr:review re-run an existing PR (guarded below).
     types: [opened, synchronize, reopened, labeled]
 
@@ -36,6 +36,7 @@ jobs:
           # title/body cannot inject shell (see the action's input-safety note).
           title: ${{ github.event.pull_request.title }}
           description: ${{ github.event.pull_request.body }}
+          base-ref: ${{ github.base_ref }} # sandbox-only: diff against the PR's real base (ci-sandbox), not hardcoded main
 
       # If this run was triggered by the ai-cr:review label, remove it afterwards so it
       # can be re-added to fire another review. always() so a failed gate still clears it.

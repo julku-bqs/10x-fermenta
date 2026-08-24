@@ -543,7 +543,7 @@ jobs:
 
 #### Manual
 
-- [ ] 1.4 Severity→decision table matches requirements
+- [x] 1.4 Severity→decision table matches requirements
 
 ### Phase 2: Template-Method Seam + Agent Refactor + Decline Short-Circuit
 
@@ -555,7 +555,7 @@ jobs:
 
 #### Manual
 
-- [ ] 2.4 CLI smoke: `git diff HEAD | node dist/cli.js --stdin` returns JSON including a `verdict` field
+- [x] 2.4 CLI smoke: `git diff HEAD | node dist/cli.js --stdin` returns JSON including a `verdict` field
 
 ### Phase 3: Prompt (5 Criteria) + CLI (title/description, exit codes)
 
@@ -566,9 +566,9 @@ jobs:
 
 #### Manual
 
-- [ ] 3.3 Real diff → per-finding `criterion` + top-level `verdict`, 3–4-sentence summary
-- [ ] 3.4 Over-cap diff → deterministic declined result, no LLM call
-- [ ] 3.5 `--title`/`--description` reflected in the review context
+- [x] 3.3 Real diff → per-finding `criterion` + top-level `verdict`, 3–4-sentence summary
+- [x] 3.4 Over-cap diff → deterministic declined result, no LLM call
+- [x] 3.5 `--title`/`--description` reflected in the review context
 
 ### Phase 4: Composite Action + Comment Formatter
 

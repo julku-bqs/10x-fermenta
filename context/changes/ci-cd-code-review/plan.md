@@ -591,10 +591,10 @@ jobs:
 
 #### Manual
 
-- [ ] 5.3 Test PR: sticky comment (summary + badge + grouped findings) + exactly one passed/failed label
-- [ ] 5.4 Seeded `blocker`/`high` → `ai-cr:failed` + red check; merge not blocked (branch protection unwired)
-- [ ] 5.5 Only-`medium` → `flagged` → `ai-cr:passed` (non-blocking)
-- [ ] 5.6 Oversize PR → declined comment (`declined`, "too large"), `ai-cr:skipped` (neutral), no LLM latency
-- [ ] 5.7 Forced reviewer failure → `::warning::`, no pass/fail label, non-blocking
-- [ ] 5.8 `ai-cr:review` label → re-runs and label removed afterwards
-- [ ] 5.9 Sticky: second run edits the same comment (no duplicate)
+- [x] 5.3 Test PR: sticky comment (summary + badge + grouped findings) + exactly one passed/failed label
+- [x] 5.4 Seeded `blocker`/`high` → `ai-cr:failed` + red check; merge not blocked (branch protection unwired)
+- [x] 5.5 Only-`medium` → `flagged` → `ai-cr:passed` (non-blocking)
+- [x] 5.6 Oversize PR → declined comment (`declined`, "too large"), `ai-cr:skipped` (neutral), no LLM latency
+- [x] 5.7 Forced reviewer failure → `::warning::`, no pass/fail label, non-blocking
+- [x] 5.8 `ai-cr:review` label → re-runs and label removed afterwards
+- [x] 5.9 Sticky: second run edits the same comment (no duplicate)

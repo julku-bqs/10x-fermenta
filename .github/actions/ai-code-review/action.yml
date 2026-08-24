@@ -1,0 +1,113 @@
+name: "AI Code Review"
+description: "Build the code-reviewer, review the PR diff, gate on the derived verdict, post a sticky comment, and apply mutually-exclusive labels."
+
+inputs:
+  pr-number:
+    description: "Pull-request number to comment on and label."
+    required: true
+  title:
+    description: "Pull-request title, folded into the review context. Attacker-controlled — consumed via env, never inlined."
+    required: false
+    default: ""
+  description:
+    description: "Pull-request description/body, folded into the review context. Attacker-controlled — consumed via env, never inlined."
+    required: false
+    default: ""
+  model:
+    description: "Model override passed to the reviewer CLI (default: the CLI's own default, 'auto')."
+    required: false
+    default: ""
+  base-ref:
+    description: "Base branch to diff against (origin/<base-ref>...HEAD)."
+    required: false
+    default: "main"
+
+outputs:
+  decision:
+    description: "The verdict decision (approved/flagged/blocked/declined), or 'warn' when the reviewer did not run."
+    value: ${{ steps.review.outputs.decision }}
+  pass:
+    description: "Whether the gate passed ('true'/'false')."
+    value: ${{ steps.review.outputs.pass }}
+
+runs:
+  using: composite
+  steps:
+    # One source of truth for the runner Node: the repo's .nvmrc (checked out by
+    # the caller). Keeps CI Node from drifting past the package's engines.node.
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+
+    - name: Build reviewer
+      shell: bash
+      working-directory: packages/code-reviewer
+      run: |
+        npm ci
+        npm run build
+
+    - name: Review, gate, comment, and label
+      id: review
+      shell: bash
+      working-directory: packages/code-reviewer
+      env:
+        # github.token authorizes both the Copilot CLI and gh. Attacker-controlled
+        # PR text arrives via env only — never interpolated into the run: block.
+        GH_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ github.token }}
+        PR: ${{ inputs.pr-number }}
+        TITLE: ${{ inputs.title }}
+        DESC: ${{ inputs.description }}
+        MODEL: ${{ inputs.model }}
+        BASE_REF: ${{ inputs.base-ref }}
+        ACTION_DIR: ${{ github.action_path }}
+      run: |
+        set -eo pipefail
+
+        # Build the CLI args from env so shell metacharacters in TITLE/DESC cannot
+        # inject: they are passed as argv, never spliced into the command string.
+        ARGS=(--stdin)
+        [ -n "$TITLE" ] && ARGS+=(--title "$TITLE")
+        [ -n "$DESC" ] && ARGS+=(--description "$DESC")
+        [ -n "$MODEL" ] && ARGS+=(--model "$MODEL")
+
+        # Capture stdout + exit code without letting a non-zero CLI abort the step.
+        set +e
+        OUT=$(git diff "origin/${BASE_REF}...HEAD" | node dist/cli.js "${ARGS[@]}")
+        CODE=$?
+        set -e
+
+        # Pure decision (unit-tested in gate.test.mjs) → DECISION/ADD_LABEL/REMOVE_LABEL/WARN/FAIL.
+        eval "$(CLI_EXIT=$CODE node "$ACTION_DIR/gate.mjs" <<<"$OUT")"
+
+        if [ "$WARN" = "1" ]; then
+          echo "::warning::AI code review did not run (reviewer exit ${CODE}); leaving the PR unlabeled and the check green."
+          {
+            echo "decision=warn"
+            echo "pass=true"
+          } >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        # Sticky comment: edit our previous one, or create it the first time.
+        printf '%s' "$OUT" | node "$ACTION_DIR/format-comment.mjs" > review.md
+        gh pr comment "$PR" --edit-last --create-if-none --body-file review.md
+
+        # Mutually-exclusive labels (comma-separated lists from the gate).
+        LABEL_ARGS=()
+        IFS=',' read -ra ADDS <<<"$ADD_LABEL"
+        for l in "${ADDS[@]}"; do [ -n "$l" ] && LABEL_ARGS+=(--add-label "$l"); done
+        IFS=',' read -ra REMS <<<"$REMOVE_LABEL"
+        for l in "${REMS[@]}"; do [ -n "$l" ] && LABEL_ARGS+=(--remove-label "$l"); done
+        gh pr edit "$PR" "${LABEL_ARGS[@]}" || true
+
+        {
+          echo "decision=$DECISION"
+          echo "pass=$([ "$FAIL" = "1" ] && echo false || echo true)"
+        } >> "$GITHUB_OUTPUT"
+
+        if [ "$FAIL" = "1" ]; then
+          echo "::error::AI code review found blocking issues (verdict: ${DECISION})."
+          exit 1
+        fi

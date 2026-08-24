@@ -574,9 +574,9 @@ jobs:
 
 #### Automated
 
-- [ ] 4.1 `action.yml` parses as valid YAML
-- [ ] 4.2 `format-comment.mjs` produces expected sections for sample JSON (findings/blocked/declined/empty)
-- [ ] 4.3 `gate.mjs` returns the correct decision for the four cases (pass/blocked/declined/unparseable)
+- [x] 4.1 `action.yml` parses as valid YAML
+- [x] 4.2 `format-comment.mjs` produces expected sections for sample JSON (findings/blocked/declined/empty)
+- [x] 4.3 `gate.mjs` returns the correct decision for the four cases (pass/blocked/declined/unparseable)
 
 #### Manual
 

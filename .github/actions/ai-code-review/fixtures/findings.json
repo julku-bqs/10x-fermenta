@@ -1,0 +1,39 @@
+{
+  "summary": "This change adds a fermentation-stage calculation and a new batches API route. Overall risk is moderate: the core math is close but input validation and tenant scoping need attention. Two medium issues and two low notes were found across the correctness, input-contract and security criteria. None are blocking.",
+  "findings": [
+    {
+      "criterion": "correctness",
+      "severity": "medium",
+      "filePath": "src/lib/services/process-plan.ts",
+      "lineNumber": "84-91",
+      "message": "Off-by-one in the day-offset accumulation can push the racking step one day late; start the reduce at day 0."
+    },
+    {
+      "criterion": "input_contract",
+      "severity": "medium",
+      "filePath": "src/pages/api/batches/index.ts",
+      "lineNumber": "42",
+      "message": "sugarGramsPerLiter is parsed with Number() but never bounded; a zod .max() guard is missing."
+    },
+    {
+      "criterion": "security_isolation",
+      "severity": "low",
+      "filePath": "src/pages/api/batches/index.ts",
+      "lineNumber": "58",
+      "message": "Query filters by user_id in code; prefer relying on the RLS policy so a missed filter cannot leak rows."
+    },
+    {
+      "criterion": null,
+      "severity": "low",
+      "filePath": "src/components/batches/BatchForm.tsx",
+      "lineNumber": null,
+      "message": "Unused import `useMemo`; drop it to keep the bundle lean."
+    }
+  ],
+  "nitpicks": [
+    "Rename `tmp` to `stageOffsets` for readability in process-plan.ts.",
+    "Prefer `const` over `let` for `plan` — it is never reassigned."
+  ],
+  "cost": { "model": "gpt-5.4", "tokensIn": 4213, "tokensOut": 512, "aiCredits": 3 },
+  "verdict": { "decision": "flagged", "pass": true }
+}

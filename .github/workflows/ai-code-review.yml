@@ -1,0 +1,46 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    branches: [main]
+    # 'labeled' lets an on-demand ai-cr:review re-run an existing PR (guarded below).
+    types: [opened, synchronize, reopened, labeled]
+
+# Least privilege: read the code, write the PR comment/labels, authorize Copilot billing.
+permissions:
+  contents: read
+  pull-requests: write
+  copilot-requests: write
+
+# One in-flight review per PR; a fresh push cancels the previous run.
+concurrency:
+  group: ai-cr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Run on open/synchronize/reopen; for the 'labeled' event only when the label
+    # is our retry trigger — every other label edit is ignored.
+    if: github.event.action != 'labeled' || github.event.label.name == 'ai-cr:review'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so origin/main...HEAD resolves for the diff
+
+      - uses: ./.github/actions/ai-code-review
+        with:
+          pr-number: ${{ github.event.pull_request.number }}
+          # Passed as action INPUTS (safe): the action consumes them via a step-level
+          # env: mapping and never inlines them into a run: block, so a crafted PR
+          # title/body cannot inject shell (see the action's input-safety note).
+          title: ${{ github.event.pull_request.title }}
+          description: ${{ github.event.pull_request.body }}
+
+      # If this run was triggered by the ai-cr:review label, remove it afterwards so it
+      # can be re-added to fire another review. always() so a failed gate still clears it.
+      - name: Remove retry label
+        if: ${{ always() && github.event.action == 'labeled' && github.event.label.name == 'ai-cr:review' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr edit "${{ github.event.pull_request.number }}" --remove-label "ai-cr:review"

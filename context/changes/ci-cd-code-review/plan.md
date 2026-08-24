@@ -574,9 +574,9 @@ jobs:
 
 #### Automated
 
-- [x] 4.1 `action.yml` parses as valid YAML
-- [x] 4.2 `format-comment.mjs` produces expected sections for sample JSON (findings/blocked/declined/empty)
-- [x] 4.3 `gate.mjs` returns the correct decision for the four cases (pass/blocked/declined/unparseable)
+- [x] 4.1 `action.yml` parses as valid YAML — 5b64ccb
+- [x] 4.2 `format-comment.mjs` produces expected sections for sample JSON (findings/blocked/declined/empty) — 5b64ccb
+- [x] 4.3 `gate.mjs` returns the correct decision for the four cases (pass/blocked/declined/unparseable) — 5b64ccb
 
 #### Manual
 
@@ -586,8 +586,8 @@ jobs:
 
 #### Automated
 
-- [ ] 5.1 Workflow YAML parses (actionlint clean if available)
-- [ ] 5.2 Existing CI (`ci.yml`) stays green on the branch
+- [x] 5.1 Workflow YAML parses (actionlint clean if available)
+- [x] 5.2 Existing CI (`ci.yml`) stays green on the branch
 
 #### Manual
 

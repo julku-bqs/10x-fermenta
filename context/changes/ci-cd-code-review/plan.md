@@ -537,9 +537,9 @@ jobs:
 
 #### Automated
 
-- [x] 1.1 Build succeeds (`cd packages/code-reviewer && npm run build`)
-- [x] 1.2 Type checking passes (`npm run typecheck`)
-- [x] 1.3 Unit tests pass (`npm test`) — deriveVerdict table + declined-result shape + criterion coercion
+- [x] 1.1 Build succeeds (`cd packages/code-reviewer && npm run build`) — c627aac
+- [x] 1.2 Type checking passes (`npm run typecheck`) — c627aac
+- [x] 1.3 Unit tests pass (`npm test`) — deriveVerdict table + declined-result shape + criterion coercion — c627aac
 
 #### Manual
 
@@ -549,9 +549,9 @@ jobs:
 
 #### Automated
 
-- [ ] 2.1 Build succeeds
-- [ ] 2.2 Type checking passes
-- [ ] 2.3 Unit tests pass — decline short-circuit (runReview not called) + normal verdict attach
+- [x] 2.1 Build succeeds
+- [x] 2.2 Type checking passes
+- [x] 2.3 Unit tests pass — decline short-circuit (runReview not called) + normal verdict attach
 
 #### Manual
 

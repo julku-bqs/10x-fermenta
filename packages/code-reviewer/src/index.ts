@@ -8,7 +8,7 @@
  */
 
 // The backend-agnostic seam and the factory that selects an implementation.
-export type { ReviewAgent } from "./core/review-agent.js";
+export { BaseReviewAgent, type ReviewAgent, type ReviewInput } from "./core/review-agent.js";
 export { createReviewAgent, type ReviewAgentConfig } from "./agents/factory.js";
 
 // The single concrete implementation (Copilot SDK).

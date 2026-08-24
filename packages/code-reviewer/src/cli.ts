@@ -75,7 +75,7 @@ async function main(): Promise<void> {
   const diff = getDiff(source);
 
   const reviewer = createReviewAgent({ model });
-  const result = await reviewer.review(diff);
+  const result = await reviewer.review({ diff });
 
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }

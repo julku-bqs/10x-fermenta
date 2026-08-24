@@ -580,7 +580,7 @@ jobs:
 
 #### Manual
 
-- [ ] 4.4 Rendered Markdown: verdict badge + criterion grouping + collapsible nitpicks + graceful empty state
+- [x] 4.4 Rendered Markdown: verdict badge + criterion grouping + collapsible nitpicks + graceful empty state
 
 ### Phase 5: Caller Workflow + Labels + README + Live PR Verification
 

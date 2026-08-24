@@ -8,3 +8,10 @@ export function clampPercentage(value: number): number {
   if (Number.isNaN(value)) return 0;
   return Math.min(100, Math.max(0, value));
 }
+
+/**
+ * Round a percentage to a whole number after clamping it to [0, 100].
+ */
+export function roundPercentage(value: number): number {
+  return Math.round(clampPercentage(value));
+}

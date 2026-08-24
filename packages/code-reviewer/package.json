@@ -24,9 +24,10 @@
   "scripts": {
     "dev": "tsx src/cli.ts",
     "review": "tsx src/cli.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "start": "node dist/cli.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@github/copilot-sdk": "^1.0.11",
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@types/node": "^24.7.0",
     "tsx": "^4.20.6",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
   }
 }

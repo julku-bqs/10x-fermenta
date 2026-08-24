@@ -14,7 +14,27 @@ import { z } from "zod";
 export const SeveritySchema = z.enum(["blocker", "high", "medium", "low"]);
 export type Severity = z.infer<typeof SeveritySchema>;
 
+/**
+ * The five review criteria the model classifies each finding into. Chosen so the
+ * agent spends its budget on what lint + Prettier + `tsc` cannot catch: the
+ * domain math, the data contracts, and tenant isolation.
+ */
+export const CriterionKeySchema = z.enum([
+  "correctness",
+  "domain_integrity",
+  "input_contract",
+  "security_isolation",
+  "data_migration",
+]);
+export type Criterion = z.infer<typeof CriterionKeySchema>;
+
 export const FindingSchema = z.object({
+  // Fault-tolerant: a model tagging slip (missing or misspelled key) coerces to
+  // null instead of failing the whole parse, so the finding's severity survives
+  // and `deriveVerdict` still gates on it.
+  criterion: CriterionKeySchema.nullable()
+    .catch(null)
+    .describe("Which of the five review criteria this finding belongs to; null if untagged or unrecognized."),
   severity: SeveritySchema.describe("Impact level of the issue: blocker, high, medium, or low."),
   filePath: z.string().describe("File path as it appears in the diff."),
   lineNumber: z.coerce
@@ -28,7 +48,11 @@ export type Finding = z.infer<typeof FindingSchema>;
 
 /** The review payload produced by the model. */
 export const ReviewSchema = z.object({
-  summary: z.string().describe("One or two sentences on the overall risk of this change."),
+  summary: z
+    .string()
+    .describe(
+      "Three to four sentences: the overall risk of this change plus a short rationale referencing the criteria that drove the findings.",
+    ),
   findings: z.array(FindingSchema).describe("High-confidence, actionable issues; empty array if none."),
   nitpicks: z.array(z.string()).describe("Minor style or readability notes; empty array if none."),
 });
@@ -53,9 +77,26 @@ export const ReviewCostSchema = z.object({
 });
 export type ReviewCost = z.infer<typeof ReviewCostSchema>;
 
-/** Full agent result: the model's review plus usage/cost. */
+/**
+ * The gateable verdict the CI workflow keys off. Derived deterministically in
+ * code from the findings' severities (see `deriveVerdict`) — never emitted by
+ * the model. `declined` is reserved for the oversize-diff short-circuit and is
+ * never produced by `deriveVerdict`.
+ */
+export const VerdictSchema = z.object({
+  decision: z
+    .enum(["approved", "flagged", "blocked", "declined"])
+    .describe("Overall gate decision derived from the findings' severities."),
+  pass: z.boolean().describe("The single boolean the CI job gates on; false only when decision is 'blocked'."),
+});
+export type Verdict = z.infer<typeof VerdictSchema>;
+
+/** Full agent result: the model's review plus usage/cost and the derived verdict. */
 export const ReviewResultSchema = ReviewSchema.extend({
   cost: ReviewCostSchema.describe("Token and credit usage for the run, plus the model used."),
+  verdict: VerdictSchema.describe(
+    "Gate verdict derived deterministically in code from the findings' severities (not emitted by the model).",
+  ),
 });
 export type ReviewResult = z.infer<typeof ReviewResultSchema>;
 

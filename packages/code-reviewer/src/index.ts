@@ -19,15 +19,23 @@ export { CopilotReviewAgent, type CopilotReviewAgentOptions } from "./agents/cop
 export {
   SeveritySchema,
   type Severity,
+  CriterionKeySchema,
+  type Criterion,
   FindingSchema,
   type Finding,
   ReviewSchema,
   type Review,
   ReviewCostSchema,
   type ReviewCost,
+  VerdictSchema,
+  type Verdict,
   ReviewResultSchema,
   type ReviewResult,
 } from "./schemas/review.js";
+
+// Deterministic, backend-agnostic scoring (the workflow's gate). The oversize
+// decline helper and input limits stay internal.
+export { deriveVerdict } from "./core/scoring.js";
 
 // Prompts (rubric + user-turn builder) for reuse and evals.
 export { REVIEW_SYSTEM_PROMPT, buildReviewPrompt } from "./prompts/review-prompt.js";

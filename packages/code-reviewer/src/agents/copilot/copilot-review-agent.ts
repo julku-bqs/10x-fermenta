@@ -1,6 +1,7 @@
 import { CopilotClient } from "@github/copilot-sdk";
 
 import type { ReviewAgent } from "../../core/review-agent.js";
+import { deriveVerdict } from "../../core/scoring.js";
 import { REVIEW_SYSTEM_PROMPT, buildReviewPrompt } from "../../prompts/review-prompt.js";
 import { type ReviewCost, type ReviewResult } from "../../schemas/review.js";
 import { parseReview } from "./parse.js";
@@ -37,6 +38,7 @@ export class CopilotReviewAgent implements ReviewAgent {
         findings: [],
         nitpicks: [],
         cost: { tokensIn: 0, tokensOut: 0 },
+        verdict: deriveVerdict([]),
       };
     }
 
@@ -98,7 +100,8 @@ export class CopilotReviewAgent implements ReviewAgent {
         cost.aiCredits = nanoAiu / 1e9;
       }
 
-      return { ...parseReview(content), cost };
+      const review = parseReview(content);
+      return { ...review, cost, verdict: deriveVerdict(review.findings) };
     } finally {
       await client.stop();
     }

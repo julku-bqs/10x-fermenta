@@ -561,8 +561,8 @@ jobs:
 
 #### Automated
 
-- [x] 3.1 Build + type check pass
-- [x] 3.2 Unit tests pass incl. the `buildReviewPrompt` trim/title test
+- [x] 3.1 Build + type check pass — 22bdef0
+- [x] 3.2 Unit tests pass incl. the `buildReviewPrompt` trim/title test — 22bdef0
 
 #### Manual
 

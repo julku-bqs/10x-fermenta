@@ -1,0 +1,7 @@
+{
+  "summary": "No reviewable changes were detected in the diff, so there is nothing to flag. The verdict is an automatic approval.",
+  "findings": [],
+  "nitpicks": [],
+  "cost": { "model": "gpt-5.4", "tokensIn": 128, "tokensOut": 16 },
+  "verdict": { "decision": "approved", "pass": true }
+}

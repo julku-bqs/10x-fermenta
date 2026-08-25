@@ -1,0 +1,7 @@
+{
+  "summary": "Diff not reviewed: it is 73412 characters, which exceeds the 50000-character limit for automated review. Split the change into smaller pull requests to get an AI review of each.",
+  "findings": [],
+  "nitpicks": [],
+  "cost": { "tokensIn": 0, "tokensOut": 0 },
+  "verdict": { "decision": "declined", "pass": true }
+}

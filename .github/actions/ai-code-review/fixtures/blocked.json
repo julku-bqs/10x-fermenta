@@ -1,0 +1,22 @@
+{
+  "summary": "This change introduces a data migration and a new validation path. Risk is high: the migration drops a column still read at runtime, which will break existing batches. One blocker and one high issue were found, so the change is not approvable as-is.",
+  "findings": [
+    {
+      "criterion": "data_migration",
+      "severity": "blocker",
+      "filePath": "supabase/migrations/20260824120000_drop_legacy.sql",
+      "lineNumber": "3",
+      "message": "DROP COLUMN legacy_stage removes a column still read in process-plan.ts; add a backfill and code change first or the read throws."
+    },
+    {
+      "criterion": "domain_integrity",
+      "severity": "high",
+      "filePath": "src/lib/services/process-plan.ts",
+      "lineNumber": "120-134",
+      "message": "Stabilization is scheduled before fermentation completes when residual sugar is above threshold, violating the documented process ordering."
+    }
+  ],
+  "nitpicks": [],
+  "cost": { "model": "gpt-5.4", "tokensIn": 5102, "tokensOut": 640, "aiCredits": 4 },
+  "verdict": { "decision": "blocked", "pass": false }
+}

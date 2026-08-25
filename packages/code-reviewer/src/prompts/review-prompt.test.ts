@@ -28,4 +28,12 @@ describe("buildReviewPrompt", () => {
     expect(out).toContain("a".repeat(MAX_DESCRIPTION_CHARS));
     expect(out).not.toContain("a".repeat(MAX_DESCRIPTION_CHARS + 1));
   });
+
+  it("wraps author-supplied PR context in an untrusted-data boundary", () => {
+    const out = buildReviewPrompt({ diff: "d", title: "t", description: "why" });
+
+    expect(out).toContain("BEGIN UNTRUSTED PR CONTEXT");
+    expect(out).toContain("END UNTRUSTED PR CONTEXT");
+    expect(buildReviewPrompt({ diff: "d" })).not.toContain("UNTRUSTED PR CONTEXT");
+  });
 });

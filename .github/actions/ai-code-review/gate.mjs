@@ -51,11 +51,12 @@ export function decideGate({ cliExit, stdout }) {
     };
   }
 
-  // Normal result: gate on the single boolean the model never touches.
+  // Normal result: gate on the single boolean the model never touches. Strip a
+  // stale ai-cr:skipped too, so a declined-then-reviewed PR ends on exactly one label.
   if (verdict.pass === false) {
-    return { verdict, addLabel: FAIL_LABEL, removeLabel: PASS_LABEL, warn: false, fail: true };
+    return { verdict, addLabel: FAIL_LABEL, removeLabel: `${PASS_LABEL},${SKIP_LABEL}`, warn: false, fail: true };
   }
-  return { verdict, addLabel: PASS_LABEL, removeLabel: FAIL_LABEL, warn: false, fail: false };
+  return { verdict, addLabel: PASS_LABEL, removeLabel: `${FAIL_LABEL},${SKIP_LABEL}`, warn: false, fail: false };
 }
 
 /** Single-quote a value for safe `eval` in bash; escape embedded single quotes. */

@@ -529,6 +529,14 @@ jobs:
 - Schemas to extend: [`packages/code-reviewer/src/schemas/review.ts`](../../../packages/code-reviewer/src/schemas/review.ts)
 - The seam: [`packages/code-reviewer/src/core/review-agent.ts`](../../../packages/code-reviewer/src/core/review-agent.ts)
 
+## Addendum (2026-08-25): kept out-of-plan config edits
+
+Recorded during implementation review (`reviews/impl-review.md`, finding F4). Three files changed that this plan's file list did not name; all are benign, verified green (root lint + all builds), and kept:
+
+- `.github/workflows/ci.yml` — bumped `actions/checkout` + `actions/setup-node` to v7 and switched `node-version: 24` → `node-version-file: .nvmrc`, matching the new composite action's single source of truth for Node. Phase 5 had stated ci.yml would stay "unaffected"; this is a consistency-only change with no behavior impact (same Node 24.18.0).
+- `eslint.config.js` — added `.github/actions/**/*.mjs` to the root ESLint ignore list, mirroring the existing `.github/hooks/scripts/*.mjs` + `packages/**` entries so the new CI scripts don't trip root lint.
+- `packages/code-reviewer/tsconfig.build.json` — new build-only tsconfig referenced by the `build` script (`tsc -p tsconfig.build.json`) to emit `dist/` without the new `*.test.ts` files.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.

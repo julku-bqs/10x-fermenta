@@ -10,11 +10,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { decideGate } from "./gate.mjs";
 
-test("(a) pass JSON → ai-cr:passed, no fail", () => {
+test("(a) pass JSON → ai-cr:passed, removes failed + stale skipped, no fail", () => {
   const stdout = JSON.stringify({ verdict: { decision: "approved", pass: true } });
   const r = decideGate({ cliExit: 0, stdout });
   assert.equal(r.addLabel, "ai-cr:passed");
-  assert.equal(r.removeLabel, "ai-cr:failed");
+  assert.equal(r.removeLabel, "ai-cr:failed,ai-cr:skipped");
   assert.equal(r.warn, false);
   assert.equal(r.fail, false);
 });
@@ -26,11 +26,11 @@ test("(a') flagged JSON (pass:true) → ai-cr:passed, no fail", () => {
   assert.equal(r.fail, false);
 });
 
-test("(b) blocked JSON (pass:false) → ai-cr:failed, fail:true", () => {
+test("(b) blocked JSON (pass:false) → ai-cr:failed, removes passed + stale skipped, fail:true", () => {
   const stdout = JSON.stringify({ verdict: { decision: "blocked", pass: false } });
   const r = decideGate({ cliExit: 0, stdout });
   assert.equal(r.addLabel, "ai-cr:failed");
-  assert.equal(r.removeLabel, "ai-cr:passed");
+  assert.equal(r.removeLabel, "ai-cr:passed,ai-cr:skipped");
   assert.equal(r.warn, false);
   assert.equal(r.fail, true);
 });

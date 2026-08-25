@@ -83,6 +83,15 @@ On each PR it:
 The four labels (`ai-cr:passed`, `ai-cr:failed`, `ai-cr:skipped`, `ai-cr:review`) are provisioned once with `gh label create` — the workflow does not create them.
 
 > Branch protection is intentionally **not** enabled: the `blocked` check fails visibly but does not block merges yet. Turning it into a hard merge gate is a later repo-setting toggle with no code change.
+>
+> **Security caveat (revisit before enabling branch protection):** the composite action builds and runs the reviewer _from the PR checkout_ (`npm ci && npm run build && node dist/cli.js`) while the job holds `pull-requests: write` + `copilot-requests: write`. A PR that edits `packages/code-reviewer`'s `package.json`/lockfile (a malicious dependency or lifecycle script) therefore executes on the runner. This is contained today by the `on: pull_request` trigger (fork PRs get a **read-only** token and **no secrets**; same-repo PRs come only from push-access collaborators) — but before promoting the `blocked` check to a hard merge gate, harden this by building the reviewer from the trusted **base ref** and feeding only the PR _diff_ as data. Do **not** switch the trigger to `pull_request_target`.
+>
+> Repo settings to verify (Settings → Actions → General):
+>
+> - **Fork pull request workflows** → _Require approval for all outside collaborators_ — so a fork PR's workflow (which builds its code) never runs without a maintainer clicking "Approve and run".
+> - **Workflow permissions** → _Read repository contents and packages permissions_ (read-only default) — the workflow escalates only the scopes it declares.
+> - **Collaborators & teams** — keep write/push access tight: those are exactly the people who can open a _same-repo_ PR that runs with the write-scoped token.
+> - Never store long-lived PATs/secrets this workflow can reach; it uses only the ephemeral `github.token`.
 
 The minimal caller looks like this (the action owns the build → run → gate → comment → label pipeline):
 

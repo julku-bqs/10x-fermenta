@@ -92,7 +92,8 @@ runs:
 
         # Sticky comment: edit our previous one, or create it the first time.
         printf '%s' "$OUT" | node "$ACTION_DIR/format-comment.mjs" > review.md
-        gh pr comment "$PR" --edit-last --create-if-none --body-file review.md
+        gh pr comment "$PR" --edit-last --create-if-none --body-file review.md \
+          || echo "::warning::AI code review: failed to post the PR comment; continuing (parity with the label step)."
 
         # Mutually-exclusive labels (comma-separated lists from the gate).
         LABEL_ARGS=()

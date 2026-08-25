@@ -551,7 +551,7 @@ Recorded during implementation review (`reviews/impl-review.md`, finding F4). Th
 
 #### Manual
 
-- [x] 1.4 Severity→decision table matches requirements
+- [x] 1.4 Severity→decision table matches requirements — c627aac
 
 ### Phase 2: Template-Method Seam + Agent Refactor + Decline Short-Circuit
 
@@ -563,7 +563,7 @@ Recorded during implementation review (`reviews/impl-review.md`, finding F4). Th
 
 #### Manual
 
-- [x] 2.4 CLI smoke: `git diff HEAD | node dist/cli.js --stdin` returns JSON including a `verdict` field
+- [x] 2.4 CLI smoke: `git diff HEAD | node dist/cli.js --stdin` returns JSON including a `verdict` field — e580df2
 
 ### Phase 3: Prompt (5 Criteria) + CLI (title/description, exit codes)
 
@@ -574,9 +574,9 @@ Recorded during implementation review (`reviews/impl-review.md`, finding F4). Th
 
 #### Manual
 
-- [x] 3.3 Real diff → per-finding `criterion` + top-level `verdict`, 3–4-sentence summary
-- [x] 3.4 Over-cap diff → deterministic declined result, no LLM call
-- [x] 3.5 `--title`/`--description` reflected in the review context
+- [x] 3.3 Real diff → per-finding `criterion` + top-level `verdict`, 3–4-sentence summary — 22bdef0
+- [x] 3.4 Over-cap diff → deterministic declined result, no LLM call — 22bdef0
+- [x] 3.5 `--title`/`--description` reflected in the review context — 22bdef0
 
 ### Phase 4: Composite Action + Comment Formatter
 
@@ -588,7 +588,7 @@ Recorded during implementation review (`reviews/impl-review.md`, finding F4). Th
 
 #### Manual
 
-- [x] 4.4 Rendered Markdown: verdict badge + criterion grouping + collapsible nitpicks + graceful empty state
+- [x] 4.4 Rendered Markdown: verdict badge + criterion grouping + collapsible nitpicks + graceful empty state — 5b64ccb
 
 ### Phase 5: Caller Workflow + Labels + README + Live PR Verification
 
@@ -599,10 +599,10 @@ Recorded during implementation review (`reviews/impl-review.md`, finding F4). Th
 
 #### Manual
 
-- [x] 5.3 Test PR: sticky comment (summary + badge + grouped findings) + exactly one passed/failed label
-- [x] 5.4 Seeded `blocker`/`high` → `ai-cr:failed` + red check; merge not blocked (branch protection unwired)
-- [x] 5.5 Only-`medium` → `flagged` → `ai-cr:passed` (non-blocking)
-- [x] 5.6 Oversize PR → declined comment (`declined`, "too large"), `ai-cr:skipped` (neutral), no LLM latency
-- [x] 5.7 Forced reviewer failure → `::warning::`, no pass/fail label, non-blocking
-- [x] 5.8 `ai-cr:review` label → re-runs and label removed afterwards
-- [x] 5.9 Sticky: second run edits the same comment (no duplicate)
+- [x] 5.3 Test PR: sticky comment (summary + badge + grouped findings) + exactly one passed/failed label — afeb76c
+- [x] 5.4 Seeded `blocker`/`high` → `ai-cr:failed` + red check; merge not blocked (branch protection unwired) — afeb76c
+- [x] 5.5 Only-`medium` → `flagged` → `ai-cr:passed` (non-blocking) — afeb76c
+- [x] 5.6 Oversize PR → declined comment (`declined`, "too large"), `ai-cr:skipped` (neutral), no LLM latency — afeb76c
+- [x] 5.7 Forced reviewer failure → `::warning::`, no pass/fail label, non-blocking — afeb76c
+- [x] 5.8 `ai-cr:review` label → re-runs and label removed afterwards — afeb76c
+- [x] 5.9 Sticky: second run edits the same comment (no duplicate) — afeb76c

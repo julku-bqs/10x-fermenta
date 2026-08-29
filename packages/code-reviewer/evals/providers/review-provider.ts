@@ -33,7 +33,13 @@ export default class ReviewProvider implements ApiProvider {
 
   constructor(options: ReviewProviderOptions = {}) {
     this.config = options.config ?? {};
-    this.model = this.config.model ?? "auto";
+    const model = this.config.model;
+    if (!model) {
+      throw new Error(
+        'ReviewProvider requires an explicit config.model — the eval never relies on the agent\'s "auto" default (runs would be non-comparable).',
+      );
+    }
+    this.model = model;
     this.providerId = `review-provider:${this.model}`;
     this.label = options.label ?? this.model;
   }

@@ -57,9 +57,10 @@ const EPSILON = 1e-9;
  * ignored. Returns a number in ~`[0, 1]`.
  */
 export function coverage(scores: Record<string, number>, _context?: unknown): number {
+  const score = (k: CriterionKey) => (Number.isFinite(scores[k]) ? scores[k] : 0);
   const wsum = CRITERIA.reduce((acc, k) => acc + WEIGHTS[k], 0);
-  const denom = CRITERIA.reduce((acc, k) => acc + WEIGHTS[k] / ((scores[k] ?? 0) + EPSILON), 0);
+  const denom = CRITERIA.reduce((acc, k) => acc + WEIGHTS[k] / (score(k) + EPSILON), 0);
   const harmonic = wsum / denom;
-  const minCriterion = Math.min(...CRITERIA.map((k) => scores[k] ?? 0));
-  return 0.5 * harmonic + 0.5 * minCriterion;
+  const minCriterion = Math.min(...CRITERIA.map(score));
+  return Math.max(0, Math.min(1, 0.5 * harmonic + 0.5 * minCriterion));
 }

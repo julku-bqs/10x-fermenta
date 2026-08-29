@@ -417,26 +417,26 @@ None — additive harness inside the package. No production `src/**`, CLI, CI, o
 
 #### Automated
 
-- [x] 2.1 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json`
-- [x] 2.2 Helper unit tests pass: `npm run test:eval` (cost + verdict)
-- [x] 2.3 Config loads with three providers (config-check gate)
-- [x] 2.4 No `0.01` literal outside `cost.ts`
+- [x] 2.1 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json` — 1e5a682
+- [x] 2.2 Helper unit tests pass: `npm run test:eval` (cost + verdict) — 1e5a682
+- [x] 2.3 Config loads with three providers (config-check gate) — 1e5a682
+- [x] 2.4 No `0.01` literal outside `cost.ts` — 1e5a682
 
 #### Manual
 
-- [x] 2.5 `npm run eval` shows three model cells with structured `ReviewResult` output
-- [x] 2.6 Report shows real USD cost per model and populated token usage
-- [x] 2.7 `verdict` hard gate passes for models that block the diff
-- [x] 2.8 An erroring/unavailable model shows an error cell without aborting the run
+- [x] 2.5 `npm run eval` shows three model cells with structured `ReviewResult` output — 1e5a682
+- [x] 2.6 Report shows real USD cost per model and populated token usage — 1e5a682
+- [x] 2.7 `verdict` hard gate passes for models that block the diff — 1e5a682
+- [x] 2.8 An erroring/unavailable model shows an error cell without aborting the run — 1e5a682
 
 ### Phase 3: Copilot-backed grader, per-criterion rubric, and derived aggregate
 
 #### Automated
 
-- [ ] 3.1 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json`
-- [ ] 3.2 Aggregate unit test passes: `npm run test:eval` (coverage ranking)
-- [ ] 3.3 Config loads with grader + five rubrics + derived metric (config-check gate)
-- [ ] 3.4 The five rubric asserts stay non-gating: grader hardcodes `pass: true` + `threshold: 0` on each
+- [x] 3.1 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json`
+- [x] 3.2 Aggregate unit test passes: `npm run test:eval` (coverage ranking)
+- [x] 3.3 Config loads with grader + five rubrics + derived metric (config-check gate)
+- [x] 3.4 The five rubric asserts stay non-gating: grader hardcodes `pass: true` + `threshold: 0` on each
 
 #### Manual
 

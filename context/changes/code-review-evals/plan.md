@@ -449,10 +449,10 @@ None — additive harness inside the package. No production `src/**`, CLI, CI, o
 
 #### Automated
 
-- [x] 4.1 Referenced scripts `eval` / `eval:view` exist in `package.json`
-- [x] 4.2 Harness still typechecks (no regressions)
+- [x] 4.1 Referenced scripts `eval` / `eval:view` exist in `package.json` — 121971f
+- [x] 4.2 Harness still typechecks (no regressions) — 121971f
 
 #### Manual
 
-- [x] 4.3 A developer can run the eval end-to-end from the README alone
-- [x] 4.4 The report-reading guide matches the actual columns produced
+- [x] 4.3 A developer can run the eval end-to-end from the README alone — 121971f
+- [x] 4.4 The report-reading guide matches the actual columns produced — 121971f

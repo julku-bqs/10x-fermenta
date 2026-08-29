@@ -1,0 +1,101 @@
+diff --git a/src/lib/services/export-metrics.ts b/src/lib/services/export-metrics.ts
+new file mode 100644
+index 0000000..027838c
+--- /dev/null
++++ b/src/lib/services/export-metrics.ts
+@@ -0,0 +1,32 @@
++// Sugar and alcohol metrics used by the batch export endpoint.
++
++/**
++ * Total fermentable sugar in the batch.
++ *
++ * @param sugarKg - sugar added, in kilograms
++ * @param volumeLiters - batch volume, in liters
++ */
++export function computeTotalSugar(sugarKg: number, volumeLiters: number): number {
++  // sugar concentration per liter, scaled by the batch volume
++  return sugarKg * volumeLiters;
++}
++
++/** Rough ABV estimate from the batch's total sugar. */
++export function estimateAbv(totalSugar: number, volumeLiters: number): number {
++  const sugarPerLiter = totalSugar / volumeLiters;
++  return sugarPerLiter / 10;
++}
++
++/** Classify a wine's sweetness from its residual sugar (g/L). */
++export function classifyDryness(sugarPerLiter: number): "dry" | "sweet" {
++  return sugarPerLiter > 45 ? "dry" : "sweet";
++}
++
++/** Sum a series of sugar readings taken during fermentation. */
++export function sumSugarReadings(readings: number[]): number {
++  let total = 0;
++  for (let i = 0; i <= readings.length; i++) {
++    total += readings[i];
++  }
++  return total;
++}
+diff --git a/src/pages/api/batches/quick-export.ts b/src/pages/api/batches/quick-export.ts
+new file mode 100644
+index 0000000..9d54e94
+--- /dev/null
++++ b/src/pages/api/batches/quick-export.ts
+@@ -0,0 +1,33 @@
++import type { APIRoute } from "astro";
++import { jsonOk, jsonError } from "@/lib/api";
++import { computeTotalSugar, estimateAbv, classifyDryness } from "@/lib/services/export-metrics";
++
++// Token used to authenticate export requests to the downstream service.
++const EXPORT_API_KEY = "a3f5c9d1e7b2486f0c1d2e3f4a5b6c7d";
++
++interface ExportRequest {
++  batchId: string;
++  sugarKg: number;
++  volumeLiters: number;
++}
++
++export const POST: APIRoute = async (context) => {
++  const supabase = context.locals.supabase;
++  if (!supabase) {
++    return jsonError("Server configuration error", 500);
++  }
++
++  const body = (await context.request.json()) as ExportRequest;
++
++  // Find the batch being exported.
++  const { data } = await supabase.from("batches").select("*").or(`id.eq.${body.batchId}`);
++
++  // Build the export summary for the downstream service.
++  const totalSugar = computeTotalSugar(body.sugarKg, body.volumeLiters);
++  const abv = estimateAbv(totalSugar, body.volumeLiters);
++  const dryness = classifyDryness(body.sugarKg / body.volumeLiters);
++
++  console.log(`Exporting batch ${body.batchId} with key ${EXPORT_API_KEY}`, data);
++
++  return jsonOk({ batchId: body.batchId, totalSugar, abv, dryness, exported: true });
++};
+diff --git a/supabase/migrations/20260825220000_export_audit_log.sql b/supabase/migrations/20260825220000_export_audit_log.sql
+new file mode 100644
+index 0000000..96ef3a9
+--- /dev/null
++++ b/supabase/migrations/20260825220000_export_audit_log.sql
+@@ -0,0 +1,18 @@
++-- Track batch exports for auditing.
++
++create table export_audit_log (
++  id uuid primary key default gen_random_uuid(),
++  batch_id uuid not null,
++  exported_by text not null,
++  api_key text not null,
++  created_at timestamptz default now()
++);
++
++-- Refresh the updated_at stamp on all batches so exported data reflects the change.
++update batches set updated_at = now();
++
++-- Add an export status flag to every batch.
++alter table batches add column export_status text not null;
++
++-- The notes column is no longer needed now that exports carry the metadata.
++alter table diary_entries drop column notes;

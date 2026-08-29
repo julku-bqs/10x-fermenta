@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Three to four sentences: the overall risk of this change plus a short rationale referencing the criteria that drove the findings."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "criterion": {
+            "default": null,
+            "description": "Which of the five review criteria this finding belongs to; null if untagged or unrecognized.",
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["correctness", "domain_integrity", "input_contract", "security_isolation", "data_migration"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["blocker", "high", "medium", "low"],
+            "description": "Impact level of the issue: blocker, high, medium, or low."
+          },
+          "filePath": {
+            "type": "string",
+            "description": "File path as it appears in the diff."
+          },
+          "lineNumber": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d+(-\\d+)?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Affected location as a single line (\"42\") or an inclusive range (\"10-15\"); null if not line-specific."
+          },
+          "message": {
+            "type": "string",
+            "description": "What is wrong and how to fix it."
+          }
+        },
+        "required": ["criterion", "severity", "filePath", "lineNumber", "message"],
+        "additionalProperties": false
+      },
+      "description": "High-confidence, actionable issues; empty array if none."
+    },
+    "nitpicks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Minor style or readability notes; empty array if none."
+    },
+    "cost": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "description": "The actual model that produced the review, resolved even when 'auto' was requested.",
+          "type": "string"
+        },
+        "tokensIn": {
+          "type": "number",
+          "description": "Total input tokens consumed across the run."
+        },
+        "tokensOut": {
+          "type": "number",
+          "description": "Total output tokens produced across the run."
+        },
+        "aiCredits": {
+          "description": "AI credits (AIC) consumed, derived from Copilot nano-AI units; absent when the provider does not report usage (e.g. BYOK). USD is not exposed by the SDK.",
+          "type": "number"
+        }
+      },
+      "required": ["tokensIn", "tokensOut"],
+      "additionalProperties": false,
+      "description": "Token and credit usage for the run, plus the model used."
+    },
+    "verdict": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["approved", "flagged", "blocked", "declined"],
+          "description": "Overall gate decision derived from the findings' severities."
+        },
+        "pass": {
+          "type": "boolean",
+          "description": "The single boolean the CI job gates on; false only when decision is 'blocked'."
+        }
+      },
+      "required": ["decision", "pass"],
+      "additionalProperties": false,
+      "description": "Gate verdict derived deterministically in code from the findings' severities (not emitted by the model)."
+    }
+  },
+  "required": ["summary", "findings", "nitpicks", "cost", "verdict"],
+  "additionalProperties": false
+}

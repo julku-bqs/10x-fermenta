@@ -402,32 +402,32 @@ None — additive harness inside the package. No production `src/**`, CLI, CI, o
 
 #### Automated
 
-- [x] 1.1 Dependencies install cleanly: `npm install`
-- [x] 1.2 promptfoo binary resolves: `npx promptfoo --version`
-- [x] 1.3 Config loads (config-check gate, Phase 1 §4): `npx promptfoo validate -c evals/promptfooconfig.ts`
-- [x] 1.4 Fixture exists and is non-empty (three seeded files)
-- [x] 1.5 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json`
+- [x] 1.1 Dependencies install cleanly: `npm install` — 701ce79
+- [x] 1.2 promptfoo binary resolves: `npx promptfoo --version` — 701ce79
+- [x] 1.3 Config loads (config-check gate, Phase 1 §4): `npx promptfoo validate -c evals/promptfooconfig.ts` — 701ce79
+- [x] 1.4 Fixture exists and is non-empty (three seeded files) — 701ce79
+- [x] 1.5 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json` — 701ce79
 
 #### Manual
 
-- [x] 1.6 Resolved promptfoo version recorded and local Node satisfies its `engines.node`
-- [x] 1.7 `ground-truth.md` ledger matches the captured diff
+- [x] 1.6 Resolved promptfoo version recorded and local Node satisfies its `engines.node` — 701ce79
+- [x] 1.7 `ground-truth.md` ledger matches the captured diff — 701ce79
 
 ### Phase 2: Review provider, three models, and the deterministic fail-gate
 
 #### Automated
 
-- [ ] 2.1 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json`
-- [ ] 2.2 Helper unit tests pass: `npm run test:eval` (cost + verdict)
-- [ ] 2.3 Config loads with three providers (config-check gate)
-- [ ] 2.4 No `0.01` literal outside `cost.ts`
+- [x] 2.1 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json`
+- [x] 2.2 Helper unit tests pass: `npm run test:eval` (cost + verdict)
+- [x] 2.3 Config loads with three providers (config-check gate)
+- [x] 2.4 No `0.01` literal outside `cost.ts`
 
 #### Manual
 
-- [ ] 2.5 `npm run eval` shows three model cells with structured `ReviewResult` output
-- [ ] 2.6 Report shows real USD cost per model and populated token usage
-- [ ] 2.7 `verdict` hard gate passes for models that block the diff
-- [ ] 2.8 An erroring/unavailable model shows an error cell without aborting the run
+- [x] 2.5 `npm run eval` shows three model cells with structured `ReviewResult` output
+- [x] 2.6 Report shows real USD cost per model and populated token usage
+- [x] 2.7 `verdict` hard gate passes for models that block the diff
+- [x] 2.8 An erroring/unavailable model shows an error cell without aborting the run
 
 ### Phase 3: Copilot-backed grader, per-criterion rubric, and derived aggregate
 

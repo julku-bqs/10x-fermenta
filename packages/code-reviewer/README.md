@@ -152,7 +152,34 @@ Every review agent implements the `ReviewAgent` interface (`src/core/review-agen
 
 ### Evals (promptfoo)
 
-The package is structured so a [promptfoo custom provider](https://www.promptfoo.dev/docs/providers/custom-api/) can `import { createReviewAgent }` and map the returned `ReviewResult` onto promptfoo's `{ output, tokenUsage, cost }` shape (`cost` already carries `tokensIn` / `tokensOut` and, when available, `aiCredits`). Wiring up the eval environment itself is intentionally out of scope for this package.
+A local [promptfoo](https://www.promptfoo.dev/) harness in [`evals/`](./evals) runs the **same** review prompt across **three pinned models** — `gpt-5.3-codex`, `claude-sonnet-4.6`, `claude-haiku-4.5` — against **one comprehensive, deliberately-flawed diff**, and reports each model's **cost**, whether it **actually fails the PR**, and **how well it finds the seeded bugs**. It's a developer-run tool for comparing models on cost-to-value — **not** a CI gate.
+
+**Prerequisites**
+
+- Copilot auth (same as [Requirements](#requirements) — `copilot login`, or a `COPILOT_GITHUB_TOKEN` / `GH_TOKEN`). The LLM judge is keyless too — **no `OPENAI_API_KEY`**.
+- Each full run **consumes AI credits**: ~3 reviews + up to 15 grader calls.
+- **promptfoo `0.122.2`** (a local devDependency installed by `npm install`), which requires **Node ≥ 22.22.0** — the repo's `.nvmrc` (Node 24) satisfies this.
+
+**Run it** (from `packages/code-reviewer/`):
+
+```bash
+npm run eval        # run the three-model comparison on the seeded diff
+npm run eval:view   # open the HTML report in a browser
+npm run test:eval   # offline unit tests for the harness helpers (keyless, no credits)
+```
+
+**Reading the report** — one row (the seeded diff) × three model columns. Per model:
+
+- **Cost (USD)** — derived from the SDK's AI credits at GitHub's official `$0.01`/credit rate, plus token usage.
+- **`verdict` hard gate** — pass/fail on "does the review actually fail the PR?" (`decision: blocked`, `pass: false`) plus `is-json` (a well-formed `ReviewResult`). Every model **must** clear these; a red cell means the model failed to block a diff full of blockers.
+- **Five per-criterion scores** (`domain_integrity`, `correctness`, `input_contract`, `security_isolation`, `data_migration`) in `[0,1]`, graded by a **Copilot-backed LLM judge** — how well the review's findings surfaced that criterion's seeded bugs. These are **non-gating**: a weaker model shows a lower score, not a failure — that lower score _is_ the comparison signal.
+- **`weighted_coverage`** — one derived summary of the five scores (a weighted harmonic mean blended with the worst-criterion floor) that penalizes uneven coverage more than a plain average.
+
+> **n=1 caveat.** Each run scores **one** diff over **non-deterministic** live model calls, so `weighted_coverage` is a **directional** coverage summary, **not** a statistical measure — don't over-read a small gap between models. For a rough directional average, raise `evaluateOptions.repeat` (> 1) in [`evals/promptfooconfig.ts`](./evals/promptfooconfig.ts); it re-runs each case and costs proportionally more credits.
+
+**Grader model.** The judge is pinned to a strong model **distinct** from the three under test (`claude-opus-4.8` by default; override via the grader's `config.model`) so no model grades its own output.
+
+**Fixture provenance.** The seeded diff is a committed snapshot — [`evals/fixtures/quick-export-multiflaw.diff`](./evals/fixtures/quick-export-multiflaw.diff) — captured from branch **`test/ai-cr-live-flaws`**, which is **testing-only, DO NOT MERGE**. The flaw→criterion ledger the rubrics key off is [`evals/fixtures/ground-truth.md`](./evals/fixtures/ground-truth.md); if the diff ever changes, re-capture it and update the ledger + rubrics.
 
 ## Notes
 

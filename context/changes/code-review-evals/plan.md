@@ -433,26 +433,26 @@ None — additive harness inside the package. No production `src/**`, CLI, CI, o
 
 #### Automated
 
-- [x] 3.1 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json`
-- [x] 3.2 Aggregate unit test passes: `npm run test:eval` (coverage ranking)
-- [x] 3.3 Config loads with grader + five rubrics + derived metric (config-check gate)
-- [x] 3.4 The five rubric asserts stay non-gating: grader hardcodes `pass: true` + `threshold: 0` on each
+- [x] 3.1 Harness typechecks: `npx tsc --noEmit -p evals/tsconfig.json` — 7bbce37
+- [x] 3.2 Aggregate unit test passes: `npm run test:eval` (coverage ranking) — 7bbce37
+- [x] 3.3 Config loads with grader + five rubrics + derived metric (config-check gate) — 7bbce37
+- [x] 3.4 The five rubric asserts stay non-gating: grader hardcodes `pass: true` + `threshold: 0` on each — 7bbce37
 
 #### Manual
 
-- [ ] 3.5 `npm run eval` shows five per-criterion scores and a `weighted_coverage` column per model
-- [ ] 3.6 Grader runs keyless (Copilot auth only), pinned to a distinct model
-- [ ] 3.7 Split gate holds: weaker model = lower coverage but still passes the verdict hard bar
-- [ ] 3.8 `npm run eval:view` renders component breakdown, USD cost, and coverage
+- [x] 3.5 `npm run eval` shows five per-criterion scores and a `weighted_coverage` column per model — 7bbce37
+- [x] 3.6 Grader runs keyless (Copilot auth only), pinned to a distinct model — 7bbce37
+- [x] 3.7 Split gate holds: weaker model = lower coverage but still passes the verdict hard bar — 7bbce37
+- [x] 3.8 `npm run eval:view` renders component breakdown, USD cost, and coverage — 7bbce37
 
 ### Phase 4: Documentation and ergonomics
 
 #### Automated
 
-- [ ] 4.1 Referenced scripts `eval` / `eval:view` exist in `package.json`
-- [ ] 4.2 Harness still typechecks (no regressions)
+- [x] 4.1 Referenced scripts `eval` / `eval:view` exist in `package.json`
+- [x] 4.2 Harness still typechecks (no regressions)
 
 #### Manual
 
-- [ ] 4.3 A developer can run the eval end-to-end from the README alone
-- [ ] 4.4 The report-reading guide matches the actual columns produced
+- [x] 4.3 A developer can run the eval end-to-end from the README alone
+- [x] 4.4 The report-reading guide matches the actual columns produced

@@ -10,7 +10,7 @@ archived_at: null
 ## Notes
 
 Seeded from the code-review-evals review follow-up (FU-1 in
-`context/changes/code-review-evals/follow-ups/review-fixes.md`). Scope: the
+`context/archive/2026-08-27-code-review-evals/follow-ups/review-fixes.md`). Scope: the
 grader provider and the scoring module only.
 
 **Source finding:** F2 (code-review-evals impl-review) — the grader's JSON

@@ -4,6 +4,7 @@ import { BaseReviewAgent, type ReviewInput } from "../../core/review-agent.js";
 import { REVIEW_SYSTEM_PROMPT, buildReviewPrompt } from "../../prompts/review-prompt.js";
 import { type ReviewCost, type ReviewResult } from "../../schemas/review.js";
 import { parseReview } from "./parse.js";
+import { readRepoFileTool } from "./read-repo-file-tool.js";
 
 export interface CopilotReviewAgentOptions {
   /** Model id to use. Defaults to `COPILOT_MODEL` env var, then `"auto"`. */
@@ -52,12 +53,12 @@ export class CopilotReviewAgent extends BaseReviewAgent {
         systemMessage: { mode: "append", content: this.instructions },
         // Streaming lets us collect per-call usage via `assistant.usage` events.
         streaming: true,
-        // Read-only review: the diff is supplied inline, so the agent needs no
-        // tools. An empty allowlist disables them. Per the SDK's agent loop a
-        // turn only continues when the model requests a tool, so with none
-        // available it produces its answer in a single turn (one LLM call).
-        // The SDK has no native max-turns setting; this is the way to bound it.
-        availableTools: [],
+        // Read-only review: the diff is supplied inline and the only extra
+        // capability is a repo-scoped file reader for surrounding context.
+        // Keep the allowlist to this single custom tool so the agent cannot
+        // branch into broader shell/search behavior.
+        tools: [readRepoFileTool],
+        availableTools: ["custom:read_repo_file"],
         // Safety fallback: auto-approve any (unexpected) tool request so the
         // agent never blocks waiting for input.
         onPermissionRequest: async () => ({ kind: "approve-once" }),

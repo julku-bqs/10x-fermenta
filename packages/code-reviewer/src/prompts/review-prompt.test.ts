@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildReviewPrompt } from "./review-prompt.js";
+import { buildReviewPrompt, REVIEW_SYSTEM_PROMPT } from "./review-prompt.js";
 import { MAX_DESCRIPTION_CHARS } from "../core/limits.js";
 
 describe("buildReviewPrompt", () => {
@@ -35,5 +35,10 @@ describe("buildReviewPrompt", () => {
     expect(out).toContain("BEGIN UNTRUSTED PR CONTEXT");
     expect(out).toContain("END UNTRUSTED PR CONTEXT");
     expect(buildReviewPrompt({ diff: "d" })).not.toContain("UNTRUSTED PR CONTEXT");
+  });
+
+  it("tells the reviewer to read relevant repo context with the file tool", () => {
+    expect(REVIEW_SYSTEM_PROMPT).toContain("read_repo_file");
+    expect(REVIEW_SYSTEM_PROMPT).toContain("read at least one relevant repository file");
   });
 });

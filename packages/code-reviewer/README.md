@@ -185,4 +185,4 @@ npm run test:eval   # offline unit tests for the harness helpers (keyless, no cr
 
 This package is intentionally standalone (its own `package.json` / `node_modules`) so the native Copilot CLI dependency stays out of the Astro/Cloudflare app build. It is excluded from the repo's root ESLint and TypeScript programs.
 
-The reviewer runs **read-only**: the diff is passed inline and agent tools are disabled (`availableTools: []`). Per the SDK's agent loop a turn only continues when the model requests a tool, so with none available a review is a single turn (one LLM call). The SDK has no native max-turns setting, so this is how the cost is bounded.
+The reviewer runs **read-only**: the diff is passed inline and the agent is limited to one custom repo-file reader (`read_repo_file`) for surrounding code context. `availableTools` is restricted to that single custom tool, so the reviewer still cannot branch into shell/search behavior. This keeps the review grounded in the diff plus nearby repository code while preserving a tight capability boundary.

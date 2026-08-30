@@ -56,7 +56,6 @@ describe("CopilotReviewAgent", () => {
     expect(result.verdict).toEqual({ decision: "approved", pass: true });
     expect(sessionConfig.tools).toHaveLength(1);
     expect(sessionConfig.tools[0].name).toBe(READ_REPO_FILE_TOOL_NAME);
-    expect(sessionConfig.tools[0].skipPermission).toBe(true);
     expect(sessionConfig.availableTools).toEqual([`custom:${READ_REPO_FILE_TOOL_NAME}`]);
   });
 });

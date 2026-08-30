@@ -4,7 +4,7 @@ import { BaseReviewAgent, type ReviewInput } from "../../core/review-agent.js";
 import { REVIEW_SYSTEM_PROMPT, buildReviewPrompt } from "../../prompts/review-prompt.js";
 import { type ReviewCost, type ReviewResult } from "../../schemas/review.js";
 import { parseReview } from "./parse.js";
-import { readRepoFileTool } from "./read-repo-file-tool.js";
+import { createReadRepoFileTool, resolveRepoRoot } from "./read-repo-file-tool.js";
 
 export interface CopilotReviewAgentOptions {
   /** Model id to use. Defaults to `COPILOT_MODEL` env var, then `"auto"`. */
@@ -45,6 +45,7 @@ export class CopilotReviewAgent extends BaseReviewAgent {
 
     const client = new CopilotClient();
     try {
+      const repoRoot = resolveRepoRoot();
       await client.start();
       const session = await client.createSession({
         model: this.model,
@@ -57,7 +58,7 @@ export class CopilotReviewAgent extends BaseReviewAgent {
         // capability is a repo-scoped file reader for surrounding context.
         // Keep the allowlist to this single custom tool so the agent cannot
         // branch into broader shell/search behavior.
-        tools: [readRepoFileTool],
+        tools: [createReadRepoFileTool(repoRoot)],
         availableTools: ["custom:read_repo_file"],
         // Safety fallback: auto-approve any (unexpected) tool request so the
         // agent never blocks waiting for input.

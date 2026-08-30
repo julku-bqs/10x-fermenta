@@ -1,4 +1,4 @@
-import { CopilotClient, type AssistantMessageEvent } from "@github/copilot-sdk";
+import { CopilotClient, type AssistantMessageEvent, type CopilotSession } from "@github/copilot-sdk";
 
 import { MAX_AI_CREDITS, SEND_AND_WAIT_TIMEOUT_MS } from "../../core/limits.js";
 import { BaseReviewAgent, type ReviewInput } from "../../core/review-agent.js";
@@ -78,6 +78,8 @@ export class CopilotReviewAgent extends BaseReviewAgent {
       let usageModel: string | undefined;
       const cost: ReviewCost = { tokensIn: 0, tokensOut: 0 };
 
+      this.attachToolTrace(session);
+
       session.on("assistant.usage", (event) => {
         cost.tokensIn += event.data.inputTokens ?? 0;
         cost.tokensOut += event.data.outputTokens ?? 0;
@@ -113,5 +115,25 @@ export class CopilotReviewAgent extends BaseReviewAgent {
     } finally {
       await client.stop();
     }
+  }
+
+  /**
+   * Opt-in diagnostic: when `REVIEW_TRACE_TOOLS` is set, log every tool the
+   * agent invokes (view/grep/glob) to stderr — out of band from the JSON on
+   * stdout — so you can confirm it actually read the repo/context. A no-op
+   * otherwise, so normal runs are unaffected.
+   */
+  private attachToolTrace(session: CopilotSession): void {
+    if (!process.env.REVIEW_TRACE_TOOLS) return;
+
+    const toolNames = new Map<string, string>();
+    session.on("tool.execution_start", (event) => {
+      toolNames.set(event.data.toolCallId, event.data.toolName);
+      process.stderr.write(`[tool] ${event.data.toolName} ${JSON.stringify(event.data.arguments)}\n`);
+    });
+    session.on("tool.execution_complete", (event) => {
+      const name = toolNames.get(event.data.toolCallId) ?? "?";
+      process.stderr.write(`[tool:done] ${name} (${event.data.success ? "ok" : "fail"})\n`);
+    });
   }
 }

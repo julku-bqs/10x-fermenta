@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process";
+
 import type { ReviewAgent } from "../core/review-agent.js";
 import { CopilotReviewAgent } from "./copilot/copilot-review-agent.js";
 
@@ -10,6 +12,17 @@ export interface ReviewAgentConfig {
   instructions?: string;
 }
 
+function resolveRepoRoot(): string {
+  try {
+    return execFileSync("git", ["rev-parse", "--show-toplevel"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return process.cwd();
+  }
+}
+
 /**
  * Select and construct a {@link ReviewAgent} implementation by name so future
  * backends slot in without touching callers.
@@ -18,7 +31,11 @@ export function createReviewAgent(config: ReviewAgentConfig = {}): ReviewAgent {
   const { provider = "copilot", model, instructions } = config;
 
   if (provider === "copilot") {
-    return new CopilotReviewAgent({ model, instructions });
+    return new CopilotReviewAgent({
+      model,
+      instructions,
+      workingDirectory: resolveRepoRoot(),
+    });
   }
 
   throw new Error(`Unknown review agent provider: ${String(provider)}`);

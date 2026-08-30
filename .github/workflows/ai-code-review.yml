@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   review:
+    timeout-minutes: 10
     # Run on open/synchronize/reopen; for the 'labeled' event only when the label
     # is our retry trigger — every other label edit is ignored.
     if: github.event.action != 'labeled' || github.event.label.name == 'ai-cr:review'

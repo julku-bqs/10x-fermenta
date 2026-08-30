@@ -242,9 +242,9 @@ None. No schema, DTO, or public factory-API change. `ReviewInput` and `ReviewRes
 
 #### Automated
 
-- [ ] 1.1 Type checking passes: `npm run typecheck`
-- [ ] 1.2 Build passes: `npm run build`
-- [ ] 1.3 Existing unit tests pass: `npm test`
+- [x] 1.1 Type checking passes: `npm run typecheck`
+- [x] 1.2 Build passes: `npm run build`
+- [x] 1.3 Existing unit tests pass: `npm test`
 
 #### Manual
 

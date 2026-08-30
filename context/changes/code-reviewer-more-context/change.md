@@ -1,9 +1,9 @@
 ---
 change_id: code-reviewer-more-context
 title: Add a file-read tool to CopilotReviewAgent for change-context-aware reviews
-status: new
+status: plan_reviewed
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-30
 archived_at: null
 ---
 

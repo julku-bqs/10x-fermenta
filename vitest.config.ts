@@ -9,6 +9,6 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    exclude: ["node_modules", "src/__tests__/integration/**", "tests/e2e/**"],
+    exclude: ["**/node_modules/**", "packages/**", ".github/**", "src/__tests__/integration/**", "tests/e2e/**"],
   },
 });

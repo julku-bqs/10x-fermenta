@@ -143,7 +143,7 @@ The SDK supports much more than a single prompt. Natural next steps:
 - **Custom / sub-agents:** pass `customAgents` to `createSession` to specialize and orchestrate ([docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/custom-agents)).
 - **Custom tools & MCP servers:** let the agent fetch extra context ([MCP docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/mcp)).
 - **Streaming:** subscribe to `assistant.message_delta` for live output ([streaming docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/streaming-events)).
-- **Session limits:** cap AI-credit spend per run in CI ([docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/session-limits)).
+- **Session limits:** cap AI-credit spend per run in CI ([docs](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/session-limits)); the Copilot backend now uses this via `maxAiCredits`.
 - **Structured output:** the review is returned as a `zod`-validated object (`src/schemas/review.ts`). Extend the schema there as your needs grow.
 
 ### Adding a backend
@@ -175,7 +175,7 @@ npm run test:eval   # offline unit tests for the harness helpers (keyless, no cr
 - **Five per-criterion scores** (`domain_integrity`, `correctness`, `input_contract`, `security_isolation`, `data_migration`) in `[0,1]`, graded by a **Copilot-backed LLM judge** — how well the review's findings surfaced that criterion's seeded bugs. These are **non-gating**: a weaker model shows a lower score, not a failure — that lower score _is_ the comparison signal.
 - **`weighted_coverage`** — one derived summary of the five scores (a weighted harmonic mean blended with the worst-criterion floor) that penalizes uneven coverage more than a plain average.
 
-> **n=1 caveat.** Each run scores **one** diff over **non-deterministic** live model calls, so `weighted_coverage` is a **directional** coverage summary, **not** a statistical measure — don't over-read a small gap between models. For a rough directional average, raise `evaluateOptions.repeat` (> 1) in [`evals/promptfooconfig.ts`](./evals/promptfooconfig.ts); it re-runs each case and costs proportionally more credits.
+> **n=1 caveat.** Each run scores **one** diff over **non-deterministic** live model calls, so `weighted_coverage` is a **directional** coverage summary, **not** a statistical measure — don't over-read a small gap between models. Reviews now read the live repo tree while grading the seeded fixture, so `weighted_coverage` is even more directional and repo-tree-dependent. For a rough directional average, raise `evaluateOptions.repeat` (> 1) in [`evals/promptfooconfig.ts`](./evals/promptfooconfig.ts); it re-runs each case and costs proportionally more credits.
 
 **Grader model.** The judge is pinned to a strong model **distinct** from the three under test (`claude-opus-4.8` by default; override via the grader's `config.model`) so no model grades its own output.
 
@@ -185,4 +185,4 @@ npm run test:eval   # offline unit tests for the harness helpers (keyless, no cr
 
 This package is intentionally standalone (its own `package.json` / `node_modules`) so the native Copilot CLI dependency stays out of the Astro/Cloudflare app build. It is excluded from the repo's root ESLint and TypeScript programs.
 
-The reviewer runs **read-only**: the diff is passed inline and agent tools are disabled (`availableTools: []`). Per the SDK's agent loop a turn only continues when the model requests a tool, so with none available a review is a single turn (one LLM call). The SDK has no native max-turns setting, so this is how the cost is bounded.
+The reviewer runs **read-only**: the diff is passed inline and the built-in read trio (`view`, `grep`, `glob`) is available so the agent can inspect nearby code and optional `context/` docs. Cost and runtime are bounded with `sessionLimits.maxAiCredits` (`maxAiCredits`, default 300) plus a raised 300s `sendAndWait` timeout for tool-enabled reviews. Known residual risk: [`github/copilot-cli#2911`](https://github.com/github/copilot-cli/issues/2911) can still hang if the SDK ignores the timeout during a wedged tool loop.
